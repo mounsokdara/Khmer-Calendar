@@ -1,9 +1,10 @@
 import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { OverlayPage } from "../components/overlay-page";
 
 export const Route = createFileRoute("/tools")({
   component: () => (
-    <section className="tab-page is-full overlay-page">
+    <OverlayPage>
       <Outlet />
-    </section>
+    </OverlayPage>
   ),
 });

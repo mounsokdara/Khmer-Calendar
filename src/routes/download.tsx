@@ -6,6 +6,7 @@ import { ActionRow, SetGroup, SubHead, isPackaged } from "../components/settings
 import { Dialog, DlgBtn } from "../components/dialog";
 import { StackBar } from "../components/stack-bar";
 import { PACKS, savePack } from "../lib/packs";
+import { OverlayPage } from "../components/overlay-page";
 
 export const Route = createFileRoute("/download")({ component: DownloadPage });
 
@@ -38,17 +39,17 @@ function DownloadPage() {
 
   if (isPackaged()) {
     return (
-      <section className="tab-page is-full overlay-page">
+      <OverlayPage>
         <div className="more-layout set-page">
           <SubHead title={t(lang, "downloadTitle")} backTo="/more" />
           <p className="sub-lead">{t(lang, "exportInstalled")}</p>
         </div>
-      </section>
+      </OverlayPage>
     );
   }
 
   return (
-    <section className="tab-page is-full overlay-page">
+    <OverlayPage>
       <div className="more-layout set-page">
         <SubHead title={t(lang, "downloadTitle")} backTo="/more" />
         <p className="sub-lead">{t(lang, "downloadSub")}</p>
@@ -103,6 +104,6 @@ function DownloadPage() {
         <p>{err}</p>
       </Dialog>
       <StackBar open={!!toast} message={toast ?? ""} onDismiss={() => setToast(null)} />
-    </section>
+    </OverlayPage>
   );
 }

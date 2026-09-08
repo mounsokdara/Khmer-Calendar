@@ -5,6 +5,7 @@ import { StackBar } from "../components/stack-bar";
 import { WxArt } from "../components/wx-art";
 import { MdIconBtn, MdBtn } from "../components/md-click";
 import { Ripple } from "../components/ripple";
+import { CoverSheet } from "../components/overlay-page";
 import { useStore } from "../lib/store";
 import { t } from "../lib/i18n";
 import {
@@ -177,7 +178,7 @@ function WeatherPage() {
         </div>
       </div>
       {picker ? (
-        <div className="wx-overlay sheet-page">
+        <CoverSheet className="wx-overlay sheet-page">
           <header className="wx-picker-head">
             <MdIconBtn className="icon-btn" onClick={() => setPicker(false)} ariaLabel={t(lang, "back")}>
               <Icon name="arrow_back" />
@@ -200,7 +201,7 @@ function WeatherPage() {
               </button>
             ))}
           </div>
-        </div>
+        </CoverSheet>
       ) : null}
       {open && snap ? <CityDetail city={open} snap={snap} lang={lang} onClose={() => setDetail(null)} /> : null}
       <StackBar open={!!toast} message={toast ?? ""} onDismiss={() => setToast(null)} />
@@ -223,7 +224,7 @@ function CityDetail({
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const daysKm = ["អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ.", "សុក្រ", "សៅរ៍"];
   return (
-    <div className={`sheet-page wx-detail wx-kind-${w.kind}`}>
+    <CoverSheet className={`sheet-page wx-detail wx-kind-${w.kind}`}>
       <img src={city.photo} alt="" className="wx-detail-photo" />
       <div className="wx-detail-shade" />
       <header className="wx-detail-head">
@@ -301,6 +302,6 @@ function CityDetail({
           </div>
         </div>
       </div>
-    </div>
+    </CoverSheet>
   );
 }
