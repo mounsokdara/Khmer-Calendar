@@ -9,7 +9,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parent.parent
 SPA = ROOT / "apk-spa"
 STATIC = ROOT / ".vercel" / "output" / "static"
 PUBLIC = ROOT / "public"
@@ -87,7 +87,7 @@ def build_shell(assets: Path) -> bytes:
 
 def refresh_spa() -> None:
     if not STATIC.is_dir():
-        raise SystemExit("No production build. Run npm run build first.")
+        raise SystemExit("No production web build yet (.vercel/output/static is missing).")
     src_assets = STATIC / "assets"
     shell = build_shell(src_assets)
 
@@ -210,10 +210,24 @@ def rebuild_apk() -> None:
         print(f"apk rebuilt: {APK.stat().st_size} bytes")
 
 
+def sync_native_into_web_build() -> None:
+    if not STATIC.is_dir() or not NATIVE.is_dir():
+        return
+    dest = STATIC / "native"
+    dest.mkdir(parents=True, exist_ok=True)
+    for p in NATIVE.iterdir():
+        if p.is_file():
+            shutil.copy2(p, dest / p.name)
+
+
 def main() -> None:
+    if os.environ.get("VERCEL") == "1":
+        print("skip package rebuild on Vercel")
+        return
     refresh_spa()
     rebuild_native()
     rebuild_apk()
+    sync_native_into_web_build()
 
 
 if __name__ == "__main__":

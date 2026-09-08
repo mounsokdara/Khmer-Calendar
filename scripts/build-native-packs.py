@@ -10,7 +10,7 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-ROOT = Path("/workspace")
+ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "native"
 SPA = ROOT / "apk-spa"
 NEU = Path("/tmp/neu")

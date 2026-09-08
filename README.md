@@ -21,9 +21,10 @@ Download builds live in `public/native/`:
 - `KhmerCalendar.AppImage`
 - `KhmerCalendar-project.zip`
 
-Rebuild after source changes:
+`npm run build` builds the web app and the install packs (APK, Windows, Mac, Linux).
 
 ```bash
 npm run build
-python3 scripts/rebuild-packages.py
 ```
+
+Packs are written to `public/native/`. Web-only: `npm run build:web`. Packs only: `npm run build:packages`.
