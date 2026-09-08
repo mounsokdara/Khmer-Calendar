@@ -38,7 +38,7 @@ function DownloadPage() {
 
   if (isPackaged()) {
     return (
-      <section className="tab-page overlay-page">
+      <section className="tab-page is-full overlay-page">
         <div className="more-layout set-page">
           <SubHead title={t(lang, "downloadTitle")} backTo="/more" />
           <p className="sub-lead">{t(lang, "exportInstalled")}</p>
@@ -48,7 +48,7 @@ function DownloadPage() {
   }
 
   return (
-    <section className="tab-page overlay-page">
+    <section className="tab-page is-full overlay-page">
       <div className="more-layout set-page">
         <SubHead title={t(lang, "downloadTitle")} backTo="/more" />
         <p className="sub-lead">{t(lang, "downloadSub")}</p>

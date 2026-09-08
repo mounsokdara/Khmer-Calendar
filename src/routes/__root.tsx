@@ -195,7 +195,7 @@ function Root() {
     return () => window.clearInterval(id);
   }, [notifyOn, events, lang]);
 
-  const showNav = ready && !isSetup;
+  const showNav = ready && !isSetup && !isOverlay;
 
   return (
     <>

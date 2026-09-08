@@ -1,1 +1,0 @@
-import{J as e,K as t}from"./index-DP4Ifxs1.js";var n=e(),r=()=>(0,n.jsx)(`section`,{className:`tab-page overlay-page`,children:(0,n.jsx)(t,{})});export{r as component};
