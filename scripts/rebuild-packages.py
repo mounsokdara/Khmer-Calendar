@@ -359,9 +359,39 @@ def sync_native_into_web_build() -> None:
             shutil.copy2(src, dest / name)
 
 
+def hosted_ci() -> bool:
+    """Native packs need a local preview, Java, and apktool — skip on Vercel/Cloudflare/etc."""
+    if os.environ.get("KHMER_BUILD_PACKS") == "1":
+        return False
+    if os.environ.get("KHMER_SKIP_PACKS") == "1":
+        return True
+    env = os.environ
+    if any(
+        env.get(name)
+        for name in (
+            "VERCEL",
+            "VERCEL_ENV",
+            "CF_PAGES",
+            "CF_PAGES_BRANCH",
+            "CF_PAGES_COMMIT_SHA",
+            "WORKERS_CI",
+            "CLOUDFLARE_ACCOUNT_ID",
+            "NETLIFY",
+            "RENDER",
+        )
+    ):
+        return True
+    if env.get("CI") in {"1", "true", "TRUE", "yes"}:
+        return True
+    home = env.get("HOME", "")
+    if "buildhome" in home:
+        return True
+    return False
+
+
 def main() -> None:
-    if os.environ.get("VERCEL") == "1":
-        print("skip package rebuild on Vercel")
+    if hosted_ci():
+        print("skip package rebuild on hosted CI")
         return
     refresh_spa()
     rebuild_native()
