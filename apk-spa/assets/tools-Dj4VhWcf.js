@@ -1,0 +1,1 @@
+import{J as e,K as t}from"./index-CBRqOHMP.js";var n=e(),r=()=>(0,n.jsx)(`section`,{className:`tab-page is-full overlay-page`,children:(0,n.jsx)(t,{})});export{r as component};

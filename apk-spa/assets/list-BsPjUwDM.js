@@ -1,0 +1,8 @@
+import{i as e,r as t}from"./decorators-B_2ST9qI.js";import{d as n,o as r,t as i}from"./lit-CNvNe9Hv.js";import{t as a}from"./query-assigned-elements-BBHe1xEY.js";import{n as o,t as s}from"./list-controller-Dj7felfy.js";var c=new Set(Object.values(o)),l=class extends i{get items(){return this.listController.items}constructor(){super(),this.listController=new s({isItem:e=>e.hasAttribute(`md-list-item`),getPossibleItems:()=>this.slotItems,isRtl:()=>getComputedStyle(this).direction===`rtl`,deactivateItem:e=>{e.tabIndex=-1},activateItem:e=>{e.tabIndex=0},isNavigableKey:e=>c.has(e),isActivatable:e=>!e.disabled&&e.type!==`text`}),this.internals=this.attachInternals(),this.internals.role=`list`,this.addEventListener(`keydown`,this.listController.handleKeydown)}render(){return r`
+      <slot
+        @deactivate-items=${this.listController.onDeactivateItems}
+        @request-activation=${this.listController.onRequestActivation}
+        @slotchange=${this.listController.onSlotchange}>
+      </slot>
+    `}activateNextItem(){return this.listController.activateNextItem()}activatePreviousItem(){return this.listController.activatePreviousItem()}};e([a({flatten:!0})],l.prototype,`slotItems`,void 0);var u=n`:host{background:var(--md-list-container-color, var(--md-sys-color-surface, #fef7ff));color:unset;display:flex;flex-direction:column;outline:none;padding:8px 0;position:relative}
+`;u.styleSheet;var d=class extends l{};d.styles=[u],d=e([t(`md-list`)],d);export{d as MdList};

@@ -1,0 +1,17 @@
+import{i as e,n as t,r as n}from"./decorators-B_2ST9qI.js";import{d as r,o as i,t as a}from"./lit-CNvNe9Hv.js";import{t as o}from"./base-BIpe3L86.js";var s;function c(e){return(t,n)=>o(t,n,{get(){return(this.renderRoot??(s??=document.createDocumentFragment())).querySelectorAll(e)}})}var l=class extends a{constructor(){super(...arguments),this.multiline=!1}render(){return i`
+      <slot name="container"></slot>
+      <slot class="non-text" name="start"></slot>
+      <div class="text">
+        <slot name="overline" @slotchange=${this.handleTextSlotChange}></slot>
+        <slot
+          class="default-slot"
+          @slotchange=${this.handleTextSlotChange}></slot>
+        <slot name="headline" @slotchange=${this.handleTextSlotChange}></slot>
+        <slot
+          name="supporting-text"
+          @slotchange=${this.handleTextSlotChange}></slot>
+      </div>
+      <slot class="non-text" name="trailing-supporting-text"></slot>
+      <slot class="non-text" name="end"></slot>
+    `}handleTextSlotChange(){let e=!1,t=0;for(let n of this.textSlots)if(u(n)&&(t+=1),t>1){e=!0;break}this.multiline=e}};e([t({type:Boolean,reflect:!0})],l.prototype,`multiline`,void 0),e([c(`.text slot`)],l.prototype,`textSlots`,void 0);function u(e){for(let t of e.assignedNodes({flatten:!0})){let e=t.nodeType===Node.ELEMENT_NODE,n=t.nodeType===Node.TEXT_NODE&&t.textContent?.match(/\S/);if(e||n)return!0}return!1}var d=r`:host{color:var(--md-sys-color-on-surface, #1d1b20);font-family:var(--md-sys-typescale-body-large-font, var(--md-ref-typeface-plain, Roboto));font-size:var(--md-sys-typescale-body-large-size, 1rem);font-weight:var(--md-sys-typescale-body-large-weight, var(--md-ref-typeface-weight-regular, 400));line-height:var(--md-sys-typescale-body-large-line-height, 1.5rem);align-items:center;box-sizing:border-box;display:flex;gap:16px;min-height:56px;overflow:hidden;padding:12px 16px;position:relative;text-overflow:ellipsis}:host([multiline]){min-height:72px}[name=overline]{color:var(--md-sys-color-on-surface-variant, #49454f);font-family:var(--md-sys-typescale-label-small-font, var(--md-ref-typeface-plain, Roboto));font-size:var(--md-sys-typescale-label-small-size, 0.6875rem);font-weight:var(--md-sys-typescale-label-small-weight, var(--md-ref-typeface-weight-medium, 500));line-height:var(--md-sys-typescale-label-small-line-height, 1rem)}[name=supporting-text]{color:var(--md-sys-color-on-surface-variant, #49454f);font-family:var(--md-sys-typescale-body-medium-font, var(--md-ref-typeface-plain, Roboto));font-size:var(--md-sys-typescale-body-medium-size, 0.875rem);font-weight:var(--md-sys-typescale-body-medium-weight, var(--md-ref-typeface-weight-regular, 400));line-height:var(--md-sys-typescale-body-medium-line-height, 1.25rem)}[name=trailing-supporting-text]{color:var(--md-sys-color-on-surface-variant, #49454f);font-family:var(--md-sys-typescale-label-small-font, var(--md-ref-typeface-plain, Roboto));font-size:var(--md-sys-typescale-label-small-size, 0.6875rem);font-weight:var(--md-sys-typescale-label-small-weight, var(--md-ref-typeface-weight-medium, 500));line-height:var(--md-sys-typescale-label-small-line-height, 1rem)}[name=container]::slotted(*){inset:0;position:absolute}.default-slot{display:inline}.default-slot,.text ::slotted(*){overflow:hidden;text-overflow:ellipsis}.text{display:flex;flex:1;flex-direction:column;overflow:hidden}
+`;d.styleSheet;var f=class extends l{};f.styles=[d],f=e([n(`md-item`)],f);

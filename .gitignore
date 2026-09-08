@@ -1,0 +1,16 @@
+node_modules/
+.vercel/
+.tanstack/
+.grok/
+screenshots/
+test-results/
+artifacts/
+attachments/
+*.log
+.env
+.env.*
+.node_modules.lock
+.DS_Store
+public/assets/
+scripts/khmer-release.keystore
+AGENTS.md

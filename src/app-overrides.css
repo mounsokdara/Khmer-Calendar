@@ -1,0 +1,346 @@
+/* later-pass rules on top of original APK CSS */
+html.no-select,
+html.no-select body,
+html.no-select * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+[data-selectable],
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
+
+.app-dlg-scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+}
+
+.app-dlg-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  gap: 12px !important;
+}
+.app-dlg-actions > *,
+.dlg-action-btn {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  width: auto !important;
+  align-self: stretch !important;
+}
+
+.overlay-page,
+.sheet-page,
+.tab-page.is-full {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--md-sys-color-surface, #fff7f5);
+  overflow: auto;
+}
+
+.md-shell:has(.overlay-page) .nav-wrap,
+.md-shell:has(.tab-page.is-full) .nav-wrap {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.ms {
+  font-family: "Material Symbols Outlined", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 22px;
+  line-height: 1;
+  display: inline-block;
+}
+
+.md-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 24px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  border: 0;
+}
+.md-btn.is-filled {
+  background: var(--md-sys-color-primary, #9a3b38);
+  color: var(--md-sys-color-on-primary, #fff);
+}
+.md-btn.is-outlined {
+  background: transparent;
+  color: var(--md-sys-color-primary, #9a3b38);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-sys-color-primary, #9a3b38) 50%, transparent);
+}
+.md-btn:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+.md-btn.is-danger,
+.dlg-action-btn.is-danger {
+  background: var(--md-sys-color-error, #ba1a1a);
+  color: var(--md-sys-color-on-error, #fff);
+}
+.md-btn.is-outlined.is-danger {
+  background: transparent;
+  color: var(--md-sys-color-error, #ba1a1a);
+}
+
+.setup-go,
+.setup-skip {
+  width: 100%;
+}
+
+.month-pane {
+  flex: 0 0 33.3333%;
+  width: 33.3333%;
+}
+
+.task-add-rem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  color: var(--md-sys-color-primary, #9a3b38);
+  font: inherit;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.native-picker-sr {
+  clip: rect(0 0 0 0) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: absolute !important;
+  overflow: hidden !important;
+  inset: auto !important;
+}
+.task-native {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.task-chip {
+  position: relative;
+  display: inline-flex;
+}
+.task-title-input {
+  width: 100%;
+  min-height: 0;
+  font: inherit;
+  color: inherit;
+  resize: none;
+  background: transparent;
+  border: 0;
+  outline: none;
+  flex: 1;
+  padding: 0.85rem 1.5rem 1rem;
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+.task-sheet-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.task-sheet-foot {
+  padding: 0.5rem 1.25rem calc(0.9rem + env(safe-area-inset-bottom));
+}
+
+.md-shell {
+  height: 100dvh;
+}
+
+.wx-card-copy {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes splash-blob-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-8%, 6%) scale(1.08);
+  }
+}
+@keyframes splash-blob-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6%, -8%) scale(1.06);
+  }
+}
+.boot-splash-blob-a {
+  animation: splash-blob-a 8s ease-in-out infinite;
+}
+.boot-splash-blob-b {
+  animation: splash-blob-b 10s ease-in-out infinite;
+}
+
+.slide-layer.task-sheet {
+  background: var(--md-sys-color-surface, #fff7f5);
+}
+
+/* View Transitions fallback when the API is missing */
+html.no-vt[data-nav-anim][data-nav-dir="fwd"] .tab-stage > * {
+  animation: vt-in-right 0.24s cubic-bezier(0.2, 0, 0, 1) both;
+}
+html.no-vt[data-nav-anim][data-nav-dir="back"] .tab-stage > * {
+  animation: vt-in-left 0.24s cubic-bezier(0.2, 0, 0, 1) both;
+}
+
+html.extra-dark {
+  background: #000;
+}
+
+html,
+body,
+.md-shell {
+  background-color: var(--md-sys-color-surface, #fffbff);
+  color: var(--md-sys-color-on-surface, #2b1b1a);
+}
+
+.ms-icon.fill {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+md-filled-button,
+md-outlined-button,
+md-filled-tonal-button,
+md-text-button {
+  --md-filled-button-container-shape: var(--shape-button, 999px);
+  --md-outlined-button-container-shape: var(--shape-button, 999px);
+  --md-filled-tonal-button-container-shape: var(--shape-button, 999px);
+  --md-text-button-container-shape: var(--shape-button, 999px);
+}
+
+md-filled-button.md-wide,
+md-outlined-button.md-wide,
+md-filled-tonal-button.md-wide,
+md-text-button.md-wide {
+  width: 100%;
+}
+
+.icon-btn {
+  isolation: isolate;
+}
+.icon-btn .ms-icon {
+  grid-area: 1 / 1;
+  place-self: center;
+  pointer-events: none;
+  line-height: 1;
+  font-size: 1.5rem;
+  z-index: 1;
+}
+.icon-btn md-ripple {
+  grid-area: 1 / 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+.icon-btn.is-danger {
+  color: var(--md-sys-color-error);
+}
+.icon-btn.is-danger:hover,
+.icon-btn.is-danger:active {
+  background: color-mix(in srgb, var(--md-sys-color-error) 8%, transparent);
+}
+
+md-outlined-icon-button.md-icon-host,
+md-filled-icon-button.md-icon-host,
+md-filled-tonal-icon-button.md-icon-host {
+  background: transparent;
+  border-radius: var(--shape-button, 999px);
+}
+
+.m3-tooltip {
+  z-index: 200;
+}
+
+.set-page > .set-row {
+  border-radius: var(--shape-row, 26px);
+}
+
+.set-row md-switch {
+  flex-shrink: 0;
+  margin-inline-start: 8px;
+}
+
+.theme-slider-row md-slider,
+md-slider.alpha-slider {
+  width: 100%;
+  --md-slider-active-track-color: var(--cal-highlight, var(--md-sys-color-primary));
+  --md-slider-handle-color: var(--cal-highlight, var(--md-sys-color-primary));
+}
+
+.day-sil-chip .buddha-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--cal-sil, #d4920f);
+}
+
+.day-cell-buddha.buddha-icon,
+.buddha-icon.day-cell-buddha {
+  width: 13px;
+  height: 13px;
+  color: var(--cal-sil, #d4920f);
+}
+
+.os-logo {
+  display: block;
+  flex-shrink: 0;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+svg.set-row-icon.os-logo {
+  width: 24px;
+  height: 24px;
+}
+
+.set-group > .set-row .os-logo.set-row-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+
+.setup-os-logo {
+  width: 56px;
+  height: 56px;
+  margin: 4px auto 8px;
+  color: var(--md-sys-color-on-surface, #2b1b1a);
+}
+
+@media (width <= 400px) {
+  .set-group > .set-row .os-logo.set-row-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}
+

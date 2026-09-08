@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-B-hcVAMW.js";import{kt as t}from"./index-BQV1C_rv.js";var n=e();function r(){return(0,n.jsx)(`section`,{className:`tab-page is-full`,children:(0,n.jsx)(t,{})})}export{r as component};
