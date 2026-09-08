@@ -1,1 +1,0 @@
-function e(e,t){t.bubbles&&(!e.shadowRoot||t.composed)&&t.stopPropagation();let n=Reflect.construct(t.constructor,[t.type,t]),r=e.dispatchEvent(n);return r||t.preventDefault(),r}export{e as t};

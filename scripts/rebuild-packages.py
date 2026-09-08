@@ -18,9 +18,18 @@ STATIC = ROOT / ".vercel" / "output" / "static"
 PUBLIC = ROOT / "public"
 NATIVE = PUBLIC / "native"
 APK = NATIVE / "KhmerCalendar.apk"
+TEMPLATE = ROOT / "scripts" / "apk-template.apk"
 KEYSTORE = ROOT / "scripts" / "khmer-release.keystore"
 SIGNER = ROOT / "scripts" / "uber-apk-signer.jar"
 SIGNER_URL = "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar"
+
+PACK_FILES = (
+    "KhmerCalendar.apk",
+    "KhmerCalendar.exe",
+    "KhmerCalendar.dmg",
+    "KhmerCalendar.AppImage",
+    "KhmerCalendar-project.zip",
+)
 
 ROUTES = [
     "",
@@ -141,14 +150,11 @@ def refresh_spa() -> None:
         raise SystemExit("No production web build yet (.vercel/output/static is missing).")
     src_assets = STATIC / "assets"
 
-    for stale in ["today"]:
-        p = SPA / stale
-        if p.exists():
-            shutil.rmtree(p)
+    if SPA.exists():
+        shutil.rmtree(SPA)
+    SPA.mkdir(parents=True)
 
     spa_assets = SPA / "assets"
-    if spa_assets.exists():
-        shutil.rmtree(spa_assets)
     shutil.copytree(src_assets, spa_assets)
 
     copy_names = [
@@ -173,8 +179,6 @@ def refresh_spa() -> None:
         dest = SPA / folder
         if not src.is_dir():
             continue
-        if dest.exists():
-            shutil.rmtree(dest)
         shutil.copytree(src, dest)
 
     capture_route_html()
@@ -243,14 +247,15 @@ def has_v2_sig(apk: Path) -> bool:
 
 
 def rebuild_apk() -> None:
-    if not APK.exists():
-        raise SystemExit("missing existing APK template")
+    if not TEMPLATE.exists():
+        raise SystemExit("missing scripts/apk-template.apk")
     ensure_keystore()
     ensure_signer()
+    NATIVE.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         unsigned = tmp / "unsigned.apk"
-        with zipfile.ZipFile(APK) as src, zipfile.ZipFile(unsigned, "w") as dest:
+        with zipfile.ZipFile(TEMPLATE) as src, zipfile.ZipFile(unsigned, "w") as dest:
             for info in src.infolist():
                 name = info.filename
                 if name.startswith("assets/www/") or name.startswith("META-INF/"):
@@ -295,14 +300,37 @@ def rebuild_apk() -> None:
         print(f"apk rebuilt: {APK.stat().st_size} bytes (v2 signed)")
 
 
+def clean_stale_native() -> None:
+    NATIVE.mkdir(parents=True, exist_ok=True)
+    wanted = set(PACK_FILES) | {".gitkeep"}
+    for path in NATIVE.iterdir():
+        if path.is_file() and path.name not in wanted:
+            path.unlink()
+            print(f"removed leftover pack {path.name}")
+
+
+def verify_packs() -> None:
+    missing = [name for name in PACK_FILES if not (NATIVE / name).is_file() or (NATIVE / name).stat().st_size < 1000]
+    if missing:
+        raise SystemExit(f"missing published packs: {', '.join(missing)}")
+    if not has_v2_sig(APK):
+        raise SystemExit("published APK is missing v2/v3 signature")
+    html = zipfile.ZipFile(APK).read("assets/www/index.html")
+    if b"boot-splash" not in html or b"__KHMER_PACKAGED=true" not in html:
+        raise SystemExit("published APK is missing the app boot")
+
+
 def sync_native_into_web_build() -> None:
     if not STATIC.is_dir() or not NATIVE.is_dir():
         return
     dest = STATIC / "native"
+    if dest.exists():
+        shutil.rmtree(dest)
     dest.mkdir(parents=True, exist_ok=True)
-    for p in NATIVE.iterdir():
-        if p.is_file():
-            shutil.copy2(p, dest / p.name)
+    for name in PACK_FILES:
+        src = NATIVE / name
+        if src.is_file():
+            shutil.copy2(src, dest / name)
 
 
 def main() -> None:
@@ -312,6 +340,8 @@ def main() -> None:
     refresh_spa()
     rebuild_native()
     rebuild_apk()
+    clean_stale_native()
+    verify_packs()
     sync_native_into_web_build()
 
 

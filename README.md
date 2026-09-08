@@ -13,7 +13,7 @@ npm run dev
 
 ## Packages
 
-Download builds live in `public/native/`:
+Install packs are **not stored in the repo**. `npm run build` (publish) creates them:
 
 - `KhmerCalendar.apk`
 - `KhmerCalendar.exe`
@@ -21,10 +21,6 @@ Download builds live in `public/native/`:
 - `KhmerCalendar.AppImage`
 - `KhmerCalendar-project.zip`
 
-`npm run build` builds the web app and the install packs (APK, Windows, Mac, Linux).
+They land in `public/native/` for download from **More → Download**.
 
-```bash
-npm run build
-```
-
-Packs are written to `public/native/`. Web-only: `npm run build:web`. Packs only: `npm run build:packages`.
+Web-only: `npm run build:web`. Packs only (after a web build): `npm run build:packages`.

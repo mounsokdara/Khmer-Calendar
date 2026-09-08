@@ -12,6 +12,9 @@ attachments/
 .node_modules.lock
 .DS_Store
 public/assets/
+apk-spa/
+public/native/*
+!public/native/.gitkeep
 scripts/khmer-release.keystore
 scripts/uber-apk-signer.jar
 scripts/uber-apk-signer.jar.tmp
