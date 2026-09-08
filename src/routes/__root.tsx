@@ -86,6 +86,7 @@ function Root() {
   const notifyOn = useStore((s) => s.notifyOn);
   const events = useStore((s) => s.events);
   const setLastTab = useStore((s) => s.setLastTab);
+  const lastTab = useStore((s) => s.lastTab);
   const paintTheme = useStore((s) => s.paintTheme);
   const [exit, setExit] = useState(false);
   const [booted, setBooted] = useState(false);
@@ -194,16 +195,16 @@ function Root() {
     return () => window.clearInterval(id);
   }, [notifyOn, events, lang]);
 
-  const showNav = ready && !isSetup && !isOverlay;
+  const showNav = ready && !isSetup;
 
   return (
     <>
       {hydrated ? (
-        <div className={`md-shell ${path.startsWith("/weather") ? "is-wx" : ""}`} data-tab={tab}>
+        <div className={`md-shell ${path.startsWith("/weather") ? "is-wx" : ""}`} data-tab={tab ?? lastTab}>
           <div className="tab-stage">
             <Outlet />
           </div>
-          {showNav ? <NavBar active={tab ?? "more"} lang={lang} /> : null}
+          {showNav ? <NavBar active={tab ?? lastTab ?? "more"} lang={lang} /> : null}
           <PageSpinner show={spin} label={t(lang, "loading")} />
           <Dialog
             open={exit}

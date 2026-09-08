@@ -5,7 +5,7 @@ import { Icon } from "./icon";
 import { Ripple, attachRipple } from "./ripple";
 import { M3Tooltip, useM3Tooltip } from "./tooltip";
 import type { TabId } from "../lib/store";
-import { goPage } from "../lib/nav";
+import { goPage, isOverlayPath } from "../lib/nav";
 import { loadMaterial } from "../lib/material";
 
 const TABS: { id: TabId; to: string; icon: string; label: "navToday" | "navMonth" | "navEvents" | "navWeather" | "navMore" }[] = [
@@ -65,7 +65,8 @@ export function NavBar({ active, lang, onTab }: { active: TabId; lang: Lang; onT
               onClick={() => {
                 handlers.onClick();
                 if (tip.longPress.current) return;
-                if (on) return;
+                const overlay = isOverlayPath(window.location.pathname);
+                if (on && !overlay) return;
                 onTab?.(tab.id);
                 goPage(nav, tab.to);
               }}
