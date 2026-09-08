@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { readdirSync, createReadStream, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
@@ -99,6 +99,46 @@ function authPopupPlugin(): Plugin {
   };
 }
 
+function nativeDownloadPlugin(): Plugin {
+  const mime: Record<string, string> = {
+    apk: "application/vnd.android.package-archive",
+    exe: "application/vnd.microsoft.portable-executable",
+    dmg: "application/x-apple-diskimage",
+    AppImage: "application/octet-stream",
+    zip: "application/zip",
+  };
+  return {
+    name: "native-download",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const urlPath = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
+        const hit = urlPath.match(/^\/native\/([^/]+)$/);
+        if (!hit) {
+          next();
+          return;
+        }
+        const name = hit[1];
+        const file = join(server.config.root, "public", "native", name);
+        try {
+          const st = statSync(file);
+          if (!st.isFile()) {
+            next();
+            return;
+          }
+          const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : "";
+          res.statusCode = 200;
+          res.setHeader("Content-Type", mime[ext] ?? "application/octet-stream");
+          res.setHeader("Content-Length", String(st.size));
+          res.setHeader("Content-Disposition", `attachment; filename="${name}"`);
+          createReadStream(file).pipe(res);
+        } catch {
+          next();
+        }
+      });
+    },
+  };
+}
+
 export default defineConfig(({ command, isPreview }) => ({
   server: {
     host: "0.0.0.0",
@@ -114,6 +154,7 @@ export default defineConfig(({ command, isPreview }) => ({
   plugins: [
     pgliteBootstrapPlugin(),
     authPopupPlugin(),
+    nativeDownloadPlugin(),
     appEnvPlugin(),
     grokPwaPlugin(),
     tailwindcss(),

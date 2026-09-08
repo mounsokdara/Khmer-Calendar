@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-vC1NEtSE.js";import{K as t}from"./index-CLMUTj-o.js";import{n}from"./overlay-page-BAXNBxcI.js";var r=e(),i=()=>(0,r.jsx)(n,{children:(0,r.jsx)(t,{})});export{i as component};

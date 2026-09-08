@@ -13,5 +13,7 @@ attachments/
 .DS_Store
 public/assets/
 scripts/khmer-release.keystore
+scripts/uber-apk-signer.jar
+scripts/uber-apk-signer.jar.tmp
 AGENTS.md
 .project_id

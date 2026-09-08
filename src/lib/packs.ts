@@ -47,10 +47,20 @@ export function packById(id: string) {
   return PACKS.find((p) => p.id === id);
 }
 
+const PACK_MIME: Record<string, string> = {
+  apk: "application/vnd.android.package-archive",
+  exe: "application/vnd.microsoft.portable-executable",
+  dmg: "application/x-apple-diskimage",
+  AppImage: "application/octet-stream",
+  zip: "application/zip",
+};
+
 export async function savePack(file: string, name: string) {
   const res = await fetch(file);
   if (!res.ok) throw new Error(`Http ${res.status}`);
-  const blob = await res.blob();
+  const buf = await res.arrayBuffer();
+  const ext = name.split(".").pop() ?? "";
+  const blob = new Blob([buf], { type: PACK_MIME[ext] ?? "application/octet-stream" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

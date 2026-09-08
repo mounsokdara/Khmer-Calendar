@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -16,6 +17,8 @@ PUBLIC = ROOT / "public"
 NATIVE = PUBLIC / "native"
 APK = NATIVE / "KhmerCalendar.apk"
 KEYSTORE = ROOT / "scripts" / "khmer-release.keystore"
+SIGNER = ROOT / "scripts" / "uber-apk-signer.jar"
+SIGNER_URL = "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar"
 
 ROUTES = [
     "",
@@ -168,10 +171,39 @@ def ensure_keystore() -> None:
     )
 
 
+def ensure_signer() -> None:
+    if SIGNER.exists() and SIGNER.stat().st_size > 100_000:
+        return
+    tmp = SIGNER.with_suffix(".jar.tmp")
+    print("downloading APK signer")
+    urllib.request.urlretrieve(SIGNER_URL, tmp)
+    tmp.replace(SIGNER)
+
+
+def copy_zip_entry(dest: zipfile.ZipFile, name: str, data: bytes, compress_type: int) -> None:
+    info = zipfile.ZipInfo(filename=name)
+    info.compress_type = compress_type
+    info.create_system = 0
+    info.create_version = 20
+    info.extract_version = 20
+    info.external_attr = 0
+    dest.writestr(info, data)
+
+
+def has_v2_sig(apk: Path) -> bool:
+    data = apk.read_bytes()
+    eocd = data.rfind(b"PK\x05\x06")
+    if eocd < 0:
+        return False
+    cd_off = int.from_bytes(data[eocd + 16 : eocd + 20], "little")
+    return data.rfind(b"APK Sig Block 42", 0, cd_off) >= 0
+
+
 def rebuild_apk() -> None:
     if not APK.exists():
         raise SystemExit("missing existing APK template")
     ensure_keystore()
+    ensure_signer()
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         unsigned = tmp / "unsigned.apk"
@@ -180,34 +212,44 @@ def rebuild_apk() -> None:
                 name = info.filename
                 if name.startswith("assets/www/") or name.startswith("META-INF/"):
                     continue
-                dest.writestr(info, src.read(info))
+                copy_zip_entry(dest, name, src.read(info), info.compress_type)
             for p in SPA.rglob("*"):
                 if not p.is_file():
                     continue
                 rel = p.relative_to(SPA).as_posix()
-                dest.write(p, f"assets/www/{rel}")
-        signed = tmp / "signed.apk"
+                data = p.read_bytes()
+                stored = rel.endswith((".png", ".jpg", ".woff2", ".webp"))
+                copy_zip_entry(dest, f"assets/www/{rel}", data, zipfile.ZIP_STORED if stored else zipfile.ZIP_DEFLATED)
+        out_dir = tmp / "signed"
+        out_dir.mkdir()
         subprocess.check_call(
             [
-                "jarsigner",
-                "-sigalg",
-                "SHA256withRSA",
-                "-digestalg",
-                "SHA-256",
-                "-keystore",
-                str(KEYSTORE),
-                "-storepass",
-                "khmercal",
-                "-keypass",
-                "khmercal",
-                "-signedjar",
-                str(signed),
+                "java",
+                "-jar",
+                str(SIGNER),
+                "--apks",
                 str(unsigned),
+                "--allowResign",
+                "--ks",
+                str(KEYSTORE),
+                "--ksAlias",
                 "khmer",
+                "--ksPass",
+                "khmercal",
+                "--ksKeyPass",
+                "khmercal",
+                "--out",
+                str(out_dir),
+                "--verbose",
             ]
         )
+        signed = next(out_dir.glob("*.apk"), None)
+        if signed is None:
+            raise SystemExit("APK signer produced no apk")
+        if not has_v2_sig(signed):
+            raise SystemExit("APK is missing v2/v3 signature (Android 11+ will refuse install)")
         shutil.copy2(signed, APK)
-        print(f"apk rebuilt: {APK.stat().st_size} bytes")
+        print(f"apk rebuilt: {APK.stat().st_size} bytes (v2 signed)")
 
 
 def sync_native_into_web_build() -> None:
