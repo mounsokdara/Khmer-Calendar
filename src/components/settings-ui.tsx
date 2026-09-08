@@ -11,7 +11,12 @@ import { useStore } from "../lib/store";
 export function isPackaged() {
   if (typeof window === "undefined") return false;
   const w = window as Window & { __KHMER_PACKAGED?: boolean; KhmerNative?: unknown };
-  return !!(w.__KHMER_PACKAGED || w.KhmerNative);
+  if (w.__KHMER_PACKAGED || w.KhmerNative) return true;
+  try {
+    return location.hostname === "app.khmer.calendar";
+  } catch {
+    return false;
+  }
 }
 
 export function deviceKind(): "android" | "windows" | "macos" | "linux" | "ios" | "other" {

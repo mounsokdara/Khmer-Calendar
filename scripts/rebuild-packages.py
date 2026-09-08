@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import tempfile
+import time
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -38,63 +40,107 @@ ROUTES = [
 ]
 
 
-def newest(folder: Path, pattern: str) -> Path:
-    files = [p for p in folder.glob(pattern) if p.is_file()]
-    if not files:
-        raise SystemExit(f"missing {pattern} in {folder}")
-    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-    # Prefer the largest index bundle (the real app entry).
-    if pattern.startswith("index-") and pattern.endswith(".js"):
-        files.sort(key=lambda p: p.stat().st_size, reverse=True)
-    return files[0]
+PACKAGED_BOOT = (
+    b"<script>window.__KHMER_PACKAGED=true;"
+    b"(function(){try{if(location.protocol!=='file:'&&/\\/index\\.html$/i.test(location.pathname))"
+    b"history.replaceState(null,'',location.pathname.replace(/\\/index\\.html$/i,'/')+location.search+location.hash);}"
+    b"catch(e){}})();</script>"
+)
+FLAG_FALSE = b"window.__KHMER_PACKAGED=window.__KHMER_PACKAGED||false"
+FLAG_TRUE = b"window.__KHMER_PACKAGED=true"
 
 
-def build_shell(assets: Path) -> bytes:
-    css = newest(assets, "styles-*.css").name
-    entry = newest(assets, "index-*.js").name
-    jsx = newest(assets, "jsx-runtime-*.js").name
-    routes = newest(assets, "routes-*.js").name
-    settings = newest(assets, "settings-ui-*.js").name
-    html = f"""<!DOCTYPE html><html lang="km"><head>
-<meta charSet="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>ប្រតិទិនខ្មែរ</title>
-<meta name="theme-color" content="#9A3B38"/>
-<meta name="color-scheme" content="light dark"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-title" content="ប្រតិទិនខ្មែរ"/>
-<meta name="description" content="ប្រតិទិនចន្ទគតិខ្មែរ ថ្ងៃសីល ថ្ងៃឈប់សម្រាក និងព្រឹត្តិការណ៍។"/>
-<link rel="stylesheet" href="/apk-app.css"/>
-<link rel="stylesheet" href="/assets/{css}" data-precedence="default"/>
-<link rel="modulepreload" href="/assets/{entry}"/>
-<link rel="modulepreload" href="/assets/{jsx}"/>
-<link rel="modulepreload" href="/assets/{routes}"/>
-<link rel="modulepreload" href="/assets/{settings}"/>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png"/>
-<link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png"/>
-<link rel="manifest" href="/manifest.webmanifest"/>
-<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
-<link rel="preload" href="/material-symbols.woff2" as="font" type="font/woff2" crossorigin="anonymous"/>
-<script>window.__KHMER_PACKAGED=true;</script>
-<script>(function(){{try{{var d=false;if(window.KhmerNative){{try{{var n=window.KhmerNative.isNightMode();d=n===true||n===1||n==='1'||n==='true';}}catch(e){{}}}}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)d=true;var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';}}catch(e){{}}}})();</script>
-</head><body class="antialiased">
-<div class="md-shell"><div class="tab-stage"></div></div>
-<script class="$tsr" id="$tsr-stream-barrier">(self.$R=self.$R||{{}})["tsr"]=[];self.$_TSR={{h(){{this.hydrated=!0,this.c()}},e(){{this.streamEnded=!0,this.c()}},c(){{this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)}},p(e){{this.initialized?e():this.buffer.push(e)}},buffer:[]}};$_TSR.router=($R=>$R[0]={{manifest:$R[1]={{routes:$R[2]={{__root__:$R[3]={{preloads:$R[4]=["/assets/{entry}","/assets/{jsx}"],scripts:$R[5]=[$R[6]={{attrs:$R[7]={{type:"module",async:!0,src:"/assets/{entry}"}}}}]}}}},matches:$R[8]=[$R[9]={{i:"__root__",u:{int(__import__("time").time()*1000)},s:"success",ssr:!0}}]}})($R["tsr"]);$_TSR.e();document.currentScript.remove()</script>
-<script type="module" async="" src="/assets/{entry}"></script>
-</body></html>
-"""
-    return html.encode("utf-8")
+def inject_packaged(html: bytes) -> bytes:
+    html = html.replace(b"\x00", b"")
+    html = re.sub(rb'<script src="https://grok\.com/[^"]*"\s*defer></script>', b"", html)
+    html = html.replace(b'href="/__grok/manifest.webmanifest"', b'href="/manifest.webmanifest"')
+    html = re.sub(rb'<link rel="apple-touch-icon" href="/__grok/icon-180.png">', b"", html)
+    if FLAG_FALSE in html:
+        html = html.replace(FLAG_FALSE, FLAG_TRUE, 1)
+    elif b"__KHMER_PACKAGED=true" not in html:
+        html = html.replace(b"<head>", b"<head>" + PACKAGED_BOOT, 1)
+    return html
+
+
+def fetch_preview(path: str) -> bytes:
+    url = f"http://127.0.0.1:8081/{path}" if path else "http://127.0.0.1:8081/"
+    last = "no response"
+    for _ in range(16):
+        try:
+            with urllib.request.urlopen(url, timeout=30) as res:
+                data = res.read()
+            if b"<html" in data.lower() or b"<!DOCTYPE" in data.upper():
+                return data
+            last = f"non-html response for /{path} ({len(data)} bytes)"
+        except Exception as exc:
+            last = str(exc)
+        time.sleep(0.5)
+    raise SystemExit(f"failed to capture /{path}: {last}")
+
+
+def capture_route_html() -> None:
+    subprocess.check_call(["npm", "run", "preview:restart"], cwd=ROOT)
+    try:
+        for route in ROUTES:
+            html = inject_packaged(fetch_preview(route))
+            if b"boot-splash" not in html or b"/assets/index-" not in html:
+                raise SystemExit(f"packaged HTML for /{route} is missing the app boot")
+            if b"__KHMER_PACKAGED=true" not in html:
+                raise SystemExit(f"packaged HTML for /{route} is missing the packaged flag")
+            dest = SPA / route if route else SPA
+            dest.mkdir(parents=True, exist_ok=True)
+            (dest / "index.html").write_bytes(html)
+        (SPA / "_shell.html").write_bytes((SPA / "index.html").read_bytes())
+    finally:
+        subprocess.check_call(["npm", "run", "preview:stop"], cwd=ROOT)
+
+
+def prune_assets() -> None:
+    assets = SPA / "assets"
+    if not assets.is_dir():
+        return
+    needed: set[str] = set()
+    queue: list[Path] = []
+
+    def add_name(name: str) -> None:
+        name = name.split("?", 1)[0].split("#", 1)[0]
+        if not name or name in needed:
+            return
+        p = assets / name
+        if not p.is_file():
+            return
+        needed.add(name)
+        queue.append(p)
+
+    for html in SPA.rglob("*.html"):
+        for match in re.finditer(rb"/assets/([A-Za-z0-9._@-]+)", html.read_bytes()):
+            add_name(match.group(1).decode())
+
+    import_re = re.compile(
+        rb"""(?:from|import)\s*["']\./([^"']+)["']|import\(["']\./([^"']+)["']\)|(?:/)?assets/([A-Za-z0-9._@-]+)"""
+    )
+    while queue:
+        path = queue.pop()
+        if path.suffix not in {".js", ".mjs", ".css"}:
+            continue
+        data = path.read_bytes()
+        for match in import_re.finditer(data):
+            rel = match.group(1) or match.group(2) or match.group(3)
+            add_name(Path(rel.decode()).name)
+
+    removed = 0
+    for path in assets.iterdir():
+        if path.is_file() and path.name not in needed:
+            path.unlink()
+            removed += 1
+    print(f"apk-spa assets: kept {len(needed)}, pruned {removed}")
 
 
 def refresh_spa() -> None:
     if not STATIC.is_dir():
         raise SystemExit("No production web build yet (.vercel/output/static is missing).")
     src_assets = STATIC / "assets"
-    shell = build_shell(src_assets)
 
-    # Reset route HTML, keep weather/zodiac/fonts/icons.
     for stale in ["today"]:
         p = SPA / stale
         if p.exists():
@@ -131,11 +177,8 @@ def refresh_spa() -> None:
             shutil.rmtree(dest)
         shutil.copytree(src, dest)
 
-    (SPA / "_shell.html").write_bytes(shell)
-    for route in ROUTES:
-        dest = SPA / route if route else SPA
-        dest.mkdir(parents=True, exist_ok=True)
-        (dest / "index.html").write_bytes(shell)
+    capture_route_html()
+    prune_assets()
     print("apk-spa refreshed")
 
 

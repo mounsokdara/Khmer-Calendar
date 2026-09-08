@@ -1,1 +1,0 @@
-function e(e,t=!0){return t&&getComputedStyle(e).getPropertyValue(`direction`).trim()===`rtl`}export{e as t};

@@ -1,1 +1,0 @@
-import{a as e,n as t}from"./jsx-runtime-B-hcVAMW.js";import{At as n,L as r,_t as i}from"./index-BQV1C_rv.js";import{d as a}from"./settings-ui-YHZngADF.js";var o=e(t());function s(){let e=n(),t=a(),s=r(e=>e.setupDone),c=r(e=>e.lastTab);return(0,o.useEffect)(()=>{if(!t)return;let n=s?i(c):`/get-started`;e({to:n,replace:!0})},[t,s,c,e]),null}export{s as component};

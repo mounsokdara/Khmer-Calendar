@@ -66,13 +66,19 @@ INFO_PLIST = """<?xml version="1.0" encoding="UTF-8"?>
 
 def inject_html(src: Path, platform: str) -> bytes:
     html = src.read_bytes().replace(b"\x00", b"")
-    needle = b"<head>"
-    script = (
-        f"<head><script>window.__KHMER_PACKAGED=true;"
-        f"window.KhmerNative={{platform:{platform!r}}};</script>"
+    flag_true = (
+        f"window.__KHMER_PACKAGED=true;window.KhmerNative={{platform:{platform!r}}}"
     ).encode()
-    if needle in html:
-        html = html.replace(needle, script, 1)
+    html = html.replace(
+        b"window.__KHMER_PACKAGED=window.__KHMER_PACKAGED||false",
+        flag_true,
+        1,
+    )
+    if b"__KHMER_PACKAGED=true" not in html:
+        needle = b"<head>"
+        script = (f"<head><script>{flag_true.decode()};</script>").encode()
+        if needle in html:
+            html = html.replace(needle, script, 1)
     return html
 
 
@@ -88,7 +94,7 @@ def copy_www(dest: Path, platform: str) -> None:
                 continue
             src = Path(root) / name
             out = dest / rel / name
-            if name == "index.html" and rel == Path("."):
+            if name == "index.html":
                 out.write_bytes(inject_html(src, platform))
             else:
                 shutil.copy2(src, out)

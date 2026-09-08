@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute, useLocation, useRouterState } from "@tanstack/react-router";
+import { HeadContent, Outlet, Scripts, createRootRoute, redirect, useLocation, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth/provider";
@@ -13,6 +13,12 @@ import { nowHm, todayIso } from "../lib/dates";
 import { setNavDir } from "../lib/nav";
 
 export const Route = createRootRoute({
+  beforeLoad: ({ location }) => {
+    const path = location.pathname;
+    if (path === "/index.html" || path.endsWith("/index.html")) {
+      throw redirect({ to: "/", replace: true });
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -46,6 +52,15 @@ function RootDocument() {
   return (
     <html lang="km" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.__KHMER_PACKAGED=window.__KHMER_PACKAGED||false;" +
+              "(function(){try{if(location.protocol!=='file:'&&/\\/index\\.html$/i.test(location.pathname))" +
+              "history.replaceState(null,'',location.pathname.replace(/\\/index\\.html$/i,'/')+location.search+location.hash);}" +
+              "catch(e){}})();",
+          }}
+        />
         <HeadContent />
       </head>
       <body>
