@@ -55,10 +55,27 @@ const PACK_MIME: Record<string, string> = {
   zip: "application/zip",
 };
 
+function looksLikeHtml(bytes: Uint8Array) {
+  const head = new TextDecoder().decode(bytes.slice(0, 80)).trimStart().toLowerCase();
+  return head.startsWith("<!doctype") || head.startsWith("<html") || head.startsWith("<head");
+}
+
+function looksLikeApk(bytes: Uint8Array) {
+  return bytes.length > 1000 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
+}
+
 export async function savePack(file: string, name: string) {
-  const res = await fetch(file);
+  const res = await fetch(file, { cache: "no-store" });
   if (!res.ok) throw new Error(`Http ${res.status}`);
   const buf = await res.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  const ctype = (res.headers.get("content-type") || "").toLowerCase();
+  if (ctype.includes("text/html") || looksLikeHtml(bytes)) {
+    throw new Error("pack was html");
+  }
+  if (name.endsWith(".apk") && !looksLikeApk(bytes)) {
+    throw new Error("pack was not an apk");
+  }
   const ext = name.split(".").pop() ?? "";
   const blob = new Blob([buf], { type: PACK_MIME[ext] ?? "application/octet-stream" });
   const url = URL.createObjectURL(blob);

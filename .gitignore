@@ -18,5 +18,9 @@ public/native/*
 scripts/khmer-release.keystore
 scripts/uber-apk-signer.jar
 scripts/uber-apk-signer.jar.tmp
+scripts/apktool.jar
+scripts/apktool.jar.tmp
+scripts/android-apk/assets/
+scripts/android-apk/build/
 AGENTS.md
 .project_id

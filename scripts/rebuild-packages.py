@@ -18,10 +18,13 @@ STATIC = ROOT / ".vercel" / "output" / "static"
 PUBLIC = ROOT / "public"
 NATIVE = PUBLIC / "native"
 APK = NATIVE / "KhmerCalendar.apk"
-TEMPLATE = ROOT / "scripts" / "apk-template.apk"
+APK_SRC = ROOT / "scripts" / "android-apk"
 KEYSTORE = ROOT / "scripts" / "khmer-release.keystore"
 SIGNER = ROOT / "scripts" / "uber-apk-signer.jar"
 SIGNER_URL = "https://github.com/patrickfav/uber-apk-signer/releases/download/v1.3.0/uber-apk-signer-1.3.0.jar"
+APKTOOL = ROOT / "scripts" / "apktool.jar"
+APKTOOL_TMP = Path("/tmp/apktool.jar")
+APKTOOL_URL = "https://github.com/iBotPeaches/Apktool/releases/download/v2.11.1/apktool_2.11.1.jar"
 
 PACK_FILES = (
     "KhmerCalendar.apk",
@@ -218,23 +221,24 @@ def ensure_keystore() -> None:
     )
 
 
-def ensure_signer() -> None:
-    if SIGNER.exists() and SIGNER.stat().st_size > 100_000:
+def ensure_jar(dest: Path, url: str, fallback: Path | None = None) -> None:
+    if dest.exists() and dest.stat().st_size > 100_000:
         return
-    tmp = SIGNER.with_suffix(".jar.tmp")
-    print("downloading APK signer")
-    urllib.request.urlretrieve(SIGNER_URL, tmp)
-    tmp.replace(SIGNER)
+    if fallback is not None and fallback.exists() and fallback.stat().st_size > 100_000:
+        shutil.copy2(fallback, dest)
+        return
+    tmp = dest.with_suffix(".jar.tmp")
+    print(f"downloading {dest.name}")
+    urllib.request.urlretrieve(url, tmp)
+    tmp.replace(dest)
 
 
-def copy_zip_entry(dest: zipfile.ZipFile, name: str, data: bytes, compress_type: int) -> None:
-    info = zipfile.ZipInfo(filename=name)
-    info.compress_type = compress_type
-    info.create_system = 0
-    info.create_version = 20
-    info.extract_version = 20
-    info.external_attr = 0
-    dest.writestr(info, data)
+def ensure_signer() -> None:
+    ensure_jar(SIGNER, SIGNER_URL)
+
+
+def ensure_apktool() -> None:
+    ensure_jar(APKTOOL, APKTOOL_URL, APKTOOL_TMP)
 
 
 def has_v2_sig(apk: Path) -> bool:
@@ -246,28 +250,42 @@ def has_v2_sig(apk: Path) -> bool:
     return data.rfind(b"APK Sig Block 42", 0, cd_off) >= 0
 
 
+def stored_www(apk: Path) -> None:
+    with zipfile.ZipFile(apk) as z:
+        html = z.getinfo("assets/www/index.html")
+        if html.compress_type != zipfile.ZIP_STORED:
+            raise SystemExit("APK HTML is compressed; Android cannot open it as an asset")
+        js = [i for i in z.infolist() if i.filename.startswith("assets/www/") and i.filename.endswith(".js")]
+        if not js:
+            raise SystemExit("APK is missing bundled JS")
+        bad = [i.filename for i in js if i.compress_type != zipfile.ZIP_STORED]
+        if bad:
+            raise SystemExit(f"APK JS is compressed ({len(bad)} files); WebView cannot load modules")
+
+
 def rebuild_apk() -> None:
-    if not TEMPLATE.exists():
-        raise SystemExit("missing scripts/apk-template.apk")
+    if not APK_SRC.is_dir():
+        raise SystemExit("missing scripts/android-apk")
+    if not SPA.is_dir():
+        raise SystemExit("apk-spa missing")
     ensure_keystore()
     ensure_signer()
+    ensure_apktool()
     NATIVE.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
+        src = tmp / "apk"
+        shutil.copytree(APK_SRC, src, ignore=shutil.ignore_patterns("assets", "build", "dist"))
+        www = src / "assets" / "www"
+        shutil.copytree(SPA, www)
         unsigned = tmp / "unsigned.apk"
-        with zipfile.ZipFile(TEMPLATE) as src, zipfile.ZipFile(unsigned, "w") as dest:
-            for info in src.infolist():
-                name = info.filename
-                if name.startswith("assets/www/") or name.startswith("META-INF/"):
-                    continue
-                copy_zip_entry(dest, name, src.read(info), info.compress_type)
-            for p in SPA.rglob("*"):
-                if not p.is_file():
-                    continue
-                rel = p.relative_to(SPA).as_posix()
-                data = p.read_bytes()
-                stored = rel.endswith((".png", ".jpg", ".woff2", ".webp"))
-                copy_zip_entry(dest, f"assets/www/{rel}", data, zipfile.ZIP_STORED if stored else zipfile.ZIP_DEFLATED)
+        subprocess.check_call(
+            ["java", "-jar", str(APKTOOL), "b", str(src), "-f", "-o", str(unsigned)],
+            cwd=tmp,
+        )
+        if not unsigned.is_file() or unsigned.stat().st_size < 1000:
+            raise SystemExit("apktool produced no apk")
+        stored_www(unsigned)
         out_dir = tmp / "signed"
         out_dir.mkdir()
         subprocess.check_call(
@@ -294,10 +312,13 @@ def rebuild_apk() -> None:
         signed = next(out_dir.glob("*.apk"), None)
         if signed is None:
             raise SystemExit("APK signer produced no apk")
+        if signed.read_bytes()[:4] != b"PK\x03\x04":
+            raise SystemExit("signed APK is not a zip package")
         if not has_v2_sig(signed):
             raise SystemExit("APK is missing v2/v3 signature (Android 11+ will refuse install)")
+        stored_www(signed)
         shutil.copy2(signed, APK)
-        print(f"apk rebuilt: {APK.stat().st_size} bytes (v2 signed)")
+        print(f"apk rebuilt: {APK.stat().st_size} bytes (apktool + v2 signed)")
 
 
 def clean_stale_native() -> None:
@@ -313,11 +334,16 @@ def verify_packs() -> None:
     missing = [name for name in PACK_FILES if not (NATIVE / name).is_file() or (NATIVE / name).stat().st_size < 1000]
     if missing:
         raise SystemExit(f"missing published packs: {', '.join(missing)}")
+    if APK.read_bytes()[:4] != b"PK\x03\x04":
+        raise SystemExit("published APK is not a zip package")
     if not has_v2_sig(APK):
         raise SystemExit("published APK is missing v2/v3 signature")
+    stored_www(APK)
     html = zipfile.ZipFile(APK).read("assets/www/index.html")
     if b"boot-splash" not in html or b"__KHMER_PACKAGED=true" not in html:
         raise SystemExit("published APK is missing the app boot")
+    if b"/assets/index-" not in html:
+        raise SystemExit("published APK HTML is missing the app bundle")
 
 
 def sync_native_into_web_build() -> None:

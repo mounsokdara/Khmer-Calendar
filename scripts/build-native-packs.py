@@ -298,7 +298,16 @@ def build_www_payload(tmp: Path, platform: str, binary: Path, bin_name: str) -> 
 
 def build_project_zip(dest: Path) -> None:
     skip_dir = {"node_modules", ".git", "artifacts", "screenshots", "apk-spa", "attachments", ".vercel", ".tanstack", ".grok"}
-    skip_file_suffix = {".exe", ".dmg", ".AppImage", ".zip"}
+    skip_file_suffix = {".exe", ".dmg", ".AppImage", ".zip", ".jar", ".apk", ".keystore"}
+    skip_names = {
+        "KhmerCalendar.exe",
+        "KhmerCalendar.dmg",
+        "KhmerCalendar.AppImage",
+        "KhmerCalendar-project.zip",
+        "apktool.jar",
+        "uber-apk-signer.jar",
+        "khmer-release.keystore",
+    }
     dest.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
         for dirpath, dirnames, filenames in os.walk(ROOT):
@@ -308,10 +317,9 @@ def build_project_zip(dest: Path) -> None:
                 if not p.is_file():
                     continue
                 rel = p.relative_to(ROOT)
-                if rel.parts[:1] == ("public",) and rel.suffix in skip_file_suffix and "native" in rel.parts:
-                    if rel.name != "KhmerCalendar.apk":
-                        continue
-                if rel.name in {"KhmerCalendar.exe", "KhmerCalendar.dmg", "KhmerCalendar.AppImage", "KhmerCalendar-project.zip"}:
+                if rel.name in skip_names or p.suffix in skip_file_suffix:
+                    continue
+                if "native" in rel.parts and rel.name != ".gitkeep":
                     continue
                 z.write(p, f"KhmerCalendar/{rel.as_posix()}")
 

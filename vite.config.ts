@@ -1,4 +1,5 @@
 import { readdirSync, createReadStream, statSync } from "node:fs";
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { join } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
@@ -99,42 +100,74 @@ function authPopupPlugin(): Plugin {
   };
 }
 
-function nativeDownloadPlugin(): Plugin {
-  const mime: Record<string, string> = {
-    apk: "application/vnd.android.package-archive",
-    exe: "application/vnd.microsoft.portable-executable",
-    dmg: "application/x-apple-diskimage",
-    AppImage: "application/octet-stream",
-    zip: "application/zip",
+const NATIVE_MIME: Record<string, string> = {
+  apk: "application/vnd.android.package-archive",
+  exe: "application/vnd.microsoft.portable-executable",
+  dmg: "application/x-apple-diskimage",
+  AppImage: "application/octet-stream",
+  zip: "application/zip",
+};
+
+const NATIVE_PACKS = new Set([
+  "KhmerCalendar.apk",
+  "KhmerCalendar.exe",
+  "KhmerCalendar.dmg",
+  "KhmerCalendar.AppImage",
+  "KhmerCalendar-project.zip",
+]);
+
+function nativePackMiddleware(root: string) {
+  return (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+    const urlPath = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
+    const hit = urlPath.match(/^\/native\/([^/]+)$/);
+    if (!hit) {
+      next();
+      return;
+    }
+    const name = hit[1] ?? "";
+    if (!name || name.includes("..") || name.includes("\\")) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.end("bad pack name");
+      return;
+    }
+    const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : "";
+    const type = NATIVE_MIME[ext] ?? "application/octet-stream";
+    const file = join(root, "public", "native", name);
+    try {
+      const st = statSync(file);
+      if (!st.isFile()) throw new Error("not file");
+      res.statusCode = 200;
+      res.setHeader("Content-Type", type);
+      res.setHeader("Content-Length", String(st.size));
+      res.setHeader("Content-Disposition", `attachment; filename="${name}"`);
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.setHeader("Cache-Control", "no-store");
+      if ((req.method ?? "GET").toUpperCase() === "HEAD") {
+        res.end();
+        return;
+      }
+      createReadStream(file).pipe(res);
+    } catch {
+      if (NATIVE_PACKS.has(name) || ext in NATIVE_MIME) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.end("pack not found");
+        return;
+      }
+      next();
+    }
   };
+}
+
+function nativeDownloadPlugin(): Plugin {
   return {
     name: "native-download",
     configureServer(server) {
-      server.middlewares.use((req, res, next) => {
-        const urlPath = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
-        const hit = urlPath.match(/^\/native\/([^/]+)$/);
-        if (!hit) {
-          next();
-          return;
-        }
-        const name = hit[1];
-        const file = join(server.config.root, "public", "native", name);
-        try {
-          const st = statSync(file);
-          if (!st.isFile()) {
-            next();
-            return;
-          }
-          const ext = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : "";
-          res.statusCode = 200;
-          res.setHeader("Content-Type", mime[ext] ?? "application/octet-stream");
-          res.setHeader("Content-Length", String(st.size));
-          res.setHeader("Content-Disposition", `attachment; filename="${name}"`);
-          createReadStream(file).pipe(res);
-        } catch {
-          next();
-        }
-      });
+      server.middlewares.use(nativePackMiddleware(server.config.root));
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(nativePackMiddleware(server.config.root));
     },
   };
 }
@@ -164,6 +197,15 @@ export default defineConfig(({ command, isPreview }) => ({
           nitro({
             preset: "vercel",
             serverDir: "./server",
+            routeRules: {
+              "/native/**": {
+                headers: {
+                  "X-Content-Type-Options": "nosniff",
+                  "Cache-Control": "no-store",
+                  "Content-Disposition": "attachment",
+                },
+              },
+            },
           }),
         ]
       : []),
