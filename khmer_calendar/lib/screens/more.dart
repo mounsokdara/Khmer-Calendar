@@ -10,6 +10,7 @@ import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../weather.dart';
+import '../widgets/overlay_page.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Carlendar/releases/latest/download';
 
@@ -20,20 +21,44 @@ class MorePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
+    final cs = Theme.of(context).colorScheme;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         Text(t(lang, 'moreTitle'), style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
-        _group(context, [
-          _row(context, Icons.settings, t(lang, 'settingsTitle'), t(lang, 'settingsSub'), () => context.push('/settings')),
-          _row(context, Icons.build, t(lang, 'toolsTitle'), t(lang, 'toolsPageSub'), () => context.push('/tools')),
-        ]),
+        Card(
+          elevation: 0,
+          color: cs.surfaceContainerLow,
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: Text(t(lang, 'settingsTitle')),
+                subtitle: Text(t(lang, 'settingsSub')),
+                onTap: () => context.push('/settings'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.build),
+                title: Text(t(lang, 'toolsTitle')),
+                subtitle: Text(t(lang, 'toolsPageSub')),
+                onTap: () => context.push('/tools'),
+              ),
+            ],
+          ),
+        ),
         if (kIsWeb) ...[
           const SizedBox(height: 12),
-          _group(context, [
-            _row(context, Icons.install_mobile, t(lang, 'installerTitle'), t(lang, 'installerSub'), () => context.push('/download')),
-          ]),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: ListTile(
+              leading: const Icon(Icons.install_mobile),
+              title: Text(t(lang, 'installerTitle')),
+              subtitle: Text(t(lang, 'installerSub')),
+              onTap: () => context.push('/download'),
+            ),
+          ),
         ],
       ],
     );
@@ -48,59 +73,96 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = store.lang;
     final days = weekdaysFull(lang);
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'settingsTitle'))),
+    final cs = Theme.of(context).colorScheme;
+    return OverlayScaffold(
+      title: t(lang, 'settingsTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _group(context, [
-            _row(context, Icons.palette, t(lang, 'themePageTitle'), t(lang, 'themePageSub'), () => context.push('/settings/theme')),
-            _row(context, Icons.translate, t(lang, 'language'), store.langPref == 'auto' ? t(lang, 'langAuto') : (store.langPref == 'km' ? 'ខ្មែរ' : 'English'), () {
-              showModalBottomSheet<void>(
-                context: context,
-                showDragHandle: true,
-                builder: (ctx) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final p in ['auto', 'km', 'en'])
-                      RadioListTile<String>(
-                        value: p,
-                        groupValue: store.langPref,
-                        title: Text(p == 'auto' ? t(lang, 'langAuto') : (p == 'km' ? 'ខ្មែរ' : 'English')),
-                        onChanged: (v) {
-                          if (v != null) store.setLang(v);
-                          Navigator.pop(ctx);
-                        },
-                      ),
-                  ],
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.palette),
+                  title: Text(t(lang, 'themePageTitle')),
+                  subtitle: Text(t(lang, 'themePageSub')),
+                  onTap: () => context.push('/settings/theme'),
                 ),
-              );
-            }),
-            _row(context, Icons.view_week, t(lang, 'weekStartsOn'), days[store.weekStartsOn], () {
-              showModalBottomSheet<void>(
-                context: context,
-                showDragHandle: true,
-                builder: (ctx) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final d in [0, 1, 6])
-                      RadioListTile<int>(
-                        value: d,
-                        groupValue: store.weekStartsOn,
-                        title: Text(days[d]),
-                        onChanged: (v) {
-                          if (v != null) store.setWeekStartsOn(v);
-                          Navigator.pop(ctx);
-                        },
+                ListTile(
+                  leading: const Icon(Icons.translate),
+                  title: Text(t(lang, 'language')),
+                  subtitle: Text(store.langPref == 'auto' ? t(lang, 'langAuto') : (store.langPref == 'km' ? 'ខ្មែរ' : 'English')),
+                  onTap: () {
+                    showModalBottomSheet<void>(
+                      context: context,
+                      showDragHandle: true,
+                      builder: (ctx) => ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (final p in ['auto', 'km', 'en'])
+                            ListTile(
+                              leading: Icon(store.langPref == p ? Icons.radio_button_checked : Icons.radio_button_off),
+                              title: Text(p == 'auto' ? t(lang, 'langAuto') : (p == 'km' ? 'ខ្មែរ' : 'English')),
+                              subtitle: p == 'auto' ? Text(t(lang, 'langAutoSub')) : null,
+                              onTap: () {
+                                store.setLang(p);
+                                Navigator.pop(ctx);
+                              },
+                            ),
+                        ],
                       ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            }),
-            _row(context, Icons.verified_user, t(lang, 'privacyTitle'), t(lang, 'privacySub'), () => context.push('/settings/privacy')),
-            _row(context, Icons.delete_sweep, t(lang, 'clearTitle'), t(lang, 'clearSub'), () => context.push('/settings/clear')),
-            if (kIsWeb) _row(context, Icons.install_mobile, t(lang, 'installerTitle'), t(lang, 'installerSub'), () => context.push('/download')),
-          ]),
+                ListTile(
+                  leading: const Icon(Icons.view_week),
+                  title: Text(t(lang, 'weekStartsOn')),
+                  subtitle: Text(days[store.weekStartsOn]),
+                  onTap: () {
+                    showModalBottomSheet<void>(
+                      context: context,
+                      showDragHandle: true,
+                      builder: (ctx) => ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (final d in [0, 1, 6])
+                            ListTile(
+                              leading: Icon(store.weekStartsOn == d ? Icons.radio_button_checked : Icons.radio_button_off),
+                              title: Text(days[d]),
+                              onTap: () {
+                                store.setWeekStartsOn(d);
+                                Navigator.pop(ctx);
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.verified_user),
+                  title: Text(t(lang, 'privacyTitle')),
+                  subtitle: Text(t(lang, 'privacySub')),
+                  onTap: () => context.push('/settings/privacy'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.delete_sweep),
+                  title: Text(t(lang, 'clearTitle')),
+                  subtitle: Text(t(lang, 'clearSub')),
+                  onTap: () => context.push('/settings/clear'),
+                ),
+                if (kIsWeb)
+                  ListTile(
+                    leading: const Icon(Icons.install_mobile),
+                    title: Text(t(lang, 'installerTitle')),
+                    subtitle: Text(t(lang, 'installerSub')),
+                    onTap: () => context.push('/download'),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -114,12 +176,13 @@ class ThemePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'themePageTitle'))),
+    final cs = Theme.of(context).colorScheme;
+    return OverlayScaffold(
+      title: t(lang, 'themePageTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(t(lang, 'modeSystem'), style: Theme.of(context).textTheme.titleSmall),
+          Text(t(lang, 'modeSystem'), style: Theme.of(context).textTheme.titleSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           SegmentedButton<String>(
             segments: [
@@ -130,36 +193,33 @@ class ThemePage extends StatelessWidget {
             selected: {store.theme},
             onSelectionChanged: (s) => store.setTheme(s.first),
           ),
-          SwitchListTile(
-            title: Text(t(lang, 'extraDark')),
-            subtitle: Text(t(lang, 'extraDarkSub')),
-            value: store.extraDark,
-            onChanged: store.brightness == Brightness.dark || store.theme == 'dark' || store.theme == 'system'
-                ? store.setExtraDark
-                : null,
-          ),
-          const SizedBox(height: 12),
-          Text(t(lang, 'accent'), style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              for (final s in schemes)
-                GestureDetector(
-                  onTap: () => store.setColorScheme(s.id),
-                  child: Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: s.circle,
-                      shape: BoxShape.circle,
-                      border: store.colorScheme == s.id ? Border.all(color: Theme.of(context).colorScheme.onSurface, width: 3) : null,
-                    ),
-                  ),
-                ),
-            ],
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: SwitchListTile(
+              title: Text(t(lang, 'extraDark')),
+              subtitle: Text(t(lang, 'extraDarkSub')),
+              value: store.extraDark,
+              onChanged: store.brightness == Brightness.dark || store.theme == 'dark' || store.theme == 'system' ? store.setExtraDark : null,
+            ),
           ),
+          const SizedBox(height: 16),
+          Text(t(lang, 'accent'), style: Theme.of(context).textTheme.titleSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          for (final s in schemes)
+            Card(
+              elevation: 0,
+              color: cs.surfaceContainerLow,
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ListTile(
+                leading: CircleAvatar(backgroundColor: s.circle),
+                title: Text(s.label, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                trailing: store.colorScheme == s.id ? Icon(Icons.check, color: cs.primary) : null,
+                selected: store.colorScheme == s.id,
+                onTap: () => store.setColorScheme(s.id),
+              ),
+            ),
         ],
       ),
     );
@@ -173,39 +233,49 @@ class PrivacyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'privacyTitle'))),
+    final cs = Theme.of(context).colorScheme;
+    return OverlayScaffold(
+      title: t(lang, 'privacyTitle'),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          SwitchListTile(
-            title: Text(t(lang, 'permNotify')),
-            subtitle: Text(t(lang, 'permNotifySub')),
-            value: store.notifyOn,
-            onChanged: store.setNotifyOn,
-          ),
-          SwitchListTile(
-            title: Text(t(lang, 'permBackground')),
-            subtitle: Text(t(lang, 'permBackgroundSub')),
-            value: store.backgroundOn,
-            onChanged: kIsWeb
-                ? (v) {
-                    if (v) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'webBgBlock'))));
-                    }
-                  }
-                : store.setBackgroundOn,
-          ),
-          SwitchListTile(
-            title: Text(t(lang, 'permLocation')),
-            subtitle: Text(t(lang, 'permLocationSub')),
-            value: store.locationOn,
-            onChanged: store.setLocationOn,
-          ),
-          SwitchListTile(
-            title: Text(t(lang, 'autoLaunch')),
-            subtitle: Text(t(lang, 'autoLaunchSub')),
-            value: store.autoLaunchOn,
-            onChanged: kIsWeb ? null : store.setAutoLaunchOn,
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: Column(
+              children: [
+                SwitchListTile(
+                  title: Text(t(lang, 'permNotify')),
+                  subtitle: Text(t(lang, 'permNotifySub')),
+                  value: store.notifyOn,
+                  onChanged: store.setNotifyOn,
+                ),
+                SwitchListTile(
+                  title: Text(t(lang, 'permBackground')),
+                  subtitle: Text(t(lang, 'permBackgroundSub')),
+                  value: store.backgroundOn,
+                  onChanged: kIsWeb
+                      ? (v) {
+                          if (v) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'webBgBlock'))));
+                          }
+                        }
+                      : store.setBackgroundOn,
+                ),
+                SwitchListTile(
+                  title: Text(t(lang, 'permLocation')),
+                  subtitle: Text(t(lang, 'permLocationSub')),
+                  value: store.locationOn,
+                  onChanged: store.setLocationOn,
+                ),
+                SwitchListTile(
+                  title: Text(t(lang, 'autoLaunch')),
+                  subtitle: Text(t(lang, 'autoLaunchSub')),
+                  value: store.autoLaunchOn,
+                  onChanged: kIsWeb ? null : store.setAutoLaunchOn,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -220,6 +290,7 @@ class ClearPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
+    final cs = Theme.of(context).colorScheme;
     Future<void> confirm(String key, VoidCallback run) async {
       final ok = await showDialog<bool>(
         context: context,
@@ -237,33 +308,53 @@ class ClearPage extends StatelessWidget {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'clearTitle'))),
+    return OverlayScaffold(
+      title: t(lang, 'clearTitle'),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          ListTile(
-            leading: const Icon(Icons.cached),
-            title: Text(t(lang, 'clearCache')),
-            subtitle: Text(t(lang, 'clearCacheSub')),
-            onTap: () => confirm('confirmClearCache', () {}),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              leading: const Icon(Icons.cached),
+              title: Text(t(lang, 'clearCache')),
+              subtitle: Text(t(lang, 'clearCacheSub')),
+              onTap: () => confirm('confirmClearCache', () {}),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.alarm_off),
-            title: Text(t(lang, 'clearReminders')),
-            subtitle: Text(t(lang, 'clearRemindersSub')),
-            onTap: () => confirm('confirmClearReminders', store.clearEventReminders),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              leading: const Icon(Icons.alarm_off),
+              title: Text(t(lang, 'clearReminders')),
+              subtitle: Text(t(lang, 'clearRemindersSub')),
+              onTap: () => confirm('confirmClearReminders', store.clearEventReminders),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.cloud_off),
-            title: Text(t(lang, 'clearWeather')),
-            subtitle: Text(t(lang, 'clearWeatherSub')),
-            onTap: () => confirm('confirmClearWeather', store.resetWeatherCities),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              leading: const Icon(Icons.cloud_off),
+              title: Text(t(lang, 'clearWeather')),
+              subtitle: Text(t(lang, 'clearWeatherSub')),
+              onTap: () => confirm('confirmClearWeather', store.resetWeatherCities),
+            ),
           ),
-          ListTile(
-            leading: Icon(Icons.delete_forever, color: Theme.of(context).colorScheme.error),
-            title: Text(t(lang, 'clearAll')),
-            subtitle: Text(t(lang, 'clearAllSub')),
-            onTap: () => confirm('confirmClearAll', store.resetAppData),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: ListTile(
+              leading: Icon(Icons.delete_forever, color: cs.error),
+              title: Text(t(lang, 'clearAll')),
+              subtitle: Text(t(lang, 'clearAllSub')),
+              onTap: () => confirm('confirmClearAll', store.resetAppData),
+            ),
           ),
         ],
       ),
@@ -278,12 +369,22 @@ class ToolsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'toolsTitle'))),
+    final cs = Theme.of(context).colorScheme;
+    return OverlayScaffold(
+      title: t(lang, 'toolsTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _row(context, Icons.calculate, t(lang, 'calcTitle'), t(lang, 'calcSub'), () => context.push('/tools/datecalculator')),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            child: ListTile(
+              leading: const Icon(Icons.calculate),
+              title: Text(t(lang, 'calcTitle')),
+              subtitle: Text(t(lang, 'calcSub')),
+              onTap: () => context.push('/tools/datecalculator'),
+            ),
+          ),
         ],
       ),
     );
@@ -323,30 +424,45 @@ class _DateCalcPageState extends State<DateCalcPage> {
     final lunarTo = lunarOf(b);
     final shifted = isoOf(addDays(a, int.tryParse(shift) ?? 0));
     final shiftedLunar = lunarOf(fromIso(shifted));
+    final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'calcTitle'))),
+    return OverlayScaffold(
+      title: t(lang, 'calcTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(t(lang, 'calcSub')),
-          ListTile(
-            title: Text(t(lang, 'calcFrom')),
-            subtitle: Text(from),
-            onTap: () async {
-              final p = await showDatePicker(context: context, initialDate: a, firstDate: DateTime(1900), lastDate: DateTime(2100));
-              if (p != null) setState(() => from = isoOf(p));
-            },
-          ),
-          ListTile(
-            title: Text(t(lang, 'calcTo')),
-            subtitle: Text(to),
-            onTap: () async {
-              final p = await showDatePicker(context: context, initialDate: b, firstDate: DateTime(1900), lastDate: DateTime(2100));
-              if (p != null) setState(() => to = isoOf(p));
-            },
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            margin: const EdgeInsets.only(top: 12, bottom: 12),
+            child: ListTile(
+              title: Text(t(lang, 'calcFrom')),
+              subtitle: Text(from),
+              trailing: const Icon(Icons.event),
+              onTap: () async {
+                final p = await showDatePicker(context: context, initialDate: a, firstDate: DateTime(1900), lastDate: DateTime(2100));
+                if (p != null) setState(() => from = isoOf(p));
+              },
+            ),
           ),
           Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              title: Text(t(lang, 'calcTo')),
+              subtitle: Text(to),
+              trailing: const Icon(Icons.event),
+              onTap: () async {
+                final p = await showDatePicker(context: context, initialDate: b, firstDate: DateTime(1900), lastDate: DateTime(2100));
+                if (p != null) setState(() => to = isoOf(p));
+              },
+            ),
+          ),
+          Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -361,9 +477,14 @@ class _DateCalcPageState extends State<DateCalcPage> {
           ),
           const SizedBox(height: 8),
           Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
             child: ListTile(title: Text(t(lang, 'calcFrom')), subtitle: Text('${lunarFrom.lunarDateText}\n${lunarFrom.gregorianDateText}')),
           ),
+          const SizedBox(height: 8),
           Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
             child: ListTile(title: Text(t(lang, 'calcTo')), subtitle: Text('${lunarTo.lunarDateText}\n${lunarTo.gregorianDateText}')),
           ),
           const SizedBox(height: 8),
@@ -382,6 +503,8 @@ class _DateCalcPageState extends State<DateCalcPage> {
           ),
           const SizedBox(height: 8),
           Card(
+            elevation: 0,
+            color: cs.surfaceContainerLow,
             child: ListTile(title: Text(shifted), subtitle: Text(shiftedLunar.lunarDateText)),
           ),
         ],
@@ -397,6 +520,7 @@ class DownloadPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = store.lang;
+    final cs = Theme.of(context).colorScheme;
     final packs = [
       ('android', 'KhmerCalendar.apk', Icons.android, 'exportApk', 'exportApkSub'),
       ('windows', 'KhmerCalendar-windows.zip', Icons.desktop_windows, 'exportWindows', 'exportWindowsSub'),
@@ -404,8 +528,8 @@ class DownloadPage extends StatelessWidget {
       ('linux', 'KhmerCalendar-linux.tar.gz', Icons.computer, 'exportLinux', 'exportLinuxSub'),
       ('project', 'KhmerCalendar-project.zip', Icons.folder_zip, 'downloadProject', 'downloadProjectSub'),
     ];
-    return Scaffold(
-      appBar: AppBar(title: Text(t(lang, 'downloadTitle'))),
+    return OverlayScaffold(
+      title: t(lang, 'downloadTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -413,9 +537,12 @@ class DownloadPage extends StatelessWidget {
           const SizedBox(height: 12),
           for (final p in packs)
             Card(
+              elevation: 0,
+              color: cs.surfaceContainerLow,
+              margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: Icon(p.$3),
-                title: Text(t(lang, p.$4)),
+                title: Text(t(lang, p.$4), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                 subtitle: Text(t(lang, p.$5)),
                 trailing: const Icon(Icons.download),
                 onTap: () => launchUrl(Uri.parse('$_release/${p.$2}'), mode: LaunchMode.externalApplication),
@@ -444,6 +571,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
   Widget build(BuildContext context) {
     final store = widget.store;
     final ui = store.lang;
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -451,22 +579,27 @@ class _GetStartedPageState extends State<GetStartedPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(t(ui, 'appName'), style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w700)),
+              Text(t(ui, 'appName'), style: TextStyle(color: cs.primary, fontWeight: FontWeight.w700)),
               const SizedBox(height: 12),
               if (step == 'language') ...[
                 Text(t(ui, 'languageTitle'), style: Theme.of(context).textTheme.headlineSmall),
                 Text(t(ui, 'welcome')),
                 const SizedBox(height: 16),
-                for (final p in ['auto', 'km', 'en'])
-                  RadioListTile<String>(
-                    value: p,
-                    groupValue: store.langPref,
-                    title: Text(p == 'auto' ? t(ui, 'langAuto') : (p == 'km' ? 'ខ្មែរ' : 'English')),
-                    subtitle: p == 'auto' ? Text(t(ui, 'langAutoSub')) : null,
-                    onChanged: (v) {
-                      if (v != null) store.setLang(v);
-                    },
+                Card(
+                  elevation: 0,
+                  color: cs.surfaceContainerLow,
+                  child: Column(
+                    children: [
+                      for (final p in ['auto', 'km', 'en'])
+                        ListTile(
+                          leading: Icon(store.langPref == p ? Icons.radio_button_checked : Icons.radio_button_off),
+                          title: Text(p == 'auto' ? t(ui, 'langAuto') : (p == 'km' ? 'ខ្មែរ' : 'English')),
+                          subtitle: p == 'auto' ? Text(t(ui, 'langAutoSub')) : null,
+                          onTap: () => store.setLang(p),
+                        ),
+                    ],
                   ),
+                ),
                 const Spacer(),
                 FilledButton(onPressed: () => setState(() => step = kIsWeb ? 'install' : 'permissions'), child: Text(t(ui, 'setupNext'))),
               ] else if (step == 'install') ...[
@@ -553,21 +686,4 @@ class SplashPage extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _group(BuildContext context, List<Widget> children) {
-  return Card(
-    clipBehavior: Clip.antiAlias,
-    child: Column(children: children),
-  );
-}
-
-Widget _row(BuildContext context, IconData icon, String title, String sub, VoidCallback onTap) {
-  return ListTile(
-    leading: Icon(icon),
-    title: Text(title),
-    subtitle: Text(sub),
-    trailing: const Icon(Icons.chevron_right),
-    onTap: onTap,
-  );
 }

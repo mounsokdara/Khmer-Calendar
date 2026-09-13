@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../weather.dart';
+import '../widgets/swipe_delete.dart';
 
 class WeatherPage extends StatefulWidget {
   const WeatherPage({super.key, required this.store});
@@ -21,7 +22,18 @@ class _WeatherPageState extends State<WeatherPage> {
   @override
   void initState() {
     super.initState();
+    widget.store.addListener(_onStore);
     _refresh();
+  }
+
+  @override
+  void dispose() {
+    widget.store.removeListener(_onStore);
+    super.dispose();
+  }
+
+  void _onStore() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _refresh() async {
@@ -67,7 +79,16 @@ class _WeatherPageState extends State<WeatherPage> {
         if (_loading) const LinearProgressIndicator(minHeight: 2),
         Expanded(
           child: store.weatherCities.isEmpty
-              ? Center(child: Text(t(lang, 'noCity')))
+              ? Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(t(lang, 'noCity')),
+                      const SizedBox(height: 12),
+                      FilledButton(onPressed: () => _addCity(context), child: Text(t(lang, 'addCity'))),
+                    ],
+                  ),
+                )
               : RefreshIndicator(
                   onRefresh: _refresh,
                   child: ListView.builder(
@@ -81,13 +102,18 @@ class _WeatherPageState extends State<WeatherPage> {
                       final err = _err[id];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: _CityCard(
-                          city: city,
-                          snap: snap,
-                          error: err != null,
+                        child: swipeToDelete(
+                          context: context,
+                          key: 'wx-$id',
                           lang: lang,
-                          onOpen: () => _openCity(city, snap),
-                          onRemove: () => store.removeWeatherCity(id),
+                          onDelete: () => store.removeWeatherCity(id),
+                          child: _CityCard(
+                            city: city,
+                            snap: snap,
+                            error: err != null,
+                            lang: lang,
+                            onOpen: () => _openCity(city, snap),
+                          ),
                         ),
                       );
                     },
@@ -253,14 +279,12 @@ class _CityCard extends StatelessWidget {
     required this.error,
     required this.lang,
     required this.onOpen,
-    required this.onRemove,
   });
   final City city;
   final WeatherSnap? snap;
   final bool error;
   final Lang lang;
   final VoidCallback onOpen;
-  final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -270,7 +294,6 @@ class _CityCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(24),
       child: InkWell(
         onTap: onOpen,
-        onLongPress: onRemove,
         child: Stack(
           children: [
             Image.asset(city.photo, height: 168, width: double.infinity, fit: BoxFit.cover),

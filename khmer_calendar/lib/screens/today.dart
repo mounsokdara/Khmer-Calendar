@@ -7,6 +7,8 @@ import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../widgets/animal.dart';
+import '../widgets/sil_mark.dart';
+import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
 
 class TodayPage extends StatefulWidget {
@@ -57,9 +59,9 @@ class _TodayPageState extends State<TodayPage> {
                   icon: const Icon(Icons.today),
                 ),
               if (L.isSilDay)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Chip(label: Text(t(lang, 'silDay')), avatar: const Icon(Icons.brightness_2, size: 16)),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: SilMark(size: 28),
                 ),
               const Spacer(),
               IconButton(
@@ -92,6 +94,8 @@ class _TodayPageState extends State<TodayPage> {
                   Text('${day.day} ${wdays[day.weekday % 7]}', style: Theme.of(ctx).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 12),
                   Card(
+                    elevation: 0,
+                    color: cs.surfaceContainerLow,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -118,6 +122,8 @@ class _TodayPageState extends State<TodayPage> {
                   ),
                   const SizedBox(height: 12),
                   Card(
+                    elevation: 0,
+                    color: cs.surfaceContainerLow,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                       child: Row(
@@ -133,33 +139,40 @@ class _TodayPageState extends State<TodayPage> {
                   for (final h in hols) ...[
                     const SizedBox(height: 8),
                     Card(
+                      elevation: 0,
                       color: cs.primaryContainer,
                       child: ListTile(
-                        title: Text(obsTitle(h, lang), style: TextStyle(color: cs.onPrimaryContainer)),
+                        title: Text(obsTitle(h, lang), style: TextStyle(color: cs.onPrimaryContainer, fontWeight: FontWeight.bold)),
                         onTap: () => showHolidayInfo(context, store, h),
                       ),
                     ),
                   ],
                   if (tasks.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Card(
-                      child: Column(
-                        children: [
-                          for (final e in tasks)
-                            ListTile(
-                              leading: Checkbox(
-                                value: e.done ?? false,
-                                onChanged: (_) => store.toggleEventDone(e.id),
-                              ),
-                              title: Text(
-                                e.title,
-                                style: TextStyle(decoration: e.done == true ? TextDecoration.lineThrough : null),
-                              ),
-                              onTap: () => showTaskSheet(context, store: store, editing: e),
+                    for (final e in tasks)
+                      swipeToDelete(
+                        context: context,
+                        key: 'day-${e.id}',
+                        confirm: true,
+                        lang: lang,
+                        onDelete: () => store.deleteEvent(e.id),
+                        child: Card(
+                          elevation: 0,
+                          color: cs.surfaceContainerLow,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: ListTile(
+                            leading: Checkbox(
+                              value: e.done ?? false,
+                              onChanged: (_) => store.toggleEventDone(e.id),
                             ),
-                        ],
+                            title: Text(
+                              e.title,
+                              style: TextStyle(decoration: e.done == true ? TextDecoration.lineThrough : null, fontWeight: FontWeight.bold),
+                            ),
+                            onTap: () => showTaskSheet(context, store: store, editing: e),
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ],
               );

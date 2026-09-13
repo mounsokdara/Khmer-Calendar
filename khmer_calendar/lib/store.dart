@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -79,14 +80,14 @@ class CalendarEvent {
 
 enum TabId { today, months, events, weather, more }
 
-const defaultCities = ['phnom-penh', 'banteay-meanchey', 'kampong-cham', 'kratie'];
+const _legacyDefaultCities = ['phnom-penh', 'banteay-meanchey', 'kampong-cham', 'kratie'];
 
 class AppStore extends ChangeNotifier {
   List<CalendarEvent> events = [];
   String cursor = todayIso();
   String selected = todayIso();
   String theme = 'system';
-  ColorSchemeId colorScheme = ColorSchemeId.rose;
+  ColorSchemeId colorScheme = ColorSchemeId.slate;
   bool materialYou = true;
   bool extraDark = false;
   String langPref = 'auto';
@@ -94,7 +95,7 @@ class AppStore extends ChangeNotifier {
   bool setupDone = false;
   TabId lastTab = TabId.months;
   String lastEventsPane = 'holidays';
-  List<String> weatherCities = [...defaultCities];
+  List<String> weatherCities = [];
   bool installed = false;
   bool notifyOn = false;
   bool backgroundOn = false;
@@ -112,7 +113,7 @@ class AppStore extends ChangeNotifier {
   Future<void> hydrate() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('khmer-calendar-v3');
+      final raw = prefs.getString('khmer-calendar-v4') ?? prefs.getString('khmer-calendar-v3');
       if (raw != null) {
         final p = jsonDecode(raw) as Map<String, dynamic>;
         events = ((p['events'] as List?) ?? [])
@@ -124,7 +125,7 @@ class AppStore extends ChangeNotifier {
         if (scheme != null) {
           colorScheme = ColorSchemeId.values.firstWhere(
             (s) => s.name == scheme,
-            orElse: () => ColorSchemeId.rose,
+            orElse: () => ColorSchemeId.slate,
           );
         }
         materialYou = p['materialYou'] as bool? ?? true;
@@ -136,7 +137,8 @@ class AppStore extends ChangeNotifier {
           lastTab = TabId.values.firstWhere((t) => t.name == tab, orElse: () => TabId.months);
         }
         lastEventsPane = p['lastEventsPane'] as String? ?? 'holidays';
-        weatherCities = ((p['weatherCities'] as List?) ?? defaultCities).cast<String>();
+        weatherCities = ((p['weatherCities'] as List?) ?? []).cast<String>();
+        if (listEquals(weatherCities, _legacyDefaultCities)) weatherCities = [];
         installed = p['installed'] as bool? ?? false;
         notifyOn = p['notifyOn'] as bool? ?? false;
         backgroundOn = p['backgroundOn'] as bool? ?? false;
@@ -156,7 +158,7 @@ class AppStore extends ChangeNotifier {
   Future<void> persist() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(
-      'khmer-calendar-v3',
+      'khmer-calendar-v4',
       jsonEncode({
         'events': events.map((e) => e.toJson()).toList(),
         'theme': theme,
@@ -319,18 +321,18 @@ class AppStore extends ChangeNotifier {
   }
 
   void resetWeatherCities() {
-    weatherCities = [...defaultCities];
+    weatherCities = [];
     _touch();
   }
 
   void resetAppData() {
     events = [];
     theme = 'system';
-    colorScheme = ColorSchemeId.rose;
+    colorScheme = ColorSchemeId.slate;
     materialYou = true;
     extraDark = false;
     lastEventsPane = 'holidays';
-    weatherCities = [...defaultCities];
+    weatherCities = [];
     installed = false;
     notifyOn = false;
     backgroundOn = false;
