@@ -23,4 +23,7 @@ Install packs are **not stored in the repo**. `npm run build` (publish) creates 
 
 They land in `public/native/` for download from **More → Download**.
 
+Every push to `main` also builds those installers and publishes them on
+[GitHub Releases](https://github.com/mounsokdara/Khmer-Carlendar/releases/latest).
+
 Web-only: `npm run build:web`. Packs only (after a web build): `npm run build:packages`.

@@ -194,6 +194,11 @@ def rebuild_native() -> None:
 
 
 def ensure_keystore() -> None:
+    b64 = os.environ.get("ANDROID_KEYSTORE_BASE64", "").strip()
+    if b64:
+        import base64
+
+        KEYSTORE.write_bytes(base64.b64decode(b64))
     if KEYSTORE.exists():
         return
     subprocess.check_call(
@@ -360,11 +365,16 @@ def sync_native_into_web_build() -> None:
 
 
 def hosted_ci() -> bool:
-    """Native packs need a local preview, Java, and apktool — skip on Vercel/Cloudflare/etc."""
+    """Native packs need a local preview, Java, and apktool — skip on Vercel/Cloudflare/etc.
+
+    GitHub Actions is the installer/release builder, so packs run there.
+    """
     if os.environ.get("KHMER_BUILD_PACKS") == "1":
         return False
     if os.environ.get("KHMER_SKIP_PACKS") == "1":
         return True
+    if os.environ.get("GITHUB_ACTIONS") in {"true", "1"}:
+        return False
     env = os.environ
     if any(
         env.get(name)

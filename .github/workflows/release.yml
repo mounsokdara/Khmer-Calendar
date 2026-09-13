@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  KHMER_BUILD_PACKS: "1"
+  NODE_OPTIONS: --max-old-space-size=4096
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install native pack tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc
+
+      - name: Restore Android signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > scripts/khmer-release.keystore
+          fi
+          test -f scripts/khmer-release.keystore
+
+      - run: npm ci
+
+      - name: Build web app and installers
+        run: npm run build
+
+      - name: Publish GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          for f in KhmerCalendar.apk KhmerCalendar.exe KhmerCalendar.dmg KhmerCalendar.AppImage KhmerCalendar-project.zip; do
+            test -s "public/native/$f"
+          done
+          TAG="v$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
+          NOTES="$(git log -1 --format='%s%n%n%b' | head -c 4000)"
+          gh release create "$TAG" \
+            public/native/KhmerCalendar.apk \
+            public/native/KhmerCalendar.exe \
+            public/native/KhmerCalendar.dmg \
+            public/native/KhmerCalendar.AppImage \
+            public/native/KhmerCalendar-project.zip \
+            --title "Khmer Calendar $TAG" \
+            --notes "$NOTES" \
+            --latest

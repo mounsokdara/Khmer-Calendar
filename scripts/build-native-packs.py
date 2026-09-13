@@ -7,16 +7,24 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import urllib.request
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "native"
 SPA = ROOT / "apk-spa"
-NEU = Path("/tmp/neu")
-ZIG = Path("/tmp/zig/zig")
+NEU = Path(os.environ.get("KHMER_NEU_DIR", "/tmp/neu"))
 SFX = ROOT / "scripts" / "sfx.c"
 MARKER = b"KHCALPKG"
+NEU_VERSION = os.environ.get("KHMER_NEU_VERSION", "6.2.0")
+ZIG_VERSION = "0.13.0"
+NEU_BINARIES = (
+    "neutralino-linux_x64",
+    "neutralino-win_x64.exe",
+    "neutralino-mac_universal",
+)
+
 
 CONFIG = """{
   "applicationId": "kh.chhankitek.calendar",
@@ -124,10 +132,71 @@ def append_payload(stub: Path, payload: Path, dest: Path) -> None:
     dest.chmod(0o755)
 
 
-def compile_sfx_windows(dest: Path) -> None:
+def find_zig() -> Path:
+    env = os.environ.get("KHMER_ZIG")
+    if env:
+        p = Path(env)
+        if p.is_file():
+            return p
+    which = shutil.which("zig")
+    if which:
+        return Path(which)
+    local = Path("/tmp/zig/zig")
+    if local.is_file():
+        return local
+    raise SystemExit("zig compiler not found (set KHMER_ZIG or install zig 0.13.0)")
+
+
+def ensure_zig() -> Path:
+    try:
+        return find_zig()
+    except SystemExit:
+        pass
+    if os.name != "posix" or os.uname().machine not in {"x86_64", "amd64"}:
+        raise SystemExit("zig is missing and this platform cannot auto-download it")
+    url = f"https://ziglang.org/download/{ZIG_VERSION}/zig-linux-x86_64-{ZIG_VERSION}.tar.xz"
+    dest_dir = Path("/tmp/zig")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    archive = dest_dir / f"zig-linux-x86_64-{ZIG_VERSION}.tar.xz"
+    print(f"downloading zig {ZIG_VERSION}")
+    urllib.request.urlretrieve(url, archive)
+    subprocess.check_call(["tar", "-xJf", str(archive), "-C", str(dest_dir)])
+    extracted = dest_dir / f"zig-linux-x86_64-{ZIG_VERSION}" / "zig"
+    if not extracted.is_file():
+        raise SystemExit("zig download did not contain a zig binary")
+    link = dest_dir / "zig"
+    if link.exists() or link.is_symlink():
+        link.unlink()
+    link.symlink_to(extracted)
+    os.chmod(extracted, 0o755)
+    return extracted
+
+
+def ensure_neu() -> None:
+    NEU.mkdir(parents=True, exist_ok=True)
+    missing = [name for name in NEU_BINARIES if not (NEU / name).is_file()]
+    if not missing:
+        return
+    url = f"https://github.com/neutralinojs/neutralinojs/releases/download/v{NEU_VERSION}/neutralinojs-v{NEU_VERSION}.zip"
+    archive = NEU / f"neutralinojs-v{NEU_VERSION}.zip"
+    print(f"downloading Neutralino v{NEU_VERSION}")
+    urllib.request.urlretrieve(url, archive)
+    with zipfile.ZipFile(archive) as z:
+        names = z.namelist()
+        for needed in NEU_BINARIES:
+            match = next((n for n in names if n.rstrip("/").endswith(needed) and not n.endswith("/")), None)
+            if match is None:
+                raise SystemExit(f"Neutralino zip is missing {needed}")
+            target = NEU / needed
+            target.write_bytes(z.read(match))
+            os.chmod(target, 0o755)
+    archive.unlink(missing_ok=True)
+
+
+def compile_sfx_windows(dest: Path, zig: Path) -> None:
     subprocess.check_call(
         [
-            str(ZIG),
+            str(zig),
             "cc",
             "-target",
             "x86_64-windows-gnu",
@@ -140,6 +209,7 @@ def compile_sfx_windows(dest: Path) -> None:
             "-lshell32",
         ]
     )
+
 
 
 def compile_sfx_linux(dest: Path) -> None:
@@ -326,6 +396,8 @@ def build_project_zip(dest: Path) -> None:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    ensure_neu()
+    zig = ensure_zig()
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         win_zip = build_www_payload(tmp, "windows", NEU / "neutralino-win_x64.exe", "KhmerCalendar.exe")
@@ -352,7 +424,7 @@ exec "$DIR/KhmerCalendar.bin" --path="$RES" --res-mode=directory
         os.chmod(macos / "KhmerCalendar.bin", 0o755)
 
         stub_win = tmp / "stub.exe"
-        compile_sfx_windows(stub_win)
+        compile_sfx_windows(stub_win, zig)
         append_payload(stub_win, win_zip, OUT / "KhmerCalendar.exe")
 
         stub_lin = tmp / "stub-linux"
