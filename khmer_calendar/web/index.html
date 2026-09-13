@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Khmer lunar calendar — holy days, holidays, weather, and reminders.">
+  <meta name="theme-color" content="#9A3B38">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ប្រតិទិនខ្មែរ">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>ប្រតិទិនខ្មែរ</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="https://grok.com/grok-app-builder/extensions.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; background: #fffbff; color: #2b1b1a; font-family: "Kantumruy Pro", system-ui, sans-serif; }
+    .boot { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+    .boot h1 { font-size: 28px; margin: 0; }
+    .boot p { margin: 0; opacity: .7; }
+  </style>
+</head>
+<body>
+  <div class="boot" id="boot">
+    <h1>ប្រតិទិនខ្មែរ</h1>
+    <p>Khmer lunar calendar</p>
+  </div>
+  <script>
+    (function () {
+      var CHANNEL = "grok-preview-bridge";
+      window.addEventListener("message", function (ev) {
+        var d = ev.data;
+        if (!d || d.channel !== CHANNEL) return;
+        if (d.type === "navigate" && typeof d.path === "string" && d.path.charAt(0) === "/" && d.path.indexOf("//") !== 0) {
+          history.pushState({}, "", d.path);
+        }
+        if (d.type === "history" && (d.delta === -1 || d.delta === 1)) history.go(d.delta);
+      });
+      window.addEventListener("flutter-first-frame", function () {
+        var boot = document.getElementById("boot");
+        if (boot) boot.remove();
+      });
+    })();
+  </script>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

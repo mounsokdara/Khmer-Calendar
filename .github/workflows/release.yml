@@ -14,32 +14,22 @@ permissions:
 
 env:
   KHMER_BUILD_PACKS: "1"
-  NODE_OPTIONS: --max-old-space-size=4096
 
 jobs:
-  release:
+  android:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
-
-      - uses: actions/setup-python@v5
+      - uses: subosito/flutter-action@v2
         with:
-          python-version: "3.12"
-
-      - name: Install native pack tools
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc
-
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
       - name: Restore Android signing key
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -48,27 +38,131 @@ jobs:
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > scripts/khmer-release.keystore
           fi
           test -f scripts/khmer-release.keystore
+          cp scripts/khmer-release.keystore khmer_calendar/android/app/khmer-release.keystore || true
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - run: flutter build apk --release
+        working-directory: khmer_calendar
+        env:
+          ANDROID_KEYSTORE: ${{ github.workspace }}/scripts/khmer-release.keystore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: khmer_calendar/build/app/outputs/flutter-apk/app-release.apk
 
-      - run: npm ci
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - name: Linux toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - run: flutter build linux --release
+        working-directory: khmer_calendar
+      - name: Pack linux
+        run: |
+          tar -C khmer_calendar/build/linux/x64/release/bundle -czf KhmerCalendar-linux.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: KhmerCalendar-linux.tar.gz
 
-      - name: Build web app and installers
-        run: npm run build
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - run: flutter build windows --release
+        working-directory: khmer_calendar
+      - name: Pack windows
+        shell: pwsh
+        run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: KhmerCalendar-windows.zip
 
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - run: flutter build macos --release
+        working-directory: khmer_calendar
+      - name: Pack dmg
+        run: |
+          APP=$(find khmer_calendar/build/macos -name "*.app" | head -1)
+          hdiutil create -volname "Khmer Calendar" -srcfolder "$APP" -ov -format UDZO KhmerCalendar.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: KhmerCalendar.dmg
+
+  project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pack source
+        run: |
+          git archive --format=zip --output KhmerCalendar-project.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project
+          path: KhmerCalendar-project.zip
+
+  release:
+    needs: [android, linux, windows, macos, project]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Stage files
+        run: |
+          mkdir -p public/native
+          cp dist/android/app-release.apk public/native/KhmerCalendar.apk
+          cp dist/windows/KhmerCalendar-windows.zip public/native/KhmerCalendar-windows.zip
+          cp dist/macos/KhmerCalendar.dmg public/native/KhmerCalendar.dmg
+          cp dist/linux/KhmerCalendar-linux.tar.gz public/native/KhmerCalendar-linux.tar.gz
+          cp dist/project/KhmerCalendar-project.zip public/native/KhmerCalendar-project.zip
+          ls -lh public/native
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          for f in KhmerCalendar.apk KhmerCalendar.exe KhmerCalendar.dmg KhmerCalendar.AppImage KhmerCalendar-project.zip; do
-            test -s "public/native/$f"
-          done
           TAG="v$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
           NOTES="$(git log -1 --format='%s%n%n%b' | head -c 4000)"
           gh release create "$TAG" \
             public/native/KhmerCalendar.apk \
-            public/native/KhmerCalendar.exe \
+            public/native/KhmerCalendar-windows.zip \
             public/native/KhmerCalendar.dmg \
-            public/native/KhmerCalendar.AppImage \
+            public/native/KhmerCalendar-linux.tar.gz \
             public/native/KhmerCalendar-project.zip \
             --title "Khmer Calendar $TAG" \
             --notes "$NOTES" \

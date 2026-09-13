@@ -1,0 +1,104 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'i18n.dart';
+import 'screens/events.dart';
+import 'screens/more.dart';
+import 'screens/months.dart';
+import 'screens/shell.dart';
+import 'screens/today.dart';
+import 'screens/weather_page.dart';
+import 'store.dart';
+import 'theme.dart';
+
+final store = AppStore();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  await store.hydrate();
+  runApp(KhmerCalendarApp(store: store));
+}
+
+class KhmerCalendarApp extends StatefulWidget {
+  const KhmerCalendarApp({super.key, required this.store});
+  final AppStore store;
+
+  @override
+  State<KhmerCalendarApp> createState() => _KhmerCalendarAppState();
+}
+
+class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
+  late final GoRouter router;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.store.addListener(_onStore);
+    router = GoRouter(
+      refreshListenable: widget.store,
+      initialLocation: '/months',
+      redirect: (ctx, state) {
+        if (!widget.store.hydrated) return '/splash';
+        if (!widget.store.setupDone && state.uri.path != '/get-started') return '/get-started';
+        if (widget.store.setupDone && (state.uri.path == '/get-started' || state.uri.path == '/splash' || state.uri.path == '/')) {
+          switch (widget.store.lastTab) {
+            case TabId.today:
+              return '/day';
+            case TabId.events:
+              return '/events';
+            case TabId.weather:
+              return '/weather';
+            case TabId.more:
+              return '/more';
+            case TabId.months:
+              return '/months';
+          }
+        }
+        return null;
+      },
+      routes: [
+        GoRoute(path: '/splash', builder: (_, _) => SplashPage(store: widget.store)),
+        GoRoute(path: '/get-started', builder: (_, _) => GetStartedPage(store: widget.store)),
+        ShellRoute(
+          builder: (ctx, state, child) => AppShell(store: widget.store, child: child),
+          routes: [
+            GoRoute(path: '/day', builder: (_, _) => TodayPage(store: widget.store)),
+            GoRoute(path: '/months', builder: (_, _) => MonthsPage(store: widget.store)),
+            GoRoute(path: '/events', builder: (_, _) => EventsPage(store: widget.store)),
+            GoRoute(path: '/weather', builder: (_, _) => WeatherPage(store: widget.store)),
+            GoRoute(path: '/more', builder: (_, _) => MorePage(store: widget.store)),
+          ],
+        ),
+        GoRoute(path: '/settings', builder: (_, _) => SettingsPage(store: widget.store)),
+        GoRoute(path: '/settings/theme', builder: (_, _) => ThemePage(store: widget.store)),
+        GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
+        GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
+        GoRoute(path: '/tools', builder: (_, _) => ToolsPage(store: widget.store)),
+        GoRoute(path: '/tools/datecalculator', builder: (_, _) => DateCalcPage(store: widget.store)),
+        GoRoute(path: '/download', builder: (_, _) => DownloadPage(store: widget.store)),
+      ],
+    );
+  }
+
+  void _onStore() => setState(() {});
+
+  @override
+  void dispose() {
+    widget.store.removeListener(_onStore);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.store;
+    return MaterialApp.router(
+      title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(brightness: Brightness.light, scheme: s.colorScheme, extraDark: false),
+      darkTheme: buildTheme(brightness: Brightness.dark, scheme: s.colorScheme, extraDark: s.extraDark),
+      themeMode: s.theme == 'light' ? ThemeMode.light : s.theme == 'dark' ? ThemeMode.dark : ThemeMode.system,
+      routerConfig: router,
+    );
+  }
+}
