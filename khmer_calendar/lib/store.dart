@@ -90,6 +90,9 @@ class AppStore extends ChangeNotifier {
   ColorSchemeId colorScheme = ColorSchemeId.slate;
   bool materialYou = true;
   bool extraDark = false;
+  String accentColor = '#F5C400';
+  String highlightColor = '#FF3B30';
+  double highlightAlpha = 0.22;
   String langPref = 'auto';
   Lang lang = deviceLang();
   bool setupDone = false;
@@ -131,6 +134,9 @@ class AppStore extends ChangeNotifier {
         }
         materialYou = p['materialYou'] as bool? ?? true;
         extraDark = p['extraDark'] as bool? ?? false;
+        accentColor = p['accentColor'] as String? ?? accentColor;
+        highlightColor = p['highlightColor'] as String? ?? highlightColor;
+        highlightAlpha = (p['highlightAlpha'] as num?)?.toDouble() ?? highlightAlpha;
         langPref = p['langPref'] as String? ?? 'auto';
         setupDone = p['setupDone'] as bool? ?? false;
         final tab = p['lastTab'] as String?;
@@ -168,6 +174,9 @@ class AppStore extends ChangeNotifier {
         'colorScheme': colorScheme.name,
         'materialYou': materialYou,
         'extraDark': extraDark,
+        'accentColor': accentColor,
+        'highlightColor': highlightColor,
+        'highlightAlpha': highlightAlpha,
         'langPref': langPref,
         'setupDone': setupDone,
         'lastTab': lastTab.name,
@@ -250,6 +259,21 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
+  void setAccentColor(String v) {
+    accentColor = v;
+    _touch();
+  }
+
+  void setHighlightColor(String v) {
+    highlightColor = v;
+    _touch();
+  }
+
+  void setHighlightAlpha(double v) {
+    highlightAlpha = v.clamp(0, 1);
+    _touch();
+  }
+
   void setLang(String pref) {
     langPref = pref;
     lang = resolveLang(pref);
@@ -272,10 +296,11 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
-  void addWeatherCity(String id) {
-    if (weatherCities.contains(id)) return;
+  bool addWeatherCity(String id) {
+    if (weatherCities.contains(id)) return false;
     weatherCities = [...weatherCities, id];
     _touch();
+    return true;
   }
 
   void removeWeatherCity(String id) {
@@ -334,6 +359,9 @@ class AppStore extends ChangeNotifier {
     colorScheme = ColorSchemeId.slate;
     materialYou = true;
     extraDark = false;
+    accentColor = '#F5C400';
+    highlightColor = '#FF3B30';
+    highlightAlpha = 0.22;
     lastEventsPane = 'holidays';
     weatherCities = [];
     installed = false;

@@ -81,7 +81,7 @@ Future<void> showTaskSheet(
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(t(lang, 'addReminder')),
-                    subtitle: Text(reminderDate.isEmpty ? t(lang, 'addReminder') : '$reminderDate ${reminderTime.isEmpty ? '' : formatTime12(reminderTime)}'),
+                    subtitle: reminderDate.isEmpty ? null : Text('$reminderDate ${reminderTime.isEmpty ? '' : formatTime12(reminderTime)}'),
                     trailing: reminderDate.isEmpty ? null : IconButton(
                       icon: const Icon(Icons.clear),
                       onPressed: () => setSt(() {
@@ -97,7 +97,9 @@ Future<void> showTaskSheet(
                         lastDate: DateTime(2100),
                       );
                       if (picked == null) return;
+                      if (!ctx.mounted) return;
                       final tm = await showTimePicker(context: ctx, initialTime: TimeOfDay.now());
+                      if (!ctx.mounted) return;
                       setSt(() {
                         reminderDate = isoOf(picked);
                         if (tm != null) {

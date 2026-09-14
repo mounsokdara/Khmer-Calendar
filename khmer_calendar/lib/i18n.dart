@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 enum Lang { km, en }
 
 typedef LangPref = String; // 'km' | 'en' | 'auto'
@@ -42,6 +44,20 @@ const km = <String, String>{
   'setupAllowBackground': 'អនុញ្ញាតដំណើរការផ្ទៃខាងក្រោយ',
   'setupAllowGps': 'អនុញ្ញាត GPS',
   'accent': 'ពណ៌សង្កត់សំឡេង',
+  'accentSub': 'ប្រើសម្រាប់ប៊ូតុង និងផ្នែកសំខាន់នៃអេក្រង់',
+  'highlight': 'ពណ៌រំលេច',
+  'highlightSub': 'រំលេចថ្ងៃនេះនៅលើប្រតិទិន',
+  'highlightAlpha': 'តម្លាភាព',
+  'highlightAlphaSub': 'កំណត់តម្លាភាពពណ៌រំលេច',
+  'schemeAria': 'ពណ៌រចនាបថ',
+  'color': 'ពណ៌',
+  'aboutTitle': 'អំពី',
+  'aboutSub': 'កំណែ អាជ្ញាបណ្ណ និងប្រភព',
+  'createdBy': 'បង្កើតដោយ',
+  'buildVersion': 'កំណែ',
+  'openSourceLicense': 'អាជ្ញាបណ្ណប្រភពបើកចំហ',
+  'sourceCode': 'កូដប្រភព',
+  'mitLicense': 'អាជ្ញាបណ្ណ MIT',
   'cancel': 'បោះបង់',
   'save': 'រក្សាទុក',
   'close': 'បិទ',
@@ -223,6 +239,20 @@ const en = <String, String>{
   'setupAllowBackground': 'Allow background running',
   'setupAllowGps': 'Allow GPS Access',
   'accent': 'Accent color',
+  'accentSub': 'Used for buttons and key parts of the screen',
+  'highlight': 'Highlight color',
+  'highlightSub': 'Highlight today on the calendar',
+  'highlightAlpha': 'Alpha',
+  'highlightAlphaSub': 'Set highlight color transparency',
+  'schemeAria': 'Theme colors',
+  'color': 'Color',
+  'aboutTitle': 'About',
+  'aboutSub': 'Version, license, and source',
+  'createdBy': 'Created by',
+  'buildVersion': 'Version',
+  'openSourceLicense': 'Open source license',
+  'sourceCode': 'Source code',
+  'mitLicense': 'MIT License',
   'cancel': 'Cancel',
   'save': 'Save',
   'close': 'Close',
@@ -373,7 +403,7 @@ const weekdaysMonEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 Lang deviceLang() {
   try {
-    final locale = IntlHelper.localeName;
+    final locale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     return locale.toLowerCase().startsWith('km') ? Lang.km : Lang.en;
   } catch (_) {
     return Lang.km;

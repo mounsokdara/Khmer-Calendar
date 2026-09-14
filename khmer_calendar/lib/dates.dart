@@ -1,6 +1,21 @@
 import 'calendar/chhankitek.dart';
 import 'i18n.dart';
 
+const calendarStartYear = 1900;
+const calendarEndYear = 2100;
+
+int monthIndexOf(DateTime d) => (d.year - calendarStartYear) * 12 + (d.month - 1);
+
+int monthCount() => (calendarEndYear - calendarStartYear + 1) * 12;
+
+DateTime monthFromIndex(int i) => DateTime(calendarStartYear, 1 + i, 1);
+
+int dayIndexOf(DateTime d) => DateTime.utc(d.year, d.month, d.day).difference(DateTime.utc(calendarStartYear, 1, 1)).inDays;
+
+int dayCount() => DateTime.utc(calendarEndYear, 12, 31).difference(DateTime.utc(calendarStartYear, 1, 1)).inDays + 1;
+
+DateTime dayFromIndex(int i) => DateTime(calendarStartYear, 1, 1 + i);
+
 String isoOf(DateTime d) {
   final y = d.year.toString().padLeft(4, '0');
   final m = d.month.toString().padLeft(2, '0');

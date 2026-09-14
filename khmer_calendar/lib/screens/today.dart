@@ -8,6 +8,7 @@ import '../i18n.dart';
 import '../store.dart';
 import '../widgets/animal.dart';
 import '../widgets/holiday_info.dart';
+import '../widgets/page_physics.dart';
 import '../widgets/sil_mark.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
@@ -22,15 +23,16 @@ class TodayPage extends StatefulWidget {
 
 class _TodayPageState extends State<TodayPage> {
   late final PageController _ctrl;
-  late String _shown;
-  bool _jumping = false;
+  late int _page;
+  bool _fromSwipe = false;
   String? _toast;
+  final _anchor = PageAnchor();
 
   @override
   void initState() {
     super.initState();
-    _shown = widget.store.selected;
-    _ctrl = PageController(initialPage: 1);
+    _page = dayIndexOf(fromIso(widget.store.selected)).clamp(0, dayCount() - 1);
+    _ctrl = PageController(initialPage: _page);
     widget.store.addListener(_onStore);
   }
 
@@ -43,32 +45,33 @@ class _TodayPageState extends State<TodayPage> {
 
   void _onStore() {
     if (!mounted) return;
-    if (!_jumping && widget.store.selected != _shown) {
-      _shown = widget.store.selected;
-      if (_ctrl.hasClients) _ctrl.jumpToPage(1);
+    final wanted = dayIndexOf(fromIso(widget.store.selected)).clamp(0, dayCount() - 1);
+    if (!_fromSwipe && wanted != _page) {
+      _page = wanted;
+      if (_ctrl.hasClients) _ctrl.jumpToPage(wanted);
     }
     setState(() {});
   }
 
   void _onPage(int i) {
-    if (_jumping || i == 1) return;
-    _jumping = true;
-    final next = isoOf(addDays(fromIso(_shown), i == 2 ? 1 : -1));
-    _shown = next;
+    _page = i;
+    final next = isoOf(dayFromIndex(i));
+    if (next == widget.store.selected) {
+      setState(() {});
+      return;
+    }
+    _fromSwipe = true;
     widget.store.goToDate(next);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_ctrl.hasClients) _ctrl.jumpToPage(1);
-      _jumping = false;
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fromSwipe = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final store = widget.store;
     final lang = store.lang;
-    final selected = fromIso(_shown);
+    final selected = fromIso(store.selected);
     final today = todayIso();
-    final isToday = _shown == today;
+    final isToday = store.selected == today;
     final L = lunarOf(selected);
 
     return Column(
@@ -91,7 +94,7 @@ class _TodayPageState extends State<TodayPage> {
               const Spacer(),
               IconButton(
                 tooltip: t(lang, 'addTask'),
-                onPressed: () => showTaskSheet(context, store: store, date: _shown),
+                onPressed: () => showTaskSheet(context, store: store, date: store.selected),
                 icon: const Icon(Icons.add),
               ),
             ],
@@ -100,12 +103,13 @@ class _TodayPageState extends State<TodayPage> {
         Expanded(
           child: PageView.builder(
             controller: _ctrl,
+            itemCount: dayCount(),
+            pageSnapping: false,
+            physics: OnePageScrollPhysics(parent: const ClampingScrollPhysics(), anchor: _anchor),
             onPageChanged: _onPage,
-            itemCount: 3,
             itemBuilder: (ctx, i) {
-              final day = addDays(selected, i - 1);
               return _DayPanel(
-                day: day,
+                day: dayFromIndex(i),
                 store: store,
                 onCopy: (text) async {
                   await Clipboard.setData(ClipboardData(text: text));

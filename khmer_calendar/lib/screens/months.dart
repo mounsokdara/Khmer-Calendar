@@ -9,8 +9,10 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/obs_row.dart';
+import '../widgets/page_physics.dart';
 import '../widgets/sil_mark.dart';
 import '../widgets/task_sheet.dart';
+import '../widgets/wheel_picker.dart';
 
 class MonthsPage extends StatefulWidget {
   const MonthsPage({super.key, required this.store});
@@ -22,13 +24,16 @@ class MonthsPage extends StatefulWidget {
 
 class _MonthsPageState extends State<MonthsPage> {
   late final PageController _ctrl;
+  late int _page;
   bool _expanded = false;
-  bool _jumping = false;
+  bool _fromSwipe = false;
+  final _anchor = PageAnchor();
 
   @override
   void initState() {
     super.initState();
-    _ctrl = PageController(initialPage: 1);
+    _page = monthIndexOf(fromIso(widget.store.cursor)).clamp(0, monthCount() - 1);
+    _ctrl = PageController(initialPage: _page);
     widget.store.addListener(_onStore);
   }
 
@@ -40,19 +45,29 @@ class _MonthsPageState extends State<MonthsPage> {
   }
 
   void _onStore() {
-    if (mounted) setState(() {});
+    if (!mounted) return;
+    final wanted = monthIndexOf(fromIso(widget.store.cursor)).clamp(0, monthCount() - 1);
+    if (!_fromSwipe && wanted != _page) {
+      _page = wanted;
+      if (_ctrl.hasClients) _ctrl.jumpToPage(wanted);
+    }
+    setState(() {});
   }
 
   AppStore get store => widget.store;
 
   void _onMonthPage(int i) {
-    if (_jumping || i == 1) return;
-    _jumping = true;
-    store.setCursor(isoOf(addMonths(fromIso(store.cursor), i == 2 ? 1 : -1)));
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_ctrl.hasClients) _ctrl.jumpToPage(1);
-      _jumping = false;
-    });
+    _page = i;
+    final m = monthFromIndex(i);
+    final cur = fromIso(store.cursor);
+    if (cur.year == m.year && cur.month == m.month) {
+      setState(() {});
+      return;
+    }
+    _fromSwipe = true;
+    final day = cur.day.clamp(1, daysInMonth(m));
+    store.setCursor(isoOf(DateTime(m.year, m.month, day)));
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fromSwipe = false);
   }
 
   void _openObs(Observance item) {
@@ -73,7 +88,6 @@ class _MonthsPageState extends State<MonthsPage> {
     final items = monthObservances(cursor, store.events).where((i) => i.kind != Kind.sil).toList();
     final holidays = items.where((i) => i.kind != Kind.event).toList();
     final tasks = items.where((i) => i.kind == Kind.event).toList();
-    final lunar = lunarOf(cursor);
     final today = todayIso();
     final wide = MediaQuery.sizeOf(context).width >= wideBreak && !_expanded;
 
@@ -85,14 +99,7 @@ class _MonthsPageState extends State<MonthsPage> {
               ? Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          _lunarLine(lunar),
-                          Expanded(child: _monthBlock(cursor, fill: true)),
-                        ],
-                      ),
-                    ),
+                    Expanded(child: _monthPager(cursor, fill: true)),
                     VerticalDivider(width: 1, color: Theme.of(context).colorScheme.outlineVariant),
                     SizedBox(
                       width: MediaQuery.sizeOf(context).width >= xlBreak ? 400 : 360,
@@ -101,11 +108,10 @@ class _MonthsPageState extends State<MonthsPage> {
                   ],
                 )
               : _expanded
-                  ? _monthBlock(cursor, fill: true)
+                  ? _monthPager(cursor, fill: true)
                   : ListView(
                       children: [
-                        _lunarLine(lunar),
-                        _monthBlock(cursor, fill: false),
+                        _monthPager(cursor, fill: false),
                         _sideList(lang, holidays, tasks, selected),
                       ],
                     ),
@@ -122,7 +128,7 @@ class _MonthsPageState extends State<MonthsPage> {
           const SizedBox(width: 8),
           Expanded(
             child: TextButton(
-              onPressed: () => _pickMonth(context),
+              onPressed: () => showMonthWheel(context, store: store),
               style: TextButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8)),
               child: Row(
                 children: [
@@ -159,81 +165,28 @@ class _MonthsPageState extends State<MonthsPage> {
     );
   }
 
-  Widget _lunarLine(LunarDay lunar) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(lunar.lunarDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, height: 1.35)),
-          ),
-          const SizedBox(width: 12),
-          Text(lunar.gregorianDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
-        ],
-      ),
-    );
-  }
-
-  Widget _monthBlock(DateTime cursor, {required bool fill}) {
-    final lang = store.lang;
-    final heads = weekdaysStarting(lang, store.weekStartsOn);
-    final sunAt = sundayIndex(store.weekStartsOn);
-    final cs = Theme.of(context).colorScheme;
-    final weekdays = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          for (var i = 0; i < heads.length; i++)
-            Expanded(
-              child: Center(
-                child: Text(
-                  heads[i],
-                  style: TextStyle(
-                    color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+  Widget _monthPager(DateTime cursor, {required bool fill}) {
     final pages = PageView.builder(
       controller: _ctrl,
+      itemCount: monthCount(),
+      pageSnapping: false,
+      physics: OnePageScrollPhysics(parent: const ClampingScrollPhysics(), anchor: _anchor),
       onPageChanged: _onMonthPage,
-      itemCount: 3,
       itemBuilder: (ctx, i) {
-        final month = addMonths(cursor, i - 1);
-        return _MonthGrid(
-          month: month,
+        return _MonthPage(
+          month: monthFromIndex(i),
+          day: cursor.day,
           store: store,
-          interactive: i == 1,
+          interactive: i == _page,
           expanded: _expanded,
           fill: fill,
         );
       },
     );
-    if (fill) {
-      return Column(
-        children: [
-          weekdays,
-          const SizedBox(height: 4),
-          Expanded(child: pages),
-        ],
-      );
-    }
+    if (fill) return pages;
     final w = MediaQuery.sizeOf(context).width;
     final cell = ((w - 16) / 7).clamp(44.0, 68.0);
-    return Column(
-      children: [
-        weekdays,
-        const SizedBox(height: 4),
-        SizedBox(height: cell * 6.15, child: pages),
-      ],
-    );
+    return SizedBox(height: 80 + (cell / 0.88) * 6, child: pages);
   }
 
   Widget _sideList(Lang lang, List<Observance> holidays, List<Observance> tasks, String selected) {
@@ -303,80 +256,19 @@ class _MonthsPageState extends State<MonthsPage> {
       ],
     );
   }
-
-  Future<void> _pickMonth(BuildContext context) async {
-    final lang = store.lang;
-    final cursor = fromIso(store.cursor);
-    var month = cursor.month - 1;
-    var year = cursor.year;
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSt) {
-            return SizedBox(
-              height: 280,
-              child: Column(
-                children: [
-                  Text(t(lang, 'change'), style: Theme.of(ctx).textTheme.titleMedium),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            itemExtent: 44,
-                            perspective: 0.002,
-                            onSelectedItemChanged: (i) => setSt(() => month = i),
-                            controller: FixedExtentScrollController(initialItem: month),
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 12,
-                              builder: (_, i) => Center(child: Text(monthsOf(lang)[i])),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            itemExtent: 44,
-                            perspective: 0.002,
-                            onSelectedItemChanged: (i) => setSt(() => year = 1900 + i),
-                            controller: FixedExtentScrollController(initialItem: year - 1900),
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 200,
-                              builder: (_, i) => Center(child: Text(lang == Lang.en ? '${1900 + i}' : khmerNum(1900 + i))),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: () {
-                      store.setCursor(isoOf(DateTime(year, month + 1, 1)));
-                      Navigator.pop(ctx);
-                    },
-                    child: Text(t(lang, 'ok')),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
 }
 
-class _MonthGrid extends StatelessWidget {
-  const _MonthGrid({
+class _MonthPage extends StatelessWidget {
+  const _MonthPage({
     required this.month,
+    required this.day,
     required this.store,
     required this.interactive,
     required this.expanded,
     required this.fill,
   });
   final DateTime month;
+  final int day;
   final AppStore store;
   final bool interactive;
   final bool expanded;
@@ -384,9 +276,16 @@ class _MonthGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang = store.lang;
+    final heads = weekdaysStarting(lang, store.weekStartsOn);
+    final sunAt = sundayIndex(store.weekStartsOn);
+    final cs = Theme.of(context).colorScheme;
+    final shownDay = day.clamp(1, daysInMonth(month));
+    final lunar = lunarOf(DateTime(month.year, month.month, shownDay));
     final gridDays = monthGrid(month, store.weekStartsOn);
     final today = todayIso();
     final chips = interactive ? monthObservances(month, store.events).where((i) => i.kind != Kind.sil).toList() : const <Observance>[];
+
     Widget grid({required double aspect, required bool shrink}) {
       return GridView.count(
         crossAxisCount: 7,
@@ -409,18 +308,62 @@ class _MonthGrid extends StatelessWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: fill
-          ? LayoutBuilder(
-              builder: (ctx, box) {
-                final cellW = box.maxWidth / 7;
-                final cellH = box.maxHeight / 6;
-                final aspect = cellH > 0 ? cellW / cellH : 0.88;
-                return grid(aspect: aspect, shrink: false);
-              },
-            )
-          : grid(aspect: 0.88, shrink: true),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(lunar.lunarDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, height: 1.35)),
+              ),
+              const SizedBox(width: 12),
+              Text(lunar.gregorianDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Row(
+            children: [
+              for (var i = 0; i < heads.length; i++)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      heads[i],
+                      style: TextStyle(
+                        color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        if (fill)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: LayoutBuilder(
+                builder: (ctx, box) {
+                  final cellW = box.maxWidth / 7;
+                  final cellH = box.maxHeight / 6;
+                  final aspect = cellH > 0 ? cellW / cellH : 0.88;
+                  return grid(aspect: aspect, shrink: false);
+                },
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: grid(aspect: 0.88, shrink: true),
+          ),
+      ],
     );
   }
 }
@@ -453,6 +396,8 @@ class _DayCell extends StatelessWidget {
     final lunar = lunarOf(day);
     final cs = Theme.of(context).colorScheme;
     final color = dayToneColor(context, tone);
+    final fill = isToday ? todayFill(context) : Colors.transparent;
+    final onFill = isToday ? todayOnFill(context) : null;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: !interactive
@@ -467,7 +412,7 @@ class _DayCell extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           decoration: BoxDecoration(
-            color: isToday ? cs.primaryContainer : Colors.transparent,
+            color: fill,
             borderRadius: BorderRadius.circular(10),
             border: selected && !isToday ? Border.all(color: cs.primary, width: 1.5) : null,
           ),
@@ -486,7 +431,7 @@ class _DayCell extends StatelessWidget {
                     Text(
                       lunar.moonDayKhmer,
                       style: TextStyle(
-                        color: isToday ? cs.onPrimaryContainer.withValues(alpha: 0.78) : cs.onSurfaceVariant,
+                        color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
                         fontSize: 10,
                         height: 1.1,
                       ),
@@ -494,7 +439,7 @@ class _DayCell extends StatelessWidget {
                     Text(
                       '${day.day}',
                       style: TextStyle(
-                        color: isToday ? cs.onPrimaryContainer : color,
+                        color: onFill ?? color,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
                         height: 1.25,
@@ -507,7 +452,7 @@ class _DayCell extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: isToday ? cs.onPrimaryContainer.withValues(alpha: 0.78) : cs.onSurfaceVariant,
+                          color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
                           fontSize: 8,
                           height: 1.2,
                         ),

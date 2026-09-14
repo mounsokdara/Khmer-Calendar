@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../widgets/overlay_page.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.store, required this.child});
@@ -20,14 +21,28 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return WatchStore(
+      store: store,
+      builder: (context, store) => _ShellBody(store: store, child: child),
+    );
+  }
+}
+
+class _ShellBody extends StatelessWidget {
+  const _ShellBody({required this.store, required this.child});
+  final AppStore store;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     final loc = GoRouterState.of(context).uri.path;
-    var idx = tabs.indexWhere((t) => loc == t.$2 || loc.startsWith('${t.$2}/'));
+    var idx = AppShell.tabs.indexWhere((t) => loc == t.$2 || loc.startsWith('${t.$2}/'));
     if (idx < 0) idx = 1;
     final wide = MediaQuery.sizeOf(context).width >= wideBreak;
 
     void go(int i) {
-      store.setLastTab(tabs[i].$1);
-      context.go(tabs[i].$2);
+      store.setLastTab(AppShell.tabs[i].$1);
+      context.go(AppShell.tabs[i].$2);
     }
 
     if (wide) {
@@ -40,7 +55,7 @@ class AppShell extends StatelessWidget {
                 onDestinationSelected: go,
                 labelType: NavigationRailLabelType.all,
                 destinations: [
-                  for (final tab in tabs)
+                  for (final tab in AppShell.tabs)
                     NavigationRailDestination(
                       icon: Icon(tab.$3),
                       selectedIcon: Icon(tab.$3),
@@ -62,7 +77,7 @@ class AppShell extends StatelessWidget {
         selectedIndex: idx,
         onDestinationSelected: go,
         destinations: [
-          for (final tab in tabs)
+          for (final tab in AppShell.tabs)
             NavigationDestination(
               icon: Icon(tab.$3),
               selectedIcon: Icon(tab.$3),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'i18n.dart';
@@ -75,6 +76,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         GoRoute(path: '/settings/theme', builder: (_, _) => ThemePage(store: widget.store)),
         GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
         GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
+        GoRoute(path: '/about', builder: (_, _) => AboutPage(store: widget.store)),
         GoRoute(path: '/tools', builder: (_, _) => ToolsPage(store: widget.store)),
         GoRoute(path: '/tools/datecalculator', builder: (_, _) => DateCalcPage(store: widget.store)),
         GoRoute(path: '/download', builder: (_, _) => DownloadPage(store: widget.store)),
@@ -90,14 +92,34 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     super.dispose();
   }
 
+  ThemeData _theme(Brightness brightness, {required bool extraDark}) {
+    final s = widget.store;
+    return buildTheme(
+      brightness: brightness,
+      scheme: s.colorScheme,
+      extraDark: extraDark,
+      materialYou: s.materialYou,
+      accentColor: s.accentColor,
+      highlightColor: s.highlightColor,
+      highlightAlpha: s.highlightAlpha,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = widget.store;
     return MaterialApp.router(
       title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
       debugShowCheckedModeBanner: false,
-      theme: buildTheme(brightness: Brightness.light, scheme: s.colorScheme, extraDark: false),
-      darkTheme: buildTheme(brightness: Brightness.dark, scheme: s.colorScheme, extraDark: s.extraDark),
+      locale: Locale(s.lang == Lang.en ? 'en' : 'km'),
+      supportedLocales: const [Locale('km'), Locale('en')],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: _theme(Brightness.light, extraDark: false),
+      darkTheme: _theme(Brightness.dark, extraDark: s.extraDark),
       themeMode: s.theme == 'light' ? ThemeMode.light : s.theme == 'dark' ? ThemeMode.dark : ThemeMode.system,
       routerConfig: router,
     );

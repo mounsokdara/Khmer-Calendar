@@ -7,12 +7,26 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/obs_row.dart';
+import '../widgets/overlay_page.dart';
 import '../widgets/segmented_list.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
 
 class EventsPage extends StatelessWidget {
   const EventsPage({super.key, required this.store});
+  final AppStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    return WatchStore(
+      store: store,
+      builder: (context, store) => _EventsBody(store: store),
+    );
+  }
+}
+
+class _EventsBody extends StatelessWidget {
+  const _EventsBody({required this.store});
   final AppStore store;
 
   @override
@@ -33,51 +47,67 @@ class EventsPage extends StatelessWidget {
     final wide = MediaQuery.sizeOf(context).width >= mediumBreak;
     final xl = MediaQuery.sizeOf(context).width >= xlBreak;
 
+    final segmented = SegmentedButton<String>(
+      segments: [
+        ButtonSegment(value: 'holidays', label: Text(t(lang, 'holidaysTab'))),
+        ButtonSegment(value: 'tasks', label: Text(t(lang, 'tasksTab'))),
+      ],
+      selected: {pane},
+      onSelectionChanged: (s) => store.setLastEventsPane(s.first),
+    );
+
+    final yearOrAdd = pane == 'holidays'
+        ? TextButton.icon(
+            onPressed: () async {
+              final pick = await showModalBottomSheet<int>(
+                context: context,
+                showDragHandle: true,
+                builder: (ctx) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(title: Text(t(lang, 'yearPrev')), onTap: () => Navigator.pop(ctx, nowYear - 1)),
+                    ListTile(title: Text(t(lang, 'yearNow')), onTap: () => Navigator.pop(ctx, nowYear)),
+                    ListTile(title: Text(t(lang, 'yearNext')), onTap: () => Navigator.pop(ctx, nowYear + 1)),
+                  ],
+                ),
+              );
+              if (pick != null) store.setCursor(isoOf(DateTime(pick, 1, 1)));
+            },
+            icon: const Icon(Icons.expand_more),
+            label: Text('$year'),
+          )
+        : IconButton(
+            tooltip: t(lang, 'addTask'),
+            onPressed: () => showTaskSheet(context, store: store),
+            icon: const Icon(Icons.add),
+          );
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
-          child: Row(
-            children: [
-              Expanded(child: Text(t(lang, 'events'), style: Theme.of(context).textTheme.headlineSmall)),
-              if (pane == 'holidays')
-                TextButton.icon(
-                  onPressed: () async {
-                    final pick = await showModalBottomSheet<int>(
-                      context: context,
-                      showDragHandle: true,
-                      builder: (ctx) => Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ListTile(title: Text(t(lang, 'yearPrev')), onTap: () => Navigator.pop(ctx, nowYear - 1)),
-                          ListTile(title: Text(t(lang, 'yearNow')), onTap: () => Navigator.pop(ctx, nowYear)),
-                          ListTile(title: Text(t(lang, 'yearNext')), onTap: () => Navigator.pop(ctx, nowYear + 1)),
-                        ],
-                      ),
-                    );
-                    if (pick != null) store.setCursor(isoOf(DateTime(pick, 1, 1)));
-                  },
-                  icon: const Icon(Icons.expand_more),
-                  label: Text('$year'),
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
+          child: wide
+              ? Row(
+                  children: [
+                    Text(t(lang, 'events'), style: Theme.of(context).textTheme.headlineSmall),
+                    Expanded(child: Center(child: segmented)),
+                    yearOrAdd,
+                  ],
                 )
-              else
-                IconButton(
-                  tooltip: t(lang, 'addTask'),
-                  onPressed: () => showTaskSheet(context, store: store),
-                  icon: const Icon(Icons.add),
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(child: Text(t(lang, 'events'), style: Theme.of(context).textTheme.headlineSmall)),
+                        yearOrAdd,
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Center(child: segmented),
+                  ],
                 ),
-            ],
-          ),
         ),
-        SegmentedButton<String>(
-          segments: [
-            ButtonSegment(value: 'holidays', label: Text(t(lang, 'holidaysTab'))),
-            ButtonSegment(value: 'tasks', label: Text(t(lang, 'tasksTab'))),
-          ],
-          selected: {pane},
-          onSelectionChanged: (s) => store.setLastEventsPane(s.first),
-        ),
-        const SizedBox(height: 8),
         Expanded(
           child: pane == 'holidays'
               ? (groups.isEmpty

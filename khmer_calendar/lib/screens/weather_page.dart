@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 
 import '../i18n.dart';
+import '../location.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../weather.dart';
@@ -19,6 +19,7 @@ class _WeatherPageState extends State<WeatherPage> {
   final _cache = <String, WeatherSnap>{};
   final _err = <String, String>{};
   bool _loading = false;
+  bool _gpsBusy = false;
 
   @override
   void initState() {
@@ -71,8 +72,14 @@ class _WeatherPageState extends State<WeatherPage> {
               ),
               IconButton(
                 tooltip: t(lang, 'permLocation'),
-                onPressed: () => _nearMe(),
-                icon: const Icon(Icons.my_location),
+                onPressed: _gpsBusy ? null : _nearMe,
+                icon: _gpsBusy
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.my_location),
               ),
             ],
           ),
@@ -187,20 +194,13 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   Future<void> _nearMe() async {
-    try {
-      var perm = await Geolocator.checkPermission();
-      if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) return;
-      final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(timeLimit: Duration(seconds: 8)));
-      final city = nearestCity(pos.latitude, pos.longitude);
-      widget.store.addWeatherCity(city.id);
-      widget.store.setLocationOn(true);
-      await _refresh();
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(widget.store.lang, 'noLocation'))));
-      }
-    }
+    setState(() => _gpsBusy = true);
+    final r = await requestNearbyCity(widget.store);
+    if (!mounted) return;
+    setState(() => _gpsBusy = false);
+    if (!context.mounted) return;
+    showGpsSnack(context, widget.store.lang, r);
+    if (r == GpsResult.added || r == GpsResult.already) await _refresh();
   }
 
   Future<void> _openCity(City city, WeatherSnap? snap) async {
