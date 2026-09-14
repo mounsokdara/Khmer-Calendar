@@ -295,12 +295,26 @@ class ThemePage extends StatelessWidget {
   }
 }
 
-class PrivacyPage extends StatelessWidget {
+class PrivacyPage extends StatefulWidget {
   const PrivacyPage({super.key, required this.store});
   final AppStore store;
 
   @override
+  State<PrivacyPage> createState() => _PrivacyPageState();
+}
+
+class _PrivacyPageState extends State<PrivacyPage> {
+  @override
+  void initState() {
+    super.initState();
+    keepOnlyGranted(widget.store).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final store = widget.store;
     return WatchStore(
       store: store,
       builder: (context, store) {
@@ -335,6 +349,12 @@ class PrivacyPage extends StatelessWidget {
                         await stopBackground(store);
                         return;
                       }
+                      if (kIsWeb) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'webBgBlock'))));
+                        }
+                        return;
+                      }
                       final ok = await requestBackground(store, context: context);
                       if (context.mounted) showPermSnack(context, lang, 'background', ok);
                     },
@@ -346,6 +366,12 @@ class PrivacyPage extends StatelessWidget {
                     onChanged: (v) async {
                       if (!v) {
                         await stopAutoLaunch(store);
+                        return;
+                      }
+                      if (kIsWeb) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'webBgBlock'))));
+                        }
                         return;
                       }
                       final ok = await requestAutoLaunch(store, context: context);
@@ -808,6 +834,13 @@ class _GetStartedPageState extends State<GetStartedPage> {
       await stopBackground(store);
       return;
     }
+    if (kIsWeb) {
+      setState(() => bg = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(store.lang, 'webBgBlock'))));
+      }
+      return;
+    }
     final ok = await requestBackground(store, context: context);
     if (!mounted) return;
     setState(() => bg = ok);
@@ -819,6 +852,13 @@ class _GetStartedPageState extends State<GetStartedPage> {
     if (!v) {
       setState(() => auto = false);
       await stopAutoLaunch(store);
+      return;
+    }
+    if (kIsWeb) {
+      setState(() => auto = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(store.lang, 'webBgBlock'))));
+      }
       return;
     }
     final ok = await requestAutoLaunch(store, context: context);
@@ -836,8 +876,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
     }
     final r = await requestLocationPerm(store);
     if (!mounted) return;
-    final ok = r == GpsResult.added || r == GpsResult.already;
-    setState(() => gps = ok);
+    setState(() => gps = store.locationOn);
     showGpsSnack(context, store.lang, r);
   }
 
@@ -873,6 +912,16 @@ class _GetStartedPageState extends State<GetStartedPage> {
     });
     store.setSetupDone(true);
     if (!mounted) return;
+    context.go('/months');
+  }
+
+  Future<void> _skip() async {
+    if (busy) return;
+    final store = widget.store;
+    setState(() => busy = true);
+    await keepOnlyGranted(store);
+    if (!mounted) return;
+    store.setSetupDone(true);
     context.go('/months');
   }
 
@@ -960,6 +1009,11 @@ class _GetStartedPageState extends State<GetStartedPage> {
                 FilledButton(
                   onPressed: busy ? null : _continue,
                   child: Text(t(ui, 'setupContinue')),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: busy ? null : _skip,
+                  child: Text(t(ui, 'setupSkip')),
                 ),
               ],
             ],

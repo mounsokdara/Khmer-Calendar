@@ -1,12 +1,16 @@
 package com.mounsokdara.khmercalendar
 
 import android.app.AlarmManager
+import android.app.AppOpsManager
+import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
+import android.os.Process
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -31,6 +35,7 @@ class MainActivity : FlutterActivity() {
                         .apply()
                     result.success(true)
                 }
+                "checkStatus" -> result.success(statusMap())
                 "isIgnoringBattery" -> result.success(isIgnoringBattery())
                 "requestBatteryExemption" -> requestBatteryExemption(result)
                 "openBatterySettings" ->
@@ -73,8 +78,36 @@ class MainActivity : FlutterActivity() {
         when (requestCode) {
             REQ_BATTERY -> r.success(isIgnoringBattery())
             REQ_EXACT -> r.success(canExactAlarms())
+            REQ_AUTOSTART -> r.success(isAutoStartEnabled() || !autoStartQueryable())
             else -> r.success(true)
         }
+    }
+
+    private fun statusMap(): HashMap<String, Boolean> {
+        val auto = autoStartOp()
+        return hashMapOf(
+            "notify" to notificationsEnabled(),
+            "battery" to isIgnoringBattery(),
+            "exactAlarm" to canExactAlarms(),
+            "autoStart" to auto.second,
+            "autoStartQueryable" to auto.first,
+            "stock" to isStockAndroid(),
+            "keepAlive" to KeepAliveService.running,
+        )
+    }
+
+    private fun notificationsEnabled(): Boolean {
+        if (Build.VERSION.SDK_INT >= 33) {
+            val granted =
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED
+            if (!granted) return false
+        }
+        if (Build.VERSION.SDK_INT >= 24) {
+            val nm = getSystemService(NotificationManager::class.java) ?: return false
+            return nm.areNotificationsEnabled()
+        }
+        return true
     }
 
     private fun isIgnoringBattery(): Boolean {
@@ -88,6 +121,49 @@ class MainActivity : FlutterActivity() {
         val am = getSystemService(AlarmManager::class.java) ?: return false
         return am.canScheduleExactAlarms()
     }
+
+    private fun isStockAndroid(): Boolean {
+        val maker = Build.MANUFACTURER.lowercase()
+        val brand = Build.BRAND.lowercase()
+        return listOf("google", "pixel", "aosp").any { maker.contains(it) || brand.contains(it) }
+    }
+
+    /** First = OEM exposes an auto-start op we can read. Second = that op is allowed. */
+    private fun autoStartOp(): Pair<Boolean, Boolean> {
+        val maker = Build.MANUFACTURER.lowercase()
+        val brand = Build.BRAND.lowercase()
+        val known =
+            listOf("xiaomi", "redmi", "poco", "blackshark", "vivo", "iqoo", "oppo", "realme", "oneplus")
+                .any { maker.contains(it) || brand.contains(it) }
+        if (!known) return false to false
+        return try {
+            val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+            val checkOp =
+                appOps.javaClass.getMethod(
+                    "checkOpNoThrow",
+                    Integer.TYPE,
+                    Integer.TYPE,
+                    String::class.java,
+                )
+            val uid = Process.myUid()
+            var queryable = false
+            for (op in intArrayOf(10008, 10020, 10021, 10025)) {
+                try {
+                    val mode = checkOp.invoke(appOps, op, uid, packageName) as Int
+                    queryable = true
+                    if (mode == AppOpsManager.MODE_ALLOWED) return true to true
+                } catch (_: Exception) {
+                }
+            }
+            queryable to false
+        } catch (_: Exception) {
+            false to false
+        }
+    }
+
+    private fun autoStartQueryable(): Boolean = autoStartOp().first
+
+    private fun isAutoStartEnabled(): Boolean = autoStartOp().second
 
     private fun requestBatteryExemption(result: MethodChannel.Result) {
         if (isIgnoringBattery()) {

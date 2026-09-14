@@ -41,6 +41,10 @@ LocationSettings _gpsSettings() {
   }
 }
 
+bool locationPermissionGranted(LocationPermission perm) {
+  return perm == LocationPermission.always || perm == LocationPermission.whileInUse;
+}
+
 /// Always calls [Geolocator.requestPermission] so Continue never skips the OS dialog.
 Future<GpsResult> requestNearbyCity(AppStore store) async {
   try {
@@ -56,7 +60,7 @@ Future<GpsResult> requestNearbyCity(AppStore store) async {
     if (perm == LocationPermission.denied) {
       perm = await Geolocator.requestPermission();
     }
-    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+    if (!locationPermissionGranted(perm)) {
       return GpsResult.denied;
     }
     Position? last;
@@ -73,7 +77,6 @@ Future<GpsResult> requestNearbyCity(AppStore store) async {
     final city = nearestCity(pos.latitude, pos.longitude);
     final existed = store.weatherCities.contains(city.id);
     store.addWeatherCity(city.id);
-    store.setLocationOn(true);
     return existed ? GpsResult.already : GpsResult.added;
   } catch (_) {
     return GpsResult.failed;

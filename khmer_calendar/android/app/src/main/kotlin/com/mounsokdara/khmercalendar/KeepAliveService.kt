@@ -17,10 +17,12 @@ class KeepAliveService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        running = true
         startInForeground()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        running = true
         startInForeground()
         return START_STICKY
     }
@@ -31,6 +33,7 @@ class KeepAliveService : Service() {
     }
 
     override fun onDestroy() {
+        running = false
         super.onDestroy()
     }
 
@@ -91,5 +94,8 @@ class KeepAliveService : Service() {
     companion object {
         const val CHANNEL = "khmer_keep_alive"
         const val ID = 41
+
+        @Volatile
+        var running: Boolean = false
     }
 }

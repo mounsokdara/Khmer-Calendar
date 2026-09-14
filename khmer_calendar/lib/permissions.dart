@@ -13,6 +13,22 @@ import 'store.dart';
 
 const _channel = MethodChannel('khmer.permissions');
 
+class OsPerms {
+  const OsPerms({
+    required this.notify,
+    required this.background,
+    required this.autoLaunch,
+    required this.location,
+    this.autoStartQueryable = false,
+  });
+
+  final bool notify;
+  final bool background;
+  final bool autoLaunch;
+  final bool location;
+  final bool autoStartQueryable;
+}
+
 Future<bool> _native(String method, [Map<String, dynamic>? args]) async {
   if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
   try {
@@ -22,6 +38,19 @@ Future<bool> _native(String method, [Map<String, dynamic>? args]) async {
     debugPrint('native $method: $e');
     return false;
   }
+}
+
+Future<Map<String, bool>> _androidStatus() async {
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return {};
+  try {
+    final r = await _channel.invokeMethod<dynamic>('checkStatus');
+    if (r is Map) {
+      return r.map((k, v) => MapEntry('$k', v == true));
+    }
+  } catch (e) {
+    debugPrint('checkStatus: $e');
+  }
+  return {};
 }
 
 bool get _android {
@@ -75,86 +104,184 @@ Future<bool> _confirm(
   return ok == true;
 }
 
-/// Ask the OS for notification permission. Always calls request() — never skips.
+Future<bool> notificationsAllowed() async {
+  if (kIsWeb) return webnotify.isBrowserNotificationGranted();
+  if (_android) {
+    final native = (await _androidStatus())['notify'] ?? false;
+    PermissionStatus status = PermissionStatus.denied;
+    try {
+      status = await Permission.notification.status;
+    } catch (_) {}
+    return native || status.isGranted || status.isLimited || status.isProvisional;
+  }
+  try {
+    final status = await Permission.notification.status;
+    return status.isGranted || status.isLimited || status.isProvisional;
+  } catch (_) {
+    return false;
+  }
+}
+
+Future<bool> backgroundAllowed() async {
+  if (kIsWeb) return false;
+  if (_android) {
+    final s = await _androidStatus();
+    if (s['battery'] == true) return true;
+    try {
+      return (await Permission.ignoreBatteryOptimizations.status).isGranted;
+    } catch (_) {
+      return false;
+    }
+  }
+  if (_apple) return notificationsAllowed();
+  return true;
+}
+
+Future<bool> autoLaunchAllowed() async {
+  if (kIsWeb) return false;
+  if (_desktop) {
+    try {
+      return await autostart.isDesktopAutostartEnabled();
+    } catch (_) {
+      return false;
+    }
+  }
+  if (_android) {
+    final s = await _androidStatus();
+    if (s['stock'] == true) return true;
+    if (s['autoStartQueryable'] == true) return s['autoStart'] == true;
+    return false;
+  }
+  return false;
+}
+
+Future<bool> locationAllowed() async {
+  try {
+    final p = await Geolocator.checkPermission();
+    return p == LocationPermission.always || p == LocationPermission.whileInUse;
+  } catch (_) {
+    return false;
+  }
+}
+
+/// Read the OS. Never trust a local flag.
+Future<OsPerms> readOsPermissions() async {
+  final notify = await notificationsAllowed();
+  final background = await backgroundAllowed();
+  final autoLaunch = await autoLaunchAllowed();
+  final location = await locationAllowed();
+  var queryable = false;
+  if (_android) {
+    queryable = (await _androidStatus())['autoStartQueryable'] == true;
+  } else if (_desktop) {
+    queryable = true;
+  }
+  return OsPerms(
+    notify: notify,
+    background: background,
+    autoLaunch: autoLaunch,
+    location: location,
+    autoStartQueryable: queryable,
+  );
+}
+
+/// Turn flags off when the OS no longer allows them. Never turns flags on.
+Future<void> keepOnlyGranted(AppStore store) async {
+  final os = await readOsPermissions();
+  if (store.notifyOn && !os.notify) store.setNotifyOn(false);
+  if (store.backgroundOn && !os.background) store.setBackgroundOn(false);
+  if (store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
+  if (store.locationOn && !os.location) store.setLocationOn(false);
+  await _syncNativeFlags(store);
+  if (!store.backgroundOn) await _native('stopKeepAlive');
+  if (!store.notifyOn) await cancelAllReminders();
+}
+
+/// After Continue asked the OS, store only what is actually allowed.
+Future<void> writeGrantedFlags(AppStore store) async {
+  final os = await readOsPermissions();
+  store.setNotifyOn(os.notify);
+  store.setBackgroundOn(os.background);
+  store.setAutoLaunchOn(os.autoLaunch);
+  store.setLocationOn(os.location);
+  await _syncNativeFlags(store);
+  if (os.background && !kIsWeb) {
+    await _native('startKeepAlive');
+  } else {
+    await _native('stopKeepAlive');
+  }
+  if (os.notify) {
+    await initReminderEngine();
+    await syncReminders(store);
+  } else {
+    await cancelAllReminders();
+  }
+}
+
+/// Ask the OS for notification permission, then re-read whether it is allowed.
 Future<bool> requestNotifications(AppStore store) async {
-  var ok = false;
   try {
     if (kIsWeb) {
-      ok = await webnotify.requestBrowserNotification();
+      await webnotify.requestBrowserNotification();
     } else {
-      ok = await requestOsNotificationPermission();
-      PermissionStatus status = PermissionStatus.denied;
+      await requestOsNotificationPermission();
       try {
-        status = await Permission.notification.request();
+        await Permission.notification.request();
       } catch (e) {
         debugPrint('permission_handler notify: $e');
       }
-      ok = ok || status.isGranted || status.isLimited || status.isProvisional;
     }
   } catch (e) {
     debugPrint('requestNotifications: $e');
   }
+  final ok = await notificationsAllowed();
   store.setNotifyOn(ok);
   if (ok && !kIsWeb) {
     await initReminderEngine();
     await syncReminders(store);
+  } else if (!ok) {
+    await cancelAllReminders();
   }
   return ok;
 }
 
-/// Keep the reminder engine alive: battery exemption, exact alarms, FGS.
+/// Ask battery / exact-alarm, then keep background on only if the OS allowed it.
 Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
-    await _confirm(context, store.lang, 'permBackground', 'webBgBlock');
     store.setBackgroundOn(false);
     return false;
   }
-  var ok = false;
   try {
     if (_android) {
-      PermissionStatus bat = PermissionStatus.denied;
       try {
-        bat = await Permission.ignoreBatteryOptimizations.request();
+        await Permission.ignoreBatteryOptimizations.request();
       } catch (e) {
         debugPrint('battery handler: $e');
       }
-      ok = bat.isGranted || await _native('isIgnoringBattery');
-      if (!ok) {
+      if (!await backgroundAllowed()) {
         await _pause();
-        ok = await _native('requestBatteryExemption');
+        await _native('requestBatteryExemption');
       }
       try {
         await Permission.scheduleExactAlarm.request();
       } catch (_) {}
       await _pause();
       await _native('requestExactAlarm');
-      final started = await _native('startKeepAlive');
-      ok = started || ok || await _native('isIgnoringBattery');
     } else if (_apple) {
       await requestOsNotificationPermission();
-      final appleCtx = context;
-      if (appleCtx != null && appleCtx.mounted) {
-        ok = await _confirm(appleCtx, store.lang, 'permBackground', 'permBackgroundSub');
-      } else {
-        ok = appleCtx == null;
-      }
-    } else {
-      final deskCtx = context;
-      if (deskCtx != null && deskCtx.mounted) {
-        ok = await _confirm(deskCtx, store.lang, 'permBackground', 'permBackgroundSub');
-      } else {
-        ok = deskCtx == null;
-      }
     }
   } catch (e) {
     debugPrint('requestBackground: $e');
-    ok = false;
   }
+  final ok = await backgroundAllowed();
   store.setBackgroundOn(ok);
   await _syncNativeFlags(store);
   if (ok) {
+    await _native('startKeepAlive');
     await initReminderEngine();
     await syncReminders(store);
+  } else {
+    await _native('stopKeepAlive');
   }
   return ok;
 }
@@ -165,43 +292,43 @@ Future<void> stopBackground(AppStore store) async {
   await _native('stopKeepAlive');
 }
 
-/// Boot / login auto-start so reminders fire after reboot.
+/// Open OEM auto-start / desktop login items, then re-read whether it is allowed.
 Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
-    await _confirm(context, store.lang, 'autoLaunch', 'webBgBlock');
     store.setAutoLaunchOn(false);
     return false;
   }
-  var ok = false;
   try {
     if (_android) {
-      store.setAutoLaunchOn(true);
-      await _syncNativeFlags(store);
-      await _pause();
-      ok = await _native('openAutoStart');
+      final s = await _androidStatus();
+      if (s['stock'] != true) {
+        await _pause();
+        await _native('openAutoStart');
+      }
+      var os = await readOsPermissions();
+      if (s['stock'] != true && !os.autoStartQueryable) {
+        final ctx = context;
+        if (ctx != null && ctx.mounted) {
+          final confirmed = await _confirm(ctx, store.lang, 'autoLaunchConfirm', 'autoLaunchConfirmSub');
+          store.setAutoLaunchOn(confirmed);
+          await _syncNativeFlags(store);
+          return confirmed;
+        }
+        store.setAutoLaunchOn(false);
+        await _syncNativeFlags(store);
+        return false;
+      }
     } else if (_desktop) {
       try {
-        ok = await autostart.enableDesktopAutostart();
+        await autostart.enableDesktopAutostart();
       } catch (e) {
         debugPrint('desktop autostart: $e');
-        ok = false;
-      }
-      if (!ok) {
-        final deskCtx = context;
-        if (deskCtx != null && deskCtx.mounted) {
-          ok = await _confirm(deskCtx, store.lang, 'autoLaunch', 'autoLaunchSub');
-        }
-      }
-    } else {
-      final iosCtx = context;
-      if (iosCtx != null && iosCtx.mounted) {
-        ok = await _confirm(iosCtx, store.lang, 'autoLaunch', 'autoLaunchSub');
       }
     }
   } catch (e) {
     debugPrint('requestAutoLaunch: $e');
-    ok = false;
   }
+  final ok = await autoLaunchAllowed();
   store.setAutoLaunchOn(ok);
   await _syncNativeFlags(store);
   return ok;
@@ -218,21 +345,21 @@ Future<void> stopAutoLaunch(AppStore store) async {
 }
 
 Future<GpsResult> requestLocationPerm(AppStore store) async {
-  var r = await requestNearbyCity(store);
-  if (r == GpsResult.denied && _android) {
-    try {
-      final perm = await Geolocator.checkPermission();
-      if (perm == LocationPermission.deniedForever) {
-        await _native('openAppSettings');
-        r = await requestNearbyCity(store);
-      }
-    } catch (_) {}
+  GpsResult r = GpsResult.denied;
+  try {
+    r = await requestNearbyCity(store);
+  } catch (e) {
+    debugPrint('requestLocationPerm: $e');
   }
-  store.setLocationOn(r == GpsResult.added || r == GpsResult.already);
+  final ok = await locationAllowed();
+  store.setLocationOn(ok);
+  if (!ok) {
+    if (r != GpsResult.disabled) r = GpsResult.denied;
+  }
   return r;
 }
 
-/// Continue / setup: ask every permission in order. Never skip the OS dialogs.
+/// Continue: ask every OS prompt, then store only what the OS actually allowed.
 Future<void> requestAllPermissions(
   AppStore store, {
   BuildContext? context,
@@ -267,11 +394,12 @@ Future<void> requestAllPermissions(
   } catch (e) {
     debugPrint('all/gps: $e');
   }
+  await writeGrantedFlags(store);
 }
 
-/// Re-apply saved flags after boot / hydrate (start FGS, reschedule reminders).
+/// Re-apply saved flags after boot / hydrate, but drop any the OS no longer allows.
 Future<void> applyStoredPermissions(AppStore store) async {
-  await _syncNativeFlags(store);
+  await keepOnlyGranted(store);
   bindReminderSync(store);
   if (store.backgroundOn && !kIsWeb) {
     await _native('startKeepAlive');
