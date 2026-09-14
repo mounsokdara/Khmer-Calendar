@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../theme.dart';
+
 const _silSvg = '''
 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <ellipse cx="12" cy="3.15" rx="1.45" ry="1.2" fill="currentColor"/>
@@ -10,19 +12,18 @@ const _silSvg = '''
 </svg>
 ''';
 
+/// Buddha sil mark. Always painted in the calendar yellow (`#d4920f`).
 class SilMark extends StatelessWidget {
-  const SilMark({super.key, this.size = 14, this.color});
+  const SilMark({super.key, this.size = 14});
   final double size;
-  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.tertiary;
     return SvgPicture.string(
       _silSvg,
       width: size,
       height: size,
-      colorFilter: ColorFilter.mode(c, BlendMode.srcIn),
+      colorFilter: const ColorFilter.mode(silColor, BlendMode.srcIn),
     );
   }
 }

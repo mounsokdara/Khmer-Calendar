@@ -5,9 +5,11 @@ import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../widgets/holiday_info.dart';
+import '../widgets/obs_row.dart';
+import '../widgets/segmented_list.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
-import 'today.dart';
 
 class EventsPage extends StatelessWidget {
   const EventsPage({super.key, required this.store});
@@ -28,7 +30,8 @@ class EventsPage extends StatelessWidget {
     final current = store.events.where((e) => e.done != true && (e.date.isEmpty || e.date.compareTo(today) >= 0)).toList();
     final overdue = store.events.where((e) => e.done != true && e.date.isNotEmpty && e.date.compareTo(today) < 0).toList();
     final done = store.events.where((e) => e.done == true).toList();
-    final cs = Theme.of(context).colorScheme;
+    final wide = MediaQuery.sizeOf(context).width >= mediumBreak;
+    final xl = MediaQuery.sizeOf(context).width >= xlBreak;
 
     return Column(
       children: [
@@ -80,39 +83,18 @@ class EventsPage extends StatelessWidget {
               ? (groups.isEmpty
                   ? Center(child: Text(t(lang, 'noHolidaysYear')))
                   : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: const EdgeInsets.only(bottom: 16),
                       children: [
-                        for (final e in groups.entries) ...[
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-                            child: Text(
-                              formatMonthTitle(fromIso('${e.key}-01'), lang),
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(color: cs.primary, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          for (final item in e.value)
-                            Card(
-                              elevation: 0,
-                              color: cs.surfaceContainerLow,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: dayToneColor(context, colorKind(item)).withValues(alpha: 0.15),
-                                  child: Text('${fromIso(item.date).day}'),
-                                ),
-                                title: Text(obsTitle(item, lang), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                                subtitle: Text(weekdaysFull(lang)[fromIso(item.date).weekday % 7]),
-                                onTap: () {
-                                  store.goToDate(item.date);
-                                  showHolidayInfo(context, store, item);
-                                },
-                              ),
-                            ),
-                        ],
+                        if (xl)
+                          _holidayGrid(context, groups, 3)
+                        else if (wide)
+                          _holidayGrid(context, groups, 2)
+                        else
+                          for (final e in groups.entries) _holidayGroup(context, e.key, e.value),
                       ],
                     ))
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.only(bottom: 16),
                   children: [
                     _taskGroup(context, t(lang, 'overdue'), overdue, true),
                     _taskGroup(context, t(lang, 'currentTasks'), current, false),
@@ -129,6 +111,59 @@ class EventsPage extends StatelessWidget {
     );
   }
 
+  Widget _holidayGrid(BuildContext context, Map<String, List<Observance>> groups, int cols) {
+    final entries = groups.entries.toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        children: [
+          for (var r = 0; r < (entries.length / cols).ceil(); r++)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var c = 0; c < cols; c++)
+                  Expanded(
+                    child: r * cols + c < entries.length
+                        ? _holidayGroup(context, entries[r * cols + c].key, entries[r * cols + c].value)
+                        : const SizedBox.shrink(),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _holidayGroup(BuildContext context, String key, List<Observance> list) {
+    final lang = store.lang;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 16, 4),
+          child: Text(
+            formatMonthTitle(fromIso('$key-01'), lang),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ),
+        for (final item in list)
+          ObsRow(
+            item: item,
+            lang: lang,
+            showWeekday: true,
+            padDay: true,
+            onTap: () {
+              store.goToDate(item.date);
+              showHolidayInfo(context, store, item);
+            },
+          ),
+      ],
+    );
+  }
+
   Widget _taskGroup(BuildContext context, String title, List<CalendarEvent> list, bool overdue) {
     if (list.isEmpty) return const SizedBox.shrink();
     final lang = store.lang;
@@ -136,10 +171,7 @@ class EventsPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
-          child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(color: overdue ? cs.error : cs.primary, fontWeight: FontWeight.bold)),
-        ),
+        SectionLabel(title, color: overdue ? cs.error : cs.primary),
         for (final e in list)
           swipeToDelete(
             context: context,
@@ -147,16 +179,11 @@ class EventsPage extends StatelessWidget {
             confirm: true,
             lang: lang,
             onDelete: () => store.deleteEvent(e.id),
-            child: Card(
-              elevation: 0,
-              color: cs.surfaceContainerLow,
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Checkbox(value: e.done ?? false, onChanged: (_) => store.toggleEventDone(e.id)),
-                title: Text(e.title, style: TextStyle(decoration: e.done == true ? TextDecoration.lineThrough : null, fontWeight: FontWeight.bold)),
-                subtitle: Text(eventWhenLabel(e.date, e.startTime, e.allDay, lang)),
-                onTap: () => showTaskSheet(context, store: store, editing: e),
-              ),
+            child: ListTile(
+              leading: Checkbox(value: e.done ?? false, onChanged: (_) => store.toggleEventDone(e.id)),
+              title: Text(e.title, style: TextStyle(decoration: e.done == true ? TextDecoration.lineThrough : null, fontWeight: FontWeight.bold)),
+              subtitle: Text(eventWhenLabel(e.date, e.startTime, e.allDay, lang)),
+              onTap: () => showTaskSheet(context, store: store, editing: e),
             ),
           ),
       ],

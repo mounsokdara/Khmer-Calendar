@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../i18n.dart';
 import '../store.dart';
+import '../theme.dart';
 import '../weather.dart';
 import '../widgets/swipe_delete.dart';
 
@@ -91,8 +92,19 @@ class _WeatherPageState extends State<WeatherPage> {
                 )
               : RefreshIndicator(
                   onRefresh: _refresh,
-                  child: ListView.builder(
+                  child: GridView.builder(
                     padding: const EdgeInsets.all(16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.sizeOf(context).width >= xlBreak
+                          ? 3
+                          : MediaQuery.sizeOf(context).width >= mediumBreak
+                              ? 2
+                              : 1,
+                      mainAxisExtent: 168,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.6,
+                    ),
                     itemCount: store.weatherCities.length,
                     itemBuilder: (ctx, i) {
                       final id = store.weatherCities[i];
@@ -100,20 +112,17 @@ class _WeatherPageState extends State<WeatherPage> {
                       if (city == null) return const SizedBox.shrink();
                       final snap = _cache[id];
                       final err = _err[id];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: swipeToDelete(
-                          context: context,
-                          key: 'wx-$id',
+                      return swipeToDelete(
+                        context: context,
+                        key: 'wx-$id',
+                        lang: lang,
+                        onDelete: () => store.removeWeatherCity(id),
+                        child: _CityCard(
+                          city: city,
+                          snap: snap,
+                          error: err != null,
                           lang: lang,
-                          onDelete: () => store.removeWeatherCity(id),
-                          child: _CityCard(
-                            city: city,
-                            snap: snap,
-                            error: err != null,
-                            lang: lang,
-                            onOpen: () => _openCity(city, snap),
-                          ),
+                          onOpen: () => _openCity(city, snap),
                         ),
                       );
                     },

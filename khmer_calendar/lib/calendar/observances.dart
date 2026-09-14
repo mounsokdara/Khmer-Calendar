@@ -228,6 +228,37 @@ List<Observance> observancesOn(String iso, List<CalendarEvent> events) {
 
 String obsTitle(Observance o, Lang lang) => lang == Lang.en && o.titleEn.isNotEmpty ? o.titleEn : o.title;
 
+String obsSub(Observance o, Lang lang) {
+  final en = o.subtitleEn ?? '';
+  final km = o.subtitle ?? '';
+  if (lang == Lang.en && en.isNotEmpty) return en;
+  return km;
+}
+
+String gregorianLabel(DateTime d, Lang lang) {
+  final months = monthsOf(lang);
+  return lang == Lang.en
+      ? '${d.day} ${months[d.month - 1]} ${d.year}'
+      : 'ថ្ងៃទី${d.day} ខែ${months[d.month - 1]} ឆ្នាំ${d.year}';
+}
+
+String lunarLabel(String iso, Lang lang) {
+  final n = lunarOf(fromIso(iso));
+  const wdayEn = {
+    'អាទិត្យ': 'Sunday',
+    'ចន្ទ': 'Monday',
+    'អង្គារ': 'Tuesday',
+    'ពុធ': 'Wednesday',
+    'ព្រហស្បតិ៍': 'Thursday',
+    'សុក្រ': 'Friday',
+    'សៅរ៍': 'Saturday',
+  };
+  final wax = n.moonStatus == 'កើត' ? 'waxing' : 'waning';
+  return lang == Lang.en
+      ? '${wdayEn[n.dayOfWeek] ?? n.dayOfWeek} ${n.moonDay} $wax ${monthEn[n.khmerMonth] ?? n.khmerMonth} · B.E. ${n.buddhistEraYear}'
+      : 'ថ្ងៃ${n.dayOfWeek} ${n.moonDayKhmer}${n.moonStatus} ខែ${n.khmerMonth} ព.ស. ${n.buddhistEraYearKhmer}';
+}
+
 String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';

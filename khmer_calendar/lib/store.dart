@@ -111,6 +111,7 @@ class AppStore extends ChangeNotifier {
   }
 
   Future<void> hydrate() async {
+    final started = DateTime.now();
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString('khmer-calendar-v4') ?? prefs.getString('khmer-calendar-v3');
@@ -151,6 +152,8 @@ class AppStore extends ChangeNotifier {
     }
     lang = resolveLang(langPref);
     IntlHelper.localeName = lang == Lang.km ? 'km' : 'en';
+    final wait = 720 - DateTime.now().difference(started).inMilliseconds;
+    if (wait > 0) await Future<void>.delayed(Duration(milliseconds: wait));
     hydrated = true;
     notifyListeners();
   }

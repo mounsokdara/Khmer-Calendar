@@ -6,6 +6,7 @@ import 'screens/events.dart';
 import 'screens/more.dart';
 import 'screens/months.dart';
 import 'screens/shell.dart';
+import 'screens/splash.dart';
 import 'screens/today.dart';
 import 'screens/weather_page.dart';
 import 'store.dart';
@@ -13,11 +14,11 @@ import 'theme.dart';
 
 final store = AppStore();
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-  await store.hydrate();
   runApp(KhmerCalendarApp(store: store));
+  store.hydrate();
 }
 
 class KhmerCalendarApp extends StatefulWidget {
@@ -37,7 +38,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     widget.store.addListener(_onStore);
     router = GoRouter(
       refreshListenable: widget.store,
-      initialLocation: '/months',
+      initialLocation: '/splash',
       redirect: (ctx, state) {
         if (!widget.store.hydrated) return '/splash';
         if (!widget.store.setupDone && state.uri.path != '/get-started') return '/get-started';

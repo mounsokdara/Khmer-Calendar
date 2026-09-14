@@ -99,6 +99,16 @@ ThemeData buildTheme({
   );
 }
 
+const silColor = Color(0xFFD4920F);
+
+const wideBreak = 840.0;
+const mediumBreak = 720.0;
+const xlBreak = 1180.0;
+
+bool isWide(BuildContext context) => MediaQuery.sizeOf(context).width >= wideBreak;
+bool isMedium(BuildContext context) => MediaQuery.sizeOf(context).width >= mediumBreak;
+bool isXl(BuildContext context) => MediaQuery.sizeOf(context).width >= xlBreak;
+
 Color dayToneColor(BuildContext context, String tone) {
   final cs = Theme.of(context).colorScheme;
   switch (tone) {
@@ -107,7 +117,9 @@ Color dayToneColor(BuildContext context, String tone) {
     case 'holiday':
       return cs.primary;
     case 'sil':
-      return cs.tertiary;
+      return silColor;
+    case 'event':
+      return cs.primary;
     case 'muted':
       return cs.onSurface.withValues(alpha: 0.38);
     default:

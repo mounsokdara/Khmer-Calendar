@@ -52,6 +52,8 @@ const km = <String, String>{
   'loading': 'កំពុងផ្ទុក',
   'splashTag': 'ប្រតិទិនចន្ទគតិខ្មែរ',
   'today': 'ថ្ងៃនេះ',
+  'expand': 'ពង្រីក',
+  'collapse': 'បង្រួម',
   'addTask': 'បន្ថែមកិច្ចការ',
   'events': 'ព្រឹត្តិការណ៍',
   'tasks': 'កិច្ចការ',
@@ -231,6 +233,8 @@ const en = <String, String>{
   'loading': 'Loading',
   'splashTag': 'Khmer lunar calendar',
   'today': 'Today',
+  'expand': 'Expand',
+  'collapse': 'Collapse',
   'addTask': 'Add task',
   'events': 'Events',
   'tasks': 'Tasks',
@@ -396,3 +400,6 @@ List<String> weekdaysStarting(Lang lang, int start) {
   if (start == 6) return [src[5], src[6], ...src.sublist(0, 5)];
   return [src[6], ...src.sublist(0, 6)];
 }
+
+int sundayIndex(int start) => start == 0 ? 0 : start == 1 ? 6 : 1;
+

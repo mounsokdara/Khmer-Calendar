@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
 import '../store.dart';
+import '../theme.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.store, required this.child});
@@ -22,14 +23,44 @@ class AppShell extends StatelessWidget {
     final loc = GoRouterState.of(context).uri.path;
     var idx = tabs.indexWhere((t) => loc == t.$2 || loc.startsWith('${t.$2}/'));
     if (idx < 0) idx = 1;
+    final wide = MediaQuery.sizeOf(context).width >= wideBreak;
+
+    void go(int i) {
+      store.setLastTab(tabs[i].$1);
+      context.go(tabs[i].$2);
+    }
+
+    if (wide) {
+      return Scaffold(
+        body: SafeArea(
+          child: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: idx,
+                onDestinationSelected: go,
+                labelType: NavigationRailLabelType.all,
+                destinations: [
+                  for (final tab in tabs)
+                    NavigationRailDestination(
+                      icon: Icon(tab.$3),
+                      selectedIcon: Icon(tab.$3),
+                      label: Text(t(store.lang, tab.$4)),
+                    ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: child),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(child: child),
       bottomNavigationBar: NavigationBar(
         selectedIndex: idx,
-        onDestinationSelected: (i) {
-          store.setLastTab(tabs[i].$1);
-          context.go(tabs[i].$2);
-        },
+        onDestinationSelected: go,
         destinations: [
           for (final tab in tabs)
             NavigationDestination(

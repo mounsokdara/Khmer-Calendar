@@ -1,4 +1,4 @@
-package kh.chhankitek.khmer_calendar
+package com.mounsokdara.khmercalendar
 
 import io.flutter.embedding.android.FlutterActivity
 

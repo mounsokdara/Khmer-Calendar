@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "kh.chhankitek.khmer_calendar"
+    namespace = "com.mounsokdara.khmercalendar"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "kh.chhankitek.calendar"
+        applicationId = "com.mounsokdara.khmercalendar"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
