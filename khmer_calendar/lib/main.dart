@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'i18n.dart';
+import 'permissions.dart';
 import 'screens/events.dart';
 import 'screens/more.dart';
 import 'screens/months.dart';
@@ -19,7 +20,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
   runApp(KhmerCalendarApp(store: store));
-  store.hydrate();
+  store.hydrate().then((_) => applyStoredPermissions(store));
 }
 
 class KhmerCalendarApp extends StatefulWidget {

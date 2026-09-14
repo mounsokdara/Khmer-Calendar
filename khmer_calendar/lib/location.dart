@@ -41,17 +41,18 @@ LocationSettings _gpsSettings() {
   }
 }
 
-/// Requests OS location (like original `toggleGps()`), then adds the nearest
-/// city. Always reports [GpsResult.already] / [GpsResult.added] so the user
-/// gets feedback even when Phnom Penh is already in the list.
-///
-/// On Android devices without Play Services (common in Cambodia) Fused Location
-/// times out — [AndroidSettings.forceLocationManager] uses the OS GPS provider.
+/// Always calls [Geolocator.requestPermission] so Continue never skips the OS dialog.
 Future<GpsResult> requestNearbyCity(AppStore store) async {
   try {
     final enabled = await Geolocator.isLocationServiceEnabled();
-    if (!enabled) return GpsResult.disabled;
-    var perm = await Geolocator.checkPermission();
+    if (!enabled) {
+      try {
+        await Geolocator.openLocationSettings();
+      } catch (_) {}
+      final again = await Geolocator.isLocationServiceEnabled();
+      if (!again) return GpsResult.disabled;
+    }
+    var perm = await Geolocator.requestPermission();
     if (perm == LocationPermission.denied) {
       perm = await Geolocator.requestPermission();
     }

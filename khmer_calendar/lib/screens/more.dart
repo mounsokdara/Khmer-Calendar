@@ -8,6 +8,8 @@ import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../location.dart';
+import '../permissions.dart';
+import '../reminders.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../widgets/overlay_page.dart';
@@ -314,19 +316,41 @@ class PrivacyPage extends StatelessWidget {
                     title: Text(t(lang, 'permNotify')),
                     subtitle: Text(t(lang, 'permNotifySub')),
                     value: store.notifyOn,
-                    onChanged: store.setNotifyOn,
+                    onChanged: (v) async {
+                      if (!v) {
+                        store.setNotifyOn(false);
+                        await cancelAllReminders();
+                        return;
+                      }
+                      final ok = await requestNotifications(store);
+                      if (context.mounted) showPermSnack(context, lang, 'notify', ok);
+                    },
                   ),
                   SwitchListTile(
                     title: Text(t(lang, 'permBackground')),
                     subtitle: Text(t(lang, 'permBackgroundSub')),
                     value: store.backgroundOn,
-                    onChanged: kIsWeb
-                        ? (v) {
-                            if (v) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'webBgBlock'))));
-                            }
-                          }
-                        : store.setBackgroundOn,
+                    onChanged: (v) async {
+                      if (!v) {
+                        await stopBackground(store);
+                        return;
+                      }
+                      final ok = await requestBackground(store, context: context);
+                      if (context.mounted) showPermSnack(context, lang, 'background', ok);
+                    },
+                  ),
+                  SwitchListTile(
+                    title: Text(t(lang, 'autoLaunch')),
+                    subtitle: Text(t(lang, 'autoLaunchSub')),
+                    value: store.autoLaunchOn,
+                    onChanged: (v) async {
+                      if (!v) {
+                        await stopAutoLaunch(store);
+                        return;
+                      }
+                      final ok = await requestAutoLaunch(store, context: context);
+                      if (context.mounted) showPermSnack(context, lang, 'auto', ok);
+                    },
                   ),
                   SwitchListTile(
                     title: Text(t(lang, 'permLocation')),
@@ -337,19 +361,9 @@ class PrivacyPage extends StatelessWidget {
                         store.setLocationOn(false);
                         return;
                       }
-                      store.setLocationOn(true);
-                      final r = await requestNearbyCity(store);
-                      if (r == GpsResult.denied || r == GpsResult.disabled || r == GpsResult.failed) {
-                        store.setLocationOn(false);
-                      }
+                      final r = await requestLocationPerm(store);
                       if (context.mounted) showGpsSnack(context, store.lang, r);
                     },
-                  ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'autoLaunch')),
-                    subtitle: Text(t(lang, 'autoLaunchSub')),
-                    value: store.autoLaunchOn,
-                    onChanged: kIsWeb ? null : store.setAutoLaunchOn,
                   ),
                 ],
               ),
@@ -751,7 +765,11 @@ class GetStartedPage extends StatefulWidget {
 class _GetStartedPageState extends State<GetStartedPage> {
   String step = 'language';
   bool notify = false;
+  bool bg = false;
+  bool auto = false;
   bool gps = false;
+  bool busy = false;
+  String asking = '';
 
   @override
   void initState() {
@@ -767,6 +785,95 @@ class _GetStartedPageState extends State<GetStartedPage> {
 
   void _onStore() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _askNotify(bool v) async {
+    final store = widget.store;
+    if (!v) {
+      setState(() => notify = false);
+      store.setNotifyOn(false);
+      await cancelAllReminders();
+      return;
+    }
+    final ok = await requestNotifications(store);
+    if (!mounted) return;
+    setState(() => notify = ok);
+    showPermSnack(context, store.lang, 'notify', ok);
+  }
+
+  Future<void> _askBg(bool v) async {
+    final store = widget.store;
+    if (!v) {
+      setState(() => bg = false);
+      await stopBackground(store);
+      return;
+    }
+    final ok = await requestBackground(store, context: context);
+    if (!mounted) return;
+    setState(() => bg = ok);
+    showPermSnack(context, store.lang, 'background', ok);
+  }
+
+  Future<void> _askAuto(bool v) async {
+    final store = widget.store;
+    if (!v) {
+      setState(() => auto = false);
+      await stopAutoLaunch(store);
+      return;
+    }
+    final ok = await requestAutoLaunch(store, context: context);
+    if (!mounted) return;
+    setState(() => auto = ok);
+    showPermSnack(context, store.lang, 'auto', ok);
+  }
+
+  Future<void> _askGps(bool v) async {
+    final store = widget.store;
+    if (!v) {
+      setState(() => gps = false);
+      store.setLocationOn(false);
+      return;
+    }
+    final r = await requestLocationPerm(store);
+    if (!mounted) return;
+    final ok = r == GpsResult.added || r == GpsResult.already;
+    setState(() => gps = ok);
+    showGpsSnack(context, store.lang, r);
+  }
+
+  Future<void> _continue() async {
+    if (busy) return;
+    final store = widget.store;
+    setState(() {
+      busy = true;
+      asking = 'askingNotify';
+    });
+    await requestAllPermissions(
+      store,
+      context: context,
+      onStep: (key) {
+        if (!mounted) return;
+        setState(() {
+          asking = key;
+          notify = store.notifyOn;
+          bg = store.backgroundOn;
+          auto = store.autoLaunchOn;
+          gps = store.locationOn;
+        });
+      },
+    );
+    if (!mounted) return;
+    setState(() {
+      notify = store.notifyOn;
+      bg = store.backgroundOn;
+      auto = store.autoLaunchOn;
+      gps = store.locationOn;
+      busy = false;
+      asking = '';
+    });
+    store.setSetupDone(true);
+    if (!mounted) return;
+    context.go('/months');
   }
 
   @override
@@ -805,47 +912,54 @@ class _GetStartedPageState extends State<GetStartedPage> {
               ] else ...[
                 Text(t(ui, 'setupPermTitle'), style: Theme.of(context).textTheme.headlineSmall),
                 Text(t(ui, 'setupPermSub')),
-                SwitchListTile(
-                  title: Text(t(ui, 'setupAllowNotify')),
-                  value: notify,
-                  onChanged: (v) {
-                    setState(() => notify = v);
-                    store.setNotifyOn(v);
-                  },
+                const SizedBox(height: 8),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: const Icon(Icons.notifications_outlined),
+                        title: Text(t(ui, 'setupAllowNotify')),
+                        subtitle: Text(t(ui, 'permNotifySub')),
+                        value: notify,
+                        onChanged: busy ? null : _askNotify,
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: const Icon(Icons.sync),
+                        title: Text(t(ui, 'setupAllowBackground')),
+                        subtitle: Text(t(ui, 'permBackgroundSub')),
+                        value: bg,
+                        onChanged: busy ? null : _askBg,
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: const Icon(Icons.rocket_launch_outlined),
+                        title: Text(t(ui, 'setupAllowAutoLaunch')),
+                        subtitle: Text(t(ui, 'autoLaunchSub')),
+                        value: auto,
+                        onChanged: busy ? null : _askAuto,
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        secondary: const Icon(Icons.location_on_outlined),
+                        title: Text(t(ui, 'setupAllowGps')),
+                        subtitle: Text(t(ui, 'permLocationSub')),
+                        value: gps,
+                        onChanged: busy ? null : _askGps,
+                      ),
+                    ],
+                  ),
                 ),
-                SwitchListTile(
-                  title: Text(t(ui, 'setupAllowGps')),
-                  value: gps,
-                  onChanged: (v) async {
-                    if (!v) {
-                      setState(() => gps = false);
-                      store.setLocationOn(false);
-                      return;
-                    }
-                    setState(() => gps = true);
-                    final r = await requestNearbyCity(store);
-                    if (!mounted) return;
-                    final ok = r == GpsResult.added || r == GpsResult.already;
-                    setState(() => gps = ok);
-                    if (!ok) store.setLocationOn(false);
-                    if (!context.mounted) return;
-                    showGpsSnack(context, store.lang, r);
-                  },
-                ),
-                const Spacer(),
+                if (busy) ...[
+                  const LinearProgressIndicator(minHeight: 3),
+                  const SizedBox(height: 8),
+                  Text(t(ui, asking.isEmpty ? 'loading' : asking), textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                ],
                 FilledButton(
-                  onPressed: () {
-                    store.setSetupDone(true);
-                    context.go('/months');
-                  },
-                  child: Text(t(ui, 'continue')),
-                ),
-                TextButton(
-                  onPressed: () {
-                    store.setSetupDone(true);
-                    context.go('/months');
-                  },
-                  child: Text(t(ui, 'setupSkipAnyway')),
+                  onPressed: busy ? null : _continue,
+                  child: Text(t(ui, 'setupContinue')),
                 ),
               ],
             ],

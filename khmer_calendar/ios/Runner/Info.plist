@@ -28,6 +28,13 @@
 	<string>Used to show nearby Cambodia weather.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Used to show nearby Cambodia weather.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Used to remind you about tasks and holidays.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>
