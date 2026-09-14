@@ -9,8 +9,9 @@ import '../store.dart';
 import '../theme.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/obs_row.dart';
-import '../widgets/page_physics.dart';
+import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
+import '../widgets/slide_track.dart';
 import '../widgets/task_sheet.dart';
 import '../widgets/wheel_picker.dart';
 
@@ -23,51 +24,13 @@ class MonthsPage extends StatefulWidget {
 }
 
 class _MonthsPageState extends State<MonthsPage> {
-  late final PageController _ctrl;
-  late int _page;
   bool _expanded = false;
-  bool _fromSwipe = false;
-  final _anchor = PageAnchor();
-
-  @override
-  void initState() {
-    super.initState();
-    _page = monthIndexOf(fromIso(widget.store.cursor)).clamp(0, monthCount() - 1);
-    _ctrl = PageController(initialPage: _page);
-    widget.store.addListener(_onStore);
-  }
-
-  @override
-  void dispose() {
-    widget.store.removeListener(_onStore);
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _onStore() {
-    if (!mounted) return;
-    final wanted = monthIndexOf(fromIso(widget.store.cursor)).clamp(0, monthCount() - 1);
-    if (!_fromSwipe && wanted != _page) {
-      _page = wanted;
-      if (_ctrl.hasClients) _ctrl.jumpToPage(wanted);
-    }
-    setState(() {});
-  }
 
   AppStore get store => widget.store;
 
-  void _onMonthPage(int i) {
-    _page = i;
-    final m = monthFromIndex(i);
+  void _shiftMonth(int dir) {
     final cur = fromIso(store.cursor);
-    if (cur.year == m.year && cur.month == m.month) {
-      setState(() {});
-      return;
-    }
-    _fromSwipe = true;
-    final day = cur.day.clamp(1, daysInMonth(m));
-    store.setCursor(isoOf(DateTime(m.year, m.month, day)));
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fromSwipe = false);
+    store.setCursor(isoOf(addMonths(cur, dir)));
   }
 
   void _openObs(Observance item) {
@@ -82,41 +45,46 @@ class _MonthsPageState extends State<MonthsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lang = store.lang;
-    final cursor = fromIso(store.cursor);
-    final selected = store.selected;
-    final items = monthObservances(cursor, store.events).where((i) => i.kind != Kind.sil).toList();
-    final holidays = items.where((i) => i.kind != Kind.event).toList();
-    final tasks = items.where((i) => i.kind == Kind.event).toList();
-    final today = todayIso();
-    final wide = MediaQuery.sizeOf(context).width >= wideBreak && !_expanded;
+    return WatchStore(
+      store: widget.store,
+      builder: (context, store) {
+        final lang = store.lang;
+        final cursor = fromIso(store.cursor);
+        final selected = store.selected;
+        final items = monthObservances(cursor, store.events).where((i) => i.kind != Kind.sil).toList();
+        final holidays = items.where((i) => i.kind != Kind.event).toList();
+        final tasks = items.where((i) => i.kind == Kind.event).toList();
+        final today = todayIso();
+        final wide = MediaQuery.sizeOf(context).width >= wideBreak && !_expanded;
 
-    return Column(
-      children: [
-        _header(lang, cursor, today),
-        Expanded(
-          child: wide
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: _monthPager(cursor, fill: true)),
-                    VerticalDivider(width: 1, color: Theme.of(context).colorScheme.outlineVariant),
-                    SizedBox(
-                      width: MediaQuery.sizeOf(context).width >= xlBreak ? 400 : 360,
-                      child: SingleChildScrollView(child: _sideList(lang, holidays, tasks, selected)),
-                    ),
-                  ],
-                )
-              : _expanded
-                  ? _monthPager(cursor, fill: true)
-                  : ListView(
+        return Column(
+          children: [
+            _header(lang, cursor, today),
+            Expanded(
+              child: wide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _monthPager(cursor, fill: false),
-                        _sideList(lang, holidays, tasks, selected),
+                        Expanded(child: _monthBlock(cursor, fill: true)),
+                        VerticalDivider(width: 1, color: Theme.of(context).colorScheme.outlineVariant),
+                        SizedBox(
+                          width: MediaQuery.sizeOf(context).width >= xlBreak ? 400 : 360,
+                          child: SingleChildScrollView(child: _sideList(lang, holidays, tasks, selected)),
+                        ),
                       ],
-                    ),
-        ),
-      ],
+                    )
+                  : _expanded
+                      ? _monthBlock(cursor, fill: true)
+                      : ListView(
+                          children: [
+                            _monthBlock(cursor, fill: false),
+                            _sideList(lang, holidays, tasks, selected),
+                          ],
+                        ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -165,28 +133,90 @@ class _MonthsPageState extends State<MonthsPage> {
     );
   }
 
-  Widget _monthPager(DateTime cursor, {required bool fill}) {
-    final pages = PageView.builder(
-      controller: _ctrl,
-      itemCount: monthCount(),
-      pageSnapping: false,
-      physics: OnePageScrollPhysics(parent: const ClampingScrollPhysics(), anchor: _anchor),
-      onPageChanged: _onMonthPage,
-      itemBuilder: (ctx, i) {
-        return _MonthPage(
-          month: monthFromIndex(i),
-          day: cursor.day,
-          store: store,
-          interactive: i == _page,
-          expanded: _expanded,
-          fill: fill,
-        );
-      },
+  Widget _lunarLine(DateTime cursor, Lang lang) {
+    final shown = cursor.day.clamp(1, daysInMonth(cursor));
+    final d = DateTime(cursor.year, cursor.month, shown);
+    final lunar = lunarOf(d);
+    final cs = Theme.of(context).colorScheme;
+    final lunarText = lang == Lang.en ? lunarLabel(isoOf(d), lang) : lunar.lunarDateText;
+    final gregText = lang == Lang.en ? gregorianLabel(d, lang) : lunar.gregorianDateText;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(lunarText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, height: 1.35)),
+          ),
+          const SizedBox(width: 12),
+          Text(gregText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
+        ],
+      ),
     );
-    if (fill) return pages;
-    final w = MediaQuery.sizeOf(context).width;
-    final cell = ((w - 16) / 7).clamp(44.0, 68.0);
-    return SizedBox(height: 80 + (cell / 0.88) * 6, child: pages);
+  }
+
+  Widget _weekdays(Lang lang) {
+    final heads = weekdaysStarting(lang, store.weekStartsOn);
+    final sunAt = sundayIndex(store.weekStartsOn);
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          for (var i = 0; i < heads.length; i++)
+            Expanded(
+              child: Center(
+                child: Text(
+                  heads[i],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _slide(DateTime cursor, {required bool fill}) {
+    final prev = addMonths(cursor, -1);
+    final next = addMonths(cursor, 1);
+    return SlideTrack(
+      pageId: isoOf(DateTime(cursor.year, cursor.month, 1)),
+      onShift: _shiftMonth,
+      previous: _MonthGrid(month: prev, store: store, interactive: false, expanded: _expanded, fill: fill),
+      current: _MonthGrid(month: cursor, store: store, interactive: true, expanded: _expanded, fill: fill),
+      next: _MonthGrid(month: next, store: store, interactive: false, expanded: _expanded, fill: fill),
+    );
+  }
+
+  Widget _monthBlock(DateTime cursor, {required bool fill}) {
+    final lang = store.lang;
+    final track = fill
+        ? Expanded(child: Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 0), child: _slide(cursor, fill: true)))
+        : Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+            child: LayoutBuilder(
+              builder: (ctx, box) {
+                final cell = (box.maxWidth / 7).clamp(44.0, 68.0);
+                return SizedBox(height: (cell / 0.88) * 6, child: _slide(cursor, fill: false));
+              },
+            ),
+          );
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!_expanded) _lunarLine(cursor, lang),
+        _weekdays(lang),
+        track,
+      ],
+    );
+    if (fill) return body;
+    return body;
   }
 
   Widget _sideList(Lang lang, List<Observance> holidays, List<Observance> tasks, String selected) {
@@ -258,17 +288,15 @@ class _MonthsPageState extends State<MonthsPage> {
   }
 }
 
-class _MonthPage extends StatelessWidget {
-  const _MonthPage({
+class _MonthGrid extends StatelessWidget {
+  const _MonthGrid({
     required this.month,
-    required this.day,
     required this.store,
     required this.interactive,
     required this.expanded,
     required this.fill,
   });
   final DateTime month;
-  final int day;
   final AppStore store;
   final bool interactive;
   final bool expanded;
@@ -276,93 +304,42 @@ class _MonthPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lang = store.lang;
-    final heads = weekdaysStarting(lang, store.weekStartsOn);
-    final sunAt = sundayIndex(store.weekStartsOn);
-    final cs = Theme.of(context).colorScheme;
-    final shownDay = day.clamp(1, daysInMonth(month));
-    final lunar = lunarOf(DateTime(month.year, month.month, shownDay));
     final gridDays = monthGrid(month, store.weekStartsOn);
     final today = todayIso();
     final chips = interactive ? monthObservances(month, store.events).where((i) => i.kind != Kind.sil).toList() : const <Observance>[];
 
-    Widget grid({required double aspect, required bool shrink}) {
-      return GridView.count(
-        crossAxisCount: 7,
-        shrinkWrap: shrink,
-        physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: aspect,
-        children: [
-          for (final d in gridDays)
-            _DayCell(
-              day: d,
-              inMonth: sameMonth(d, month),
-              selected: isoOf(d) == store.selected,
-              isToday: isoOf(d) == today,
-              store: store,
-              interactive: interactive,
-              expanded: expanded,
-              chips: expanded ? chips.where((c) => c.date == isoOf(d)).take(3).toList() : const [],
-            ),
-        ],
+    Widget cellAt(int i) {
+      final d = gridDays[i];
+      return _DayCell(
+        day: d,
+        inMonth: sameMonth(d, month),
+        selected: isoOf(d) == store.selected,
+        isToday: isoOf(d) == today,
+        store: store,
+        interactive: interactive,
+        expanded: expanded,
+        chips: expanded ? chips.where((c) => c.date == isoOf(d)).take(3).toList() : const [],
       );
     }
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(lunar.lunarDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, height: 1.35)),
-              ),
-              const SizedBox(width: 12),
-              Text(lunar.gregorianDateText, style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12)),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            children: [
-              for (var i = 0; i < heads.length; i++)
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      heads[i],
-                      style: TextStyle(
-                        color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+        for (var r = 0; r < 6; r++)
+          fill
+              ? Expanded(
+                  child: Row(
+                    children: [
+                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
+                    ],
+                  ),
+                )
+              : Expanded(
+                  child: Row(
+                    children: [
+                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
+                    ],
                   ),
                 ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        if (fill)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: LayoutBuilder(
-                builder: (ctx, box) {
-                  final cellW = box.maxWidth / 7;
-                  final cellH = box.maxHeight / 6;
-                  final aspect = cellH > 0 ? cellW / cellH : 0.88;
-                  return grid(aspect: aspect, shrink: false);
-                },
-              ),
-            ),
-          )
-        else
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: grid(aspect: 0.88, shrink: true),
-          ),
       ],
     );
   }
@@ -398,96 +375,108 @@ class _DayCell extends StatelessWidget {
     final color = dayToneColor(context, tone);
     final fill = isToday ? todayFill(context) : Colors.transparent;
     final onFill = isToday ? todayOnFill(context) : null;
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: !interactive
-          ? null
-          : () {
-              store.goToDate(iso);
-              store.setLastTab(TabId.today);
-              context.go('/day');
-            },
-      child: Padding(
-        padding: const EdgeInsets.all(1),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          decoration: BoxDecoration(
-            color: fill,
-            borderRadius: BorderRadius.circular(10),
-            border: selected && !isToday ? Border.all(color: cs.primary, width: 1.5) : null,
-          ),
-          child: Stack(
-            children: [
-              if (lunar.isSilDay && inMonth)
-                const Positioned(
-                  top: 3,
-                  right: 3,
-                  child: SilMark(size: 13),
-                ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(1, 10, 1, 4),
-                child: Column(
-                  children: [
-                    Text(
-                      lunar.moonDayKhmer,
-                      style: TextStyle(
-                        color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
-                        fontSize: 10,
-                        height: 1.1,
-                      ),
-                    ),
-                    Text(
-                      '${day.day}',
-                      style: TextStyle(
-                        color: onFill ?? color,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        height: 1.25,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    if (!expanded)
-                      Text(
-                        lunar.khmerMonth,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
-                          fontSize: 8,
-                          height: 1.2,
-                        ),
-                      )
-                    else
-                      for (final c in chips)
-                        Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(top: 1),
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          color: dayToneColor(context, colorKind(c)).withValues(alpha: 0.18),
-                          child: Text(
-                            obsTitle(c, store.lang),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 8, color: dayToneColor(context, colorKind(c))),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: !interactive
+            ? null
+            : () {
+                store.goToDate(iso);
+                store.setLastTab(TabId.today);
+                context.go('/day');
+              },
+        child: Padding(
+          padding: const EdgeInsets.all(1),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: fill,
+              borderRadius: BorderRadius.circular(10),
+              border: selected && !isToday ? Border.all(color: cs.primary, width: 1.5) : null,
+            ),
+            child: Stack(
+              alignment: Alignment.topCenter,
+              children: [
+                if (lunar.isSilDay && inMonth)
+                  const Positioned(
+                    top: 3,
+                    right: 3,
+                    child: SilMark(size: 13),
+                  ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          lunar.moonDayKhmer,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
+                            fontSize: 10,
+                            height: 1.1,
                           ),
                         ),
-                  ],
-                ),
-              ),
-              if (!expanded && mark)
-                Positioned(
-                  bottom: 4,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
+                        Text(
+                          '${day.day}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: onFill ?? color,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            height: 1.25,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                        if (!expanded)
+                          Text(
+                            lunar.khmerMonth,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
+                              fontSize: 8,
+                              height: 1.2,
+                            ),
+                          )
+                        else
+                          for (final c in chips)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(top: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 2),
+                              color: dayToneColor(context, colorKind(c)).withValues(alpha: 0.18),
+                              child: Text(
+                                obsTitle(c, store.lang),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 8, color: dayToneColor(context, colorKind(c))),
+                              ),
+                            ),
+                      ],
                     ),
                   ),
                 ),
-            ],
+                if (!expanded && mark)
+                  Positioned(
+                    bottom: 4,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

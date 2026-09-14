@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../calendar/chhankitek.dart';
+import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../location.dart';
@@ -106,13 +107,16 @@ class SettingsPage extends StatelessWidget {
                       showModalBottomSheet<void>(
                         context: context,
                         showDragHandle: true,
-                        builder: (ctx) => SafeArea(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: LangRadios(
-                              store: store,
-                              uiLang: store.lang,
-                              onPicked: () => Navigator.pop(ctx),
+                        builder: (ctx) => WatchStore(
+                          store: store,
+                          builder: (c, s) => SafeArea(
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: LangRadios(
+                                store: s,
+                                uiLang: s.lang,
+                                onPicked: () => Navigator.pop(ctx),
+                              ),
                             ),
                           ),
                         ),
@@ -493,21 +497,24 @@ class _DateCalcPageState extends State<DateCalcPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lang = widget.store.lang;
-    final a = fromIso(from);
-    final b = fromIso(to);
-    final days = b.difference(a).inDays;
-    final years = days.abs() ~/ 365;
-    final months = (days.abs() % 365) ~/ 30;
-    final rest = days.abs() - years * 365 - months * 30;
-    final lunarFrom = lunarOf(a);
-    final lunarTo = lunarOf(b);
-    final shifted = isoOf(addDays(a, int.tryParse(shift) ?? 0));
-    final shiftedLunar = lunarOf(fromIso(shifted));
-    final cs = Theme.of(context).colorScheme;
+    return WatchStore(
+      store: widget.store,
+      builder: (context, store) {
+        final lang = store.lang;
+        final a = fromIso(from);
+        final b = fromIso(to);
+        final days = b.difference(a).inDays;
+        final years = days.abs() ~/ 365;
+        final months = (days.abs() % 365) ~/ 30;
+        final rest = days.abs() - years * 365 - months * 30;
+        final lunarFrom = lunarOf(a);
+        final lunarTo = lunarOf(b);
+        final shifted = isoOf(addDays(a, int.tryParse(shift) ?? 0));
+        final shiftedLunar = lunarOf(fromIso(shifted));
+        final cs = Theme.of(context).colorScheme;
 
-    return OverlayScaffold(
-      title: t(lang, 'calcTitle'),
+        return OverlayScaffold(
+          title: t(lang, 'calcTitle'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -559,13 +566,19 @@ class _DateCalcPageState extends State<DateCalcPage> {
           Card(
             elevation: 0,
             color: cs.surfaceContainerLow,
-            child: ListTile(title: Text(t(lang, 'calcFrom')), subtitle: Text('${lunarFrom.lunarDateText}\n${lunarFrom.gregorianDateText}')),
+            child: ListTile(
+              title: Text(t(lang, 'calcFrom')),
+              subtitle: Text(lang == Lang.en ? '${lunarLabel(from, lang)}\n${gregorianLabel(a, lang)}' : '${lunarFrom.lunarDateText}\n${lunarFrom.gregorianDateText}'),
+            ),
           ),
           const SizedBox(height: 8),
           Card(
             elevation: 0,
             color: cs.surfaceContainerLow,
-            child: ListTile(title: Text(t(lang, 'calcTo')), subtitle: Text('${lunarTo.lunarDateText}\n${lunarTo.gregorianDateText}')),
+            child: ListTile(
+              title: Text(t(lang, 'calcTo')),
+              subtitle: Text(lang == Lang.en ? '${lunarLabel(to, lang)}\n${gregorianLabel(b, lang)}' : '${lunarTo.lunarDateText}\n${lunarTo.gregorianDateText}'),
+            ),
           ),
           const SizedBox(height: 8),
           Text(t(lang, 'calcAdd')),
@@ -585,10 +598,15 @@ class _DateCalcPageState extends State<DateCalcPage> {
           Card(
             elevation: 0,
             color: cs.surfaceContainerLow,
-            child: ListTile(title: Text(shifted), subtitle: Text(shiftedLunar.lunarDateText)),
+            child: ListTile(
+              title: Text(shifted),
+              subtitle: Text(lang == Lang.en ? lunarLabel(shifted, lang) : shiftedLunar.lunarDateText),
+            ),
           ),
         ],
       ),
+        );
+      },
     );
   }
 }
@@ -669,6 +687,8 @@ class AboutPage extends StatelessWidget {
                     leading: const Icon(Icons.gavel_outlined),
                     title: t(lang, 'openSourceLicense'),
                     subtitle: t(lang, 'mitLicense'),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    onTap: () => context.push('/license'),
                   ),
                   SegmentedTile(
                     leading: const Icon(Icons.code),
@@ -678,6 +698,39 @@ class AboutPage extends StatelessWidget {
                     onTap: () => launchUrl(Uri.parse(appSourceUrl), mode: LaunchMode.externalApplication),
                   ),
                 ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class OssLicensePage extends StatelessWidget {
+  const OssLicensePage({super.key, required this.store});
+  final AppStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    return WatchStore(
+      store: store,
+      builder: (context, store) {
+        final lang = store.lang;
+        final cs = Theme.of(context).colorScheme;
+        return OverlayScaffold(
+          title: t(lang, 'openSourceLicense'),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+            children: [
+              Text(t(lang, 'mitLicense'), style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 12),
+              SelectableText(
+                mitLicenseText,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      height: 1.45,
+                      color: cs.onSurface,
+                    ),
               ),
             ],
           ),

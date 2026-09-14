@@ -5,6 +5,7 @@ import '../location.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../weather.dart';
+import '../widgets/overlay_page.dart';
 import '../widgets/swipe_delete.dart';
 
 class WeatherPage extends StatefulWidget {
@@ -55,9 +56,11 @@ class _WeatherPageState extends State<WeatherPage> {
 
   @override
   Widget build(BuildContext context) {
-    final store = widget.store;
-    final lang = store.lang;
-    return Column(
+    return WatchStore(
+      store: widget.store,
+      builder: (context, store) {
+        final lang = store.lang;
+        return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
@@ -137,6 +140,8 @@ class _WeatherPageState extends State<WeatherPage> {
                 ),
         ),
       ],
+        );
+      },
     );
   }
 

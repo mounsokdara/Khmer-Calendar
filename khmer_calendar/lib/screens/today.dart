@@ -8,8 +8,9 @@ import '../i18n.dart';
 import '../store.dart';
 import '../widgets/animal.dart';
 import '../widgets/holiday_info.dart';
-import '../widgets/page_physics.dart';
+import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
+import '../widgets/slide_track.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
 
@@ -22,112 +23,72 @@ class TodayPage extends StatefulWidget {
 }
 
 class _TodayPageState extends State<TodayPage> {
-  late final PageController _ctrl;
-  late int _page;
-  bool _fromSwipe = false;
   String? _toast;
-  final _anchor = PageAnchor();
-
-  @override
-  void initState() {
-    super.initState();
-    _page = dayIndexOf(fromIso(widget.store.selected)).clamp(0, dayCount() - 1);
-    _ctrl = PageController(initialPage: _page);
-    widget.store.addListener(_onStore);
-  }
-
-  @override
-  void dispose() {
-    widget.store.removeListener(_onStore);
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _onStore() {
-    if (!mounted) return;
-    final wanted = dayIndexOf(fromIso(widget.store.selected)).clamp(0, dayCount() - 1);
-    if (!_fromSwipe && wanted != _page) {
-      _page = wanted;
-      if (_ctrl.hasClients) _ctrl.jumpToPage(wanted);
-    }
-    setState(() {});
-  }
-
-  void _onPage(int i) {
-    _page = i;
-    final next = isoOf(dayFromIndex(i));
-    if (next == widget.store.selected) {
-      setState(() {});
-      return;
-    }
-    _fromSwipe = true;
-    widget.store.goToDate(next);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fromSwipe = false);
-  }
 
   @override
   Widget build(BuildContext context) {
-    final store = widget.store;
-    final lang = store.lang;
-    final selected = fromIso(store.selected);
-    final today = todayIso();
-    final isToday = store.selected == today;
-    final L = lunarOf(selected);
+    return WatchStore(
+      store: widget.store,
+      builder: (context, store) {
+        final lang = store.lang;
+        final selected = fromIso(store.selected);
+        final today = todayIso();
+        final isToday = store.selected == today;
+        final L = lunarOf(selected);
+        final prev = addDays(selected, -1);
+        final next = addDays(selected, 1);
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-          child: Row(
-            children: [
-              if (!isToday)
-                IconButton(
-                  tooltip: t(lang, 'today'),
-                  onPressed: () => store.goToDate(today),
-                  icon: const Icon(Icons.today),
-                ),
-              if (L.isSilDay)
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: SilMark(size: 22),
-                ),
-              const Spacer(),
-              IconButton(
-                tooltip: t(lang, 'addTask'),
-                onPressed: () => showTaskSheet(context, store: store, date: store.selected),
-                icon: const Icon(Icons.add),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Row(
+                children: [
+                  if (!isToday)
+                    IconButton(
+                      tooltip: t(lang, 'today'),
+                      onPressed: () => store.goToDate(today),
+                      icon: const Icon(Icons.today),
+                    ),
+                  if (L.isSilDay)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: SilMark(size: 22),
+                    ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: t(lang, 'addTask'),
+                    onPressed: () => showTaskSheet(context, store: store, date: store.selected),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: PageView.builder(
-            controller: _ctrl,
-            itemCount: dayCount(),
-            pageSnapping: false,
-            physics: OnePageScrollPhysics(parent: const ClampingScrollPhysics(), anchor: _anchor),
-            onPageChanged: _onPage,
-            itemBuilder: (ctx, i) {
-              return _DayPanel(
-                day: dayFromIndex(i),
-                store: store,
-                onCopy: (text) async {
-                  await Clipboard.setData(ClipboardData(text: text));
-                  setState(() => _toast = t(lang, 'copied'));
-                  await Future<void>.delayed(const Duration(seconds: 2));
-                  if (mounted) setState(() => _toast = null);
-                },
-              );
-            },
-          ),
-        ),
-        if (_toast != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Chip(label: Text(_toast!)),
-          ),
-      ],
+            ),
+            Expanded(
+              child: SlideTrack(
+                pageId: store.selected,
+                onShift: (dir) => store.goToDate(isoOf(addDays(selected, dir))),
+                previous: _DayPanel(day: prev, store: store, onCopy: _copy),
+                current: _DayPanel(day: selected, store: store, onCopy: _copy),
+                next: _DayPanel(day: next, store: store, onCopy: _copy),
+              ),
+            ),
+            if (_toast != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Chip(label: Text(_toast!)),
+              ),
+          ],
+        );
+      },
     );
+  }
+
+  Future<void> _copy(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    setState(() => _toast = t(widget.store.lang, 'copied'));
+    await Future<void>.delayed(const Duration(seconds: 2));
+    if (mounted) setState(() => _toast = null);
   }
 }
 
@@ -148,11 +109,16 @@ class _DayPanel extends StatelessWidget {
     final tasks = store.events.where((e) => e.date == iso).toList();
     final wdays = weekdaysFull(lang);
     final cs = Theme.of(context).colorScheme;
+    final lunarText = lang == Lang.en ? lunarLabel(iso, lang) : lunar.lunarDateText;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
-        Text('${day.day} ${wdays[day.weekday % 7]}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+        Text(
+          '${day.day} ${wdays[day.weekday % 7]}',
+          textAlign: TextAlign.left,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
         const SizedBox(height: 12),
         Card(
           elevation: 0,
@@ -162,7 +128,7 @@ class _DayPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(lunar.lunarDateText, style: Theme.of(context).textTheme.titleMedium),
+                Text(lunarText, style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,

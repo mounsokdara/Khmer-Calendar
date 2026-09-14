@@ -77,6 +77,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
         GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
         GoRoute(path: '/about', builder: (_, _) => AboutPage(store: widget.store)),
+        GoRoute(path: '/license', builder: (_, _) => OssLicensePage(store: widget.store)),
         GoRoute(path: '/tools', builder: (_, _) => ToolsPage(store: widget.store)),
         GoRoute(path: '/tools/datecalculator', builder: (_, _) => DateCalcPage(store: widget.store)),
         GoRoute(path: '/download', builder: (_, _) => DownloadPage(store: widget.store)),
