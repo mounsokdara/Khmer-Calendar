@@ -3,6 +3,7 @@ package com.mounsokdara.khmercalendar
 import android.app.AlarmManager
 import android.app.AppOpsManager
 import android.app.NotificationManager
+import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -58,8 +59,40 @@ class MainActivity : FlutterActivity() {
                     stopKeepAlive()
                     result.success(true)
                 }
+                "updateWidget" -> {
+                    saveWidget(call.arguments)
+                    TodayWidgetProvider.refreshAll(this)
+                    result.success(true)
+                }
+                "pinWidget" -> result.success(pinWidget())
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun saveWidget(args: Any?) {
+        val map = args as? Map<*, *> ?: return
+        getSharedPreferences(TodayWidgetProvider.PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString("iso", map["iso"] as? String ?: "")
+            .putString("day", map["day"] as? String ?: "")
+            .putString("weekday", map["weekday"] as? String ?: "")
+            .putString("lunar", map["lunar"] as? String ?: "")
+            .putString("holiday", map["holiday"] as? String ?: "")
+            .putString("title", map["title"] as? String ?: "")
+            .apply()
+    }
+
+    private fun pinWidget(): Boolean {
+        if (Build.VERSION.SDK_INT < 26) return false
+        val mgr = getSystemService(AppWidgetManager::class.java) ?: return false
+        if (!mgr.isRequestPinAppWidgetSupported) return false
+        val name = ComponentName(this, TodayWidgetProvider::class.java)
+        return try {
+            mgr.requestPinAppWidget(name, null, null)
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

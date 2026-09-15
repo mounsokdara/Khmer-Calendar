@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../calendar/chhankitek.dart';
 import '../calendar/observances.dart';
 import '../dates.dart';
+import '../home_screen.dart';
 import '../i18n.dart';
 import '../location.dart';
 import '../net.dart';
@@ -130,6 +131,28 @@ class MorePage extends StatelessWidget {
                     title: t(lang, 'installerTitle'),
                     subtitle: t(lang, 'installerSub'),
                     onTap: () => context.push('/download'),
+                  ),
+                ],
+              ),
+            ],
+            if (canPinHomeWidget) ...[
+              const SizedBox(height: 16),
+              SegmentedGroup(
+                padding: EdgeInsets.zero,
+                children: [
+                  SegmentedTile(
+                    leading: const Icon(Icons.widgets_outlined),
+                    title: t(lang, 'homeWidget'),
+                    subtitle: t(lang, 'homeWidgetSub'),
+                    trailing: const Icon(Icons.add),
+                    onTap: () async {
+                      await syncHomeWidget(store);
+                      final ok = await pinHomeWidget();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(t(lang, ok ? 'homeWidgetPinned' : 'homeWidgetHow'))),
+                      );
+                    },
                   ),
                 ],
               ),

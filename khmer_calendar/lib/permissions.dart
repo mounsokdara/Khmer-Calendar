@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'autostart_io.dart' if (dart.library.html) 'autostart_stub.dart' as autostart;
+import 'home_screen.dart';
 import 'i18n.dart';
 import 'location.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
@@ -542,6 +543,7 @@ Future<bool> requestAllPermissions(
 Future<void> applyStoredPermissions(AppStore store) async {
   await keepOnlyGranted(store);
   bindReminderSync(store);
+  bindHomeWidget(store);
   await _native('stopKeepAlive');
   if (store.notifyOn) {
     await initReminderEngine();

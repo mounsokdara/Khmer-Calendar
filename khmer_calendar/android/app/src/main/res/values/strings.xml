@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">ប្រតិទិនខ្មែរ</string>
+    <string name="widget_description">Today\'s Khmer calendar date</string>
+</resources>
