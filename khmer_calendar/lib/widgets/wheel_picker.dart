@@ -10,8 +10,19 @@ const wheelItemExtent = 52.0;
 const wheelVisible = 3;
 const wheelYearStart = 1970;
 const wheelYearEnd = 2050;
+const wheelDialogConstraints = BoxConstraints(minWidth: 280, maxWidth: 360);
 
 enum WheelKind { month, year, label }
+
+String _asciiDigits(String raw) {
+  const km = '០១២៣៤៥៦៧៨៩';
+  final b = StringBuffer();
+  for (final r in raw.trim().runes) {
+    final i = km.indexOf(String.fromCharCode(r));
+    b.write(i >= 0 ? '$i' : String.fromCharCode(r));
+  }
+  return b.toString();
+}
 
 Future<void> showMonthWheel(BuildContext context, {required AppStore store}) {
   final lang = store.lang;
@@ -78,39 +89,37 @@ class _MonthWheelDialogState extends State<_MonthWheelDialog> {
     final lang = widget.lang;
     final months = monthsOf(lang);
     final years = [for (var y = wheelYearStart; y <= wheelYearEnd; y++) y];
-    final maxW = MediaQuery.sizeOf(context).width;
     return AlertDialog(
+      constraints: wheelDialogConstraints,
       title: FittedBox(
         fit: BoxFit.scaleDown,
         alignment: Alignment.centerLeft,
         child: Text(t(lang, 'khmerCalendar'), maxLines: 1),
       ),
       contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       content: SizedBox(
-        width: maxW < 408 ? maxW - 48 : 360,
-        child: SizedBox(
-          height: wheelItemExtent * wheelVisible,
-          child: Row(
-            children: [
-              Expanded(
-                child: WheelCol(
-                  kind: WheelKind.month,
-                  labels: months,
-                  index: month,
-                  onIndex: (i) => setState(() => month = i),
-                ),
+        width: 320,
+        height: wheelItemExtent * wheelVisible,
+        child: Row(
+          children: [
+            Expanded(
+              child: WheelCol(
+                kind: WheelKind.month,
+                labels: months,
+                index: month,
+                onIndex: (i) => setState(() => month = i),
               ),
-              Expanded(
-                child: WheelCol(
-                  kind: WheelKind.year,
-                  labels: [for (final y in years) '$y'],
-                  index: (year - wheelYearStart).clamp(0, years.length - 1),
-                  onIndex: (i) => setState(() => year = wheelYearStart + i),
-                ),
+            ),
+            Expanded(
+              child: WheelCol(
+                kind: WheelKind.year,
+                labels: [for (final y in years) '$y'],
+                index: (year - wheelYearStart).clamp(0, years.length - 1),
+                onIndex: (i) => setState(() => year = wheelYearStart + i),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       actions: equalDialogActions([
@@ -146,12 +155,13 @@ class _YearWheelDialogState extends State<_YearWheelDialog> {
   Widget build(BuildContext context) {
     final lang = widget.lang;
     final years = [for (var y = wheelYearStart; y <= wheelYearEnd; y++) y];
-    final maxW = MediaQuery.sizeOf(context).width;
     return AlertDialog(
+      constraints: wheelDialogConstraints,
       title: Text(t(lang, 'yearCustom')),
       contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       content: SizedBox(
-        width: maxW < 408 ? maxW - 48 : 280,
+        width: 280,
         height: wheelItemExtent * wheelVisible,
         child: WheelCol(
           kind: WheelKind.year,
@@ -195,13 +205,22 @@ class WheelCol extends StatefulWidget {
 
 class _WheelColState extends State<WheelCol> {
   late FixedExtentScrollController _ctrl;
+  late final FocusNode _focus;
   bool _typing = false;
+  bool _committing = false;
   final _type = TextEditingController();
+  double? _downY;
 
   @override
   void initState() {
     super.initState();
     _ctrl = FixedExtentScrollController(initialItem: widget.index);
+    _focus = FocusNode();
+    _focus.addListener(_onFocus);
+  }
+
+  void _onFocus() {
+    if (_typing && !_focus.hasFocus) _commitType();
   }
 
   @override
@@ -214,6 +233,8 @@ class _WheelColState extends State<WheelCol> {
 
   @override
   void dispose() {
+    _focus.removeListener(_onFocus);
+    _focus.dispose();
     _ctrl.dispose();
     _type.dispose();
     super.dispose();
@@ -223,48 +244,70 @@ class _WheelColState extends State<WheelCol> {
     final raw = val.trim();
     if (raw.isEmpty) return null;
     if (widget.kind == WheelKind.month) return monthIndexFromQuery(raw);
-    final digits = raw.replaceAll(RegExp(r'\D'), '');
-    if (widget.kind == WheelKind.year && digits.isNotEmpty) {
-      final n = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
-      if (n >= 0) return n;
+    final q = _asciiDigits(raw);
+    if (widget.kind == WheelKind.year) {
+      var i = widget.labels.indexWhere((l) => l == q);
+      if (i >= 0) return i;
+      final n = int.tryParse(q);
+      if (n != null) {
+        i = widget.labels.indexWhere((l) => l == '$n');
+        if (i >= 0) return i;
+      }
+      i = widget.labels.indexWhere((l) => l.startsWith(q));
+      if (i >= 0) return i;
+      return null;
     }
     var i = widget.labels.indexWhere((l) => l.toLowerCase() == raw.toLowerCase());
     if (i >= 0) return i;
     i = widget.labels.indexWhere((l) => l.toLowerCase().startsWith(raw.toLowerCase()));
     if (i >= 0) return i;
-    if (digits.isNotEmpty) {
-      i = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
+    if (q.isNotEmpty) {
+      i = widget.labels.indexWhere((l) => _asciiDigits(l) == q);
       if (i >= 0) return i;
     }
     return null;
   }
 
   void _commitType() {
+    if (_committing || !_typing) return;
+    _committing = true;
     final n = _indexFromType(_type.text);
     setState(() => _typing = false);
     if (n != null && n >= 0 && n < widget.labels.length) {
-      _ctrl.jumpToItem(n);
       widget.onIndex(n);
+      if (_ctrl.hasClients) _ctrl.jumpToItem(n);
     }
+    _committing = false;
   }
 
   void _startType() {
+    if (_typing) return;
     final i = _ctrl.hasClients ? _ctrl.selectedItem : widget.index;
-    if (widget.kind == WheelKind.month) {
-      _type.text = widget.labels[i];
-    } else if (widget.kind == WheelKind.year) {
-      _type.text = widget.labels[i];
-    } else {
-      _type.text = widget.labels[i];
-    }
+    _type.text = widget.labels[i];
     _type.selection = TextSelection(baseOffset: 0, extentOffset: _type.text.length);
     setState(() => _typing = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focus.requestFocus();
+    });
+  }
+
+  void _onPointerDown(PointerDownEvent e) => _downY = e.position.dy;
+
+  void _onPointerUp(PointerUpEvent e) {
+    if (_typing || _downY == null) return;
+    final dy = (e.position.dy - _downY!).abs();
+    _downY = null;
+    if (dy > 10) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox) return;
+    final local = box.globalToLocal(e.position);
+    final mid = box.size.height / 2;
+    if ((local.dy - mid).abs() <= wheelItemExtent / 2) _startType();
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final numeric = widget.kind == WheelKind.year;
     return SizedBox(
       height: wheelItemExtent * wheelVisible,
       child: Stack(
@@ -281,53 +324,32 @@ class _WheelColState extends State<WheelCol> {
               ),
             ),
           ),
-          if (_typing)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _type,
-                autofocus: true,
-                textAlign: TextAlign.center,
-                keyboardType: numeric ? TextInputType.number : TextInputType.text,
-                style: Theme.of(context).textTheme.titleMedium,
-                inputFormatters: [
-                  LengthLimitingTextInputFormatter(widget.kind == WheelKind.month ? 24 : 16),
-                  if (numeric) FilteringTextInputFormatter.digitsOnly,
-                ],
-                decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
-                onSubmitted: (_) => _commitType(),
-                onTapOutside: (_) => _commitType(),
-              ),
-            )
-          else
-            ShaderMask(
-              shaderCallback: (rect) {
-                return const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x00FFFFFF), Color(0xFFFFFFFF), Color(0xFFFFFFFF), Color(0x00FFFFFF)],
-                  stops: [0.0, 0.28, 0.72, 1.0],
-                ).createShader(rect);
-              },
-              blendMode: BlendMode.dstIn,
-              child: ListWheelScrollView.useDelegate(
-                controller: _ctrl,
-                itemExtent: wheelItemExtent,
-                diameterRatio: 8,
-                perspective: 0.0008,
-                physics: const FixedExtentScrollPhysics(),
-                onSelectedItemChanged: widget.onIndex,
-                childDelegate: ListWheelChildBuilderDelegate(
-                  childCount: widget.labels.length,
-                  builder: (_, i) => GestureDetector(
-                    onTap: () {
-                      if (i == (_ctrl.hasClients ? _ctrl.selectedItem : widget.index)) {
-                        _startType();
-                      } else {
-                        _ctrl.animateToItem(i, duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
-                      }
-                    },
-                    child: Center(
+          Listener(
+            onPointerDown: _onPointerDown,
+            onPointerUp: _onPointerUp,
+            onPointerCancel: (_) => _downY = null,
+            child: IgnorePointer(
+              ignoring: _typing,
+              child: ShaderMask(
+                shaderCallback: (rect) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00FFFFFF), Color(0xFFFFFFFF), Color(0xFFFFFFFF), Color(0x00FFFFFF)],
+                    stops: [0.0, 0.28, 0.72, 1.0],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.dstIn,
+                child: ListWheelScrollView.useDelegate(
+                  controller: _ctrl,
+                  itemExtent: wheelItemExtent,
+                  diameterRatio: 8,
+                  perspective: 0.0008,
+                  physics: const FixedExtentScrollPhysics(),
+                  onSelectedItemChanged: widget.onIndex,
+                  childDelegate: ListWheelChildBuilderDelegate(
+                    childCount: widget.labels.length,
+                    builder: (_, i) => Center(
                       child: Text(
                         widget.labels[i],
                         style: TextStyle(
@@ -341,6 +363,25 @@ class _WheelColState extends State<WheelCol> {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+          if (_typing)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _type,
+                focusNode: _focus,
+                autofocus: true,
+                textAlign: TextAlign.center,
+                keyboardType: widget.kind == WheelKind.year ? TextInputType.number : TextInputType.text,
+                textInputAction: TextInputAction.done,
+                style: Theme.of(context).textTheme.titleMedium,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(widget.kind == WheelKind.month ? 24 : 8),
+                ],
+                decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
+                onSubmitted: (_) => _commitType(),
               ),
             ),
         ],

@@ -402,7 +402,8 @@ ThemeData buildTheme({
     ),
     dialogTheme: DialogThemeData(
       actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: 400),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     ),
     inputDecorationTheme: InputDecorationTheme(

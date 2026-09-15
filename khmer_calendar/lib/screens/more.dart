@@ -12,6 +12,7 @@ import '../permissions.dart';
 import '../reminders.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../web_install.dart';
 import '../widgets/os_logo.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/scheme_chips.dart';
@@ -19,6 +20,57 @@ import '../widgets/segmented_list.dart';
 import '../widgets/dialog_actions.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Carlendar/releases/latest/download';
+
+Future<void> openBrowserInstall(BuildContext context, {required AppStore store, required Lang lang}) async {
+  if (browserIsStandalone()) {
+    store.setInstalled(true);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'exportInstalled'))));
+    }
+    return;
+  }
+  final ok = await promptBrowserInstall();
+  if (ok) {
+    store.setInstalled(true);
+    return;
+  }
+  if (!context.mounted) return;
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      constraints: const BoxConstraints(minWidth: 280, maxWidth: 400),
+      title: Text(t(lang, 'shortcutTitle')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(t(lang, 'shortcutAsk')),
+          const SizedBox(height: 12),
+          Text(t(lang, 'shortcutAndroid')),
+          const SizedBox(height: 8),
+          Text(t(lang, 'shortcutIos')),
+          const SizedBox(height: 8),
+          Text(t(lang, 'shortcutDesktop')),
+        ],
+      ),
+      actions: equalDialogActions([
+        OutlinedButton(
+          onPressed: () => Navigator.pop(ctx),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'cancel')),
+        ),
+        FilledButton(
+          onPressed: () {
+            store.setInstalled(true);
+            Navigator.pop(ctx);
+          },
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'shortcutAdd')),
+        ),
+      ]),
+    ),
+  );
+}
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key, required this.store});
@@ -808,8 +860,23 @@ class DownloadPage extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(t(lang, 'nativeAppSub')),
+              Text(t(lang, 'downloadSub')),
               const SizedBox(height: 12),
+              if (kIsWeb) ...[
+                SegmentedGroup(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    SegmentedTile(
+                      leading: const Icon(Icons.install_mobile),
+                      title: t(lang, store.installed || browserIsStandalone() ? 'exportInstalled' : 'exportBrowser'),
+                      subtitle: t(lang, 'exportBrowserSub'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => openBrowserInstall(context, store: store, lang: lang),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
               SegmentedGroup(
                 padding: EdgeInsets.zero,
                 children: [
@@ -1088,6 +1155,20 @@ class _GetStartedPageState extends State<GetStartedPage> {
                 Expanded(
                   child: ListView(
                     children: [
+                      if (kIsWeb)
+                        SegmentedGroup(
+                          padding: EdgeInsets.zero,
+                          children: [
+                            SegmentedTile(
+                              leading: const Icon(Icons.install_mobile),
+                              title: t(ui, 'exportBrowser'),
+                              subtitle: t(ui, 'exportBrowserSub'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => openBrowserInstall(context, store: store, lang: ui),
+                            ),
+                          ],
+                        ),
+                      if (kIsWeb) const SizedBox(height: 12),
                       SegmentedGroup(
                         padding: EdgeInsets.zero,
                         children: [

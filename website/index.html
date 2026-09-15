@@ -13,7 +13,6 @@
   <link rel="icon" type="image/png" href="favicon.png"/>
   <title>ប្រតិទិនខ្មែរ</title>
   <link rel="manifest" href="manifest.json">
-  <script src="https://grok.com/grok-app-builder/extensions.js"></script>
   <style>
     html, body { height: 100%; margin: 0; background: #9a3b38; color: #fff; font-family: "Kantumruy Pro", system-ui, sans-serif; }
     .boot { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(165deg,#d9786c 0%,#9a3b38 42%,#5c1a1c 78%,#3a0f14 100%); position: relative; overflow: hidden; }
@@ -32,6 +31,40 @@
   </div>
   <script>
     (function () {
+      window.__khmerInstall = {
+        deferred: null,
+        isStandalone: function () {
+          return window.matchMedia('(display-mode: standalone)').matches
+            || window.navigator.standalone === true;
+        },
+        hasPrompt: function () { return !!window.__khmerInstall.deferred; },
+        promptInstall: async function () {
+          var e = window.__khmerInstall.deferred;
+          if (!e) return false;
+          window.__khmerInstall.deferred = null;
+          await e.prompt();
+          var choice = await e.userChoice;
+          return !!(choice && choice.outcome === 'accepted');
+        }
+      };
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        window.__khmerInstall.deferred = e;
+      });
+      window.addEventListener('appinstalled', function () {
+        window.__khmerInstall.deferred = null;
+      });
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('offline.js').catch(function () {});
+        });
+      }
+      var grok = document.createElement('script');
+      grok.src = 'https://grok.com/grok-app-builder/extensions.js';
+      grok.async = true;
+      grok.onerror = function () {};
+      document.head.appendChild(grok);
+
       var CHANNEL = "grok-preview-bridge";
       window.addEventListener("message", function (ev) {
         var d = ev.data;

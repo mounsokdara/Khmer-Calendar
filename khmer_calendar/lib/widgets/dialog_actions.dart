@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Two (or more) dialog buttons in one row, equal width:
-/// `(  hello  ) (  hellNo  )`
 class EqualDialogActions extends StatelessWidget {
   const EqualDialogActions({super.key, required this.children});
   final List<Widget> children;
@@ -9,16 +7,21 @@ class EqualDialogActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
-    return SizedBox(
-      width: double.maxFinite,
-      child: Row(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(width: 12),
-            Expanded(child: children[i]),
-          ],
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, box) {
+        final w = box.maxWidth.isFinite ? box.maxWidth : 320.0;
+        return SizedBox(
+          width: w,
+          child: Row(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0) const SizedBox(width: 12),
+                Expanded(child: children[i]),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
