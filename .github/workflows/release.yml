@@ -158,17 +158,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          VERSION="$(python3 -c "import pathlib; t=pathlib.Path('khmer_calendar/pubspec.yaml').read_text().splitlines();
-print(next(l.split(':',1)[1].strip().split('+')[0] for l in t if l.startswith('version:')))")"
+          VERSION=$(python3 -c 'import pathlib; t=pathlib.Path("khmer_calendar/pubspec.yaml").read_text().splitlines(); print(next(l.split(":",1)[1].strip().split("+")[0] for l in t if l.startswith("version:")))')
           TAG="v${VERSION}"
           NOTES_FILE=".github/release-body.md"
-          for t in $(gh release list --limit 100 --json tagName --jq '.[].tagName'); do
-            case "$t" in
-              "$TAG"|v20[0-9][0-9].[0-9][0-9].[0-9][0-9]*)
-                gh release delete "$t" --yes --cleanup-tag || true
-                ;;
-            esac
-          done
+          echo "Publishing ${TAG}"
+          gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
             public/native/KhmerCalendar.apk \
             public/native/KhmerCalendar-windows.zip \
