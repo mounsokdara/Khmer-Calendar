@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
+import 'dialog_actions.dart';
 
 Future<void> showTaskSheet(
   BuildContext context, {
@@ -144,10 +145,21 @@ Future<void> showTaskSheet(
                           context: ctx,
                           builder: (d) => AlertDialog(
                             title: Text(t(lang, 'confirmDelete')),
-                            actions: [
-                              TextButton(onPressed: () => Navigator.pop(d, false), child: Text(t(lang, 'dontDelete'))),
-                              FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(t(lang, 'delete'))),
-                            ],
+                            actions: equalDialogActions([
+                              OutlinedButton(
+                                onPressed: () => Navigator.pop(d, false),
+                                style: dialogBtnStyle(),
+                                child: dlgLabel(t(lang, 'dontDelete')),
+                              ),
+                              FilledButton(
+                                onPressed: () => Navigator.pop(d, true),
+                                style: dialogBtnStyle(
+                                  background: Theme.of(d).colorScheme.error,
+                                  foreground: Theme.of(d).colorScheme.onError,
+                                ),
+                                child: dlgLabel(t(lang, 'delete')),
+                              ),
+                            ]),
                           ),
                         );
                         if (ok == true) {

@@ -166,13 +166,16 @@ class _MonthsPageState extends State<MonthsPage> {
           for (var i = 0; i < heads.length; i++)
             Expanded(
               child: Center(
-                child: Text(
-                  heads[i],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    heads[i],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: i == sunAt ? const Color(0xFFC62828) : cs.onSurfaceVariant,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
@@ -197,13 +200,25 @@ class _MonthsPageState extends State<MonthsPage> {
   Widget _monthBlock(DateTime cursor, {required bool fill}) {
     final lang = store.lang;
     final track = fill
-        ? Expanded(child: Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 0), child: _slide(cursor, fill: true)))
+        ? Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+              child: ClipRect(clipBehavior: Clip.hardEdge, child: _slide(cursor, fill: true)),
+            ),
+          )
         : Padding(
             padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
             child: LayoutBuilder(
               builder: (ctx, box) {
-                final cell = (box.maxWidth / 7).clamp(44.0, 68.0);
-                return SizedBox(height: (cell / 0.88) * 6, child: _slide(cursor, fill: false));
+                final w = box.maxWidth;
+                if (w <= 0) return const SizedBox.shrink();
+                final cell = w / 7;
+                final rowH = (cell / 0.88).clamp(44.0, 72.0);
+                return SizedBox(
+                  width: w,
+                  height: rowH * 6,
+                  child: ClipRect(clipBehavior: Clip.hardEdge, child: _slide(cursor, fill: false)),
+                );
               },
             ),
           );
@@ -406,59 +421,62 @@ class _DayCell extends StatelessWidget {
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 8, 2, 4),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          lunar.moonDayKhmer,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
-                            fontSize: 10,
-                            height: 1.1,
-                          ),
-                        ),
-                        Text(
-                          '${day.day}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: onFill ?? color,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            height: 1.25,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        if (!expanded)
+                    padding: const EdgeInsets.fromLTRB(2, 6, 2, 4),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
                           Text(
-                            lunar.khmerMonth,
+                            lunar.moonDayKhmer,
                             textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
-                              fontSize: 8,
-                              height: 1.2,
+                              fontSize: 10,
+                              height: 1.1,
                             ),
-                          )
-                        else
-                          for (final c in chips)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(top: 1),
-                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                              color: dayToneColor(context, colorKind(c)).withValues(alpha: 0.18),
-                              child: Text(
-                                obsTitle(c, store.lang),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 8, color: dayToneColor(context, colorKind(c))),
+                          ),
+                          Text(
+                            '${day.day}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: onFill ?? color,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16,
+                              height: 1.25,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                          if (!expanded)
+                            Text(
+                              lunar.khmerMonth,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: onFill?.withValues(alpha: 0.78) ?? cs.onSurfaceVariant,
+                                fontSize: 8,
+                                height: 1.2,
                               ),
-                            ),
-                      ],
+                            )
+                          else
+                            for (final c in chips)
+                              Container(
+                                width: 64,
+                                margin: const EdgeInsets.only(top: 1),
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                color: dayToneColor(context, colorKind(c)).withValues(alpha: 0.18),
+                                child: Text(
+                                  obsTitle(c, store.lang),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 8, color: dayToneColor(context, colorKind(c))),
+                                ),
+                              ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
+import 'dialog_actions.dart';
 
 const colorPresets = [
   '#F5C400',
@@ -109,12 +110,14 @@ class ColorRow extends StatelessWidget {
     required this.value,
     required this.onPick,
     this.subtitle,
+    this.icon,
     this.disabled = false,
   });
   final String title;
   final String? subtitle;
   final String value;
   final VoidCallback onPick;
+  final IconData? icon;
   final bool disabled;
 
   @override
@@ -122,7 +125,14 @@ class ColorRow extends StatelessWidget {
     return Opacity(
       opacity: disabled ? 0.38 : 1,
       child: ListTile(
-        title: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis),
+        contentPadding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
+        leading: icon == null ? null : Icon(icon, size: 24),
+        title: Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
         subtitle: subtitle == null ? null : Text(subtitle!, maxLines: 3, overflow: TextOverflow.ellipsis),
         trailing: Container(
           width: 28,
@@ -196,16 +206,21 @@ Future<void> showColorPicker(
                 ],
               ),
             ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t(lang, 'cancel'))),
+            actions: equalDialogActions([
+              OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: dialogBtnStyle(),
+                child: dlgLabel(t(lang, 'cancel')),
+              ),
               FilledButton(
                 onPressed: () {
                   onSave(v);
                   Navigator.pop(ctx);
                 },
-                child: Text(t(lang, 'save')),
+                style: dialogBtnStyle(),
+                child: dlgLabel(t(lang, 'save')),
               ),
-            ],
+            ]),
           );
         },
       );

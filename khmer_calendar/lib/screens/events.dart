@@ -11,6 +11,7 @@ import '../widgets/overlay_page.dart';
 import '../widgets/segmented_list.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
+import '../widgets/wheel_picker.dart';
 
 class EventsPage extends StatelessWidget {
   const EventsPage({super.key, required this.store});
@@ -33,7 +34,6 @@ class _EventsBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final lang = store.lang;
     final year = fromIso(store.cursor).year;
-    final nowYear = DateTime.now().year;
     final pane = store.lastEventsPane;
     final hols = yearObservances(year, []).where((e) => e.kind == Kind.holiday).toList();
     final groups = <String, List<Observance>>{};
@@ -59,19 +59,11 @@ class _EventsBody extends StatelessWidget {
     final yearOrAdd = pane == 'holidays'
         ? TextButton.icon(
             onPressed: () async {
-              final pick = await showModalBottomSheet<int>(
-                context: context,
-                showDragHandle: true,
-                builder: (ctx) => Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(title: Text(t(lang, 'yearPrev')), onTap: () => Navigator.pop(ctx, nowYear - 1)),
-                    ListTile(title: Text(t(lang, 'yearNow')), onTap: () => Navigator.pop(ctx, nowYear)),
-                    ListTile(title: Text(t(lang, 'yearNext')), onTap: () => Navigator.pop(ctx, nowYear + 1)),
-                  ],
-                ),
-              );
-              if (pick != null) store.setCursor(isoOf(DateTime(pick, 1, 1)));
+              final pick = await showYearWheel(context, lang: lang, year: year);
+              if (pick != null) {
+                final cur = fromIso(store.cursor);
+                store.setCursor(isoOf(DateTime(pick, cur.month, 1)));
+              }
             },
             icon: const Icon(Icons.expand_more),
             label: Text('$year'),

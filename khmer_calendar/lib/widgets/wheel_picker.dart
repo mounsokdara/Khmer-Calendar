@@ -4,11 +4,14 @@ import 'package:flutter/services.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
+import 'dialog_actions.dart';
 
 const wheelItemExtent = 52.0;
 const wheelVisible = 3;
 const wheelYearStart = 1970;
 const wheelYearEnd = 2050;
+
+enum WheelKind { month, year, label }
 
 Future<void> showMonthWheel(BuildContext context, {required AppStore store}) {
   final lang = store.lang;
@@ -21,6 +24,18 @@ Future<void> showMonthWheel(BuildContext context, {required AppStore store}) {
         lang: lang,
         initialMonth: cursor.month - 1,
         initialYear: cursor.year.clamp(wheelYearStart, wheelYearEnd),
+      );
+    },
+  );
+}
+
+Future<int?> showYearWheel(BuildContext context, {required Lang lang, required int year}) {
+  return showDialog<int>(
+    context: context,
+    builder: (ctx) {
+      return _YearWheelDialog(
+        lang: lang,
+        initialYear: year.clamp(wheelYearStart, wheelYearEnd),
       );
     },
   );
@@ -80,6 +95,7 @@ class _MonthWheelDialogState extends State<_MonthWheelDialog> {
             children: [
               Expanded(
                 child: WheelCol(
+                  kind: WheelKind.month,
                   labels: months,
                   index: month,
                   onIndex: (i) => setState(() => month = i),
@@ -87,6 +103,7 @@ class _MonthWheelDialogState extends State<_MonthWheelDialog> {
               ),
               Expanded(
                 child: WheelCol(
+                  kind: WheelKind.year,
                   labels: [for (final y in years) '$y'],
                   index: (year - wheelYearStart).clamp(0, years.length - 1),
                   onIndex: (i) => setState(() => year = wheelYearStart + i),
@@ -96,21 +113,81 @@ class _MonthWheelDialogState extends State<_MonthWheelDialog> {
           ),
         ),
       ),
-      actions: [
+      actions: equalDialogActions([
         FilledButton(
           onPressed: _commit,
-          child: Text(t(lang, 'change')),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'change')),
         ),
-      ],
+      ]),
+    );
+  }
+}
+
+class _YearWheelDialog extends StatefulWidget {
+  const _YearWheelDialog({required this.lang, required this.initialYear});
+  final Lang lang;
+  final int initialYear;
+
+  @override
+  State<_YearWheelDialog> createState() => _YearWheelDialogState();
+}
+
+class _YearWheelDialogState extends State<_YearWheelDialog> {
+  late int year;
+
+  @override
+  void initState() {
+    super.initState();
+    year = widget.initialYear;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = widget.lang;
+    final years = [for (var y = wheelYearStart; y <= wheelYearEnd; y++) y];
+    final maxW = MediaQuery.sizeOf(context).width;
+    return AlertDialog(
+      title: Text(t(lang, 'yearCustom')),
+      contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+      content: SizedBox(
+        width: maxW < 408 ? maxW - 48 : 280,
+        height: wheelItemExtent * wheelVisible,
+        child: WheelCol(
+          kind: WheelKind.year,
+          labels: [for (final y in years) '$y'],
+          index: (year - wheelYearStart).clamp(0, years.length - 1),
+          onIndex: (i) => setState(() => year = wheelYearStart + i),
+        ),
+      ),
+      actions: equalDialogActions([
+        OutlinedButton(
+          onPressed: () => Navigator.pop(context),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'cancel')),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, year),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'change')),
+        ),
+      ]),
     );
   }
 }
 
 class WheelCol extends StatefulWidget {
-  const WheelCol({super.key, required this.labels, required this.index, required this.onIndex});
+  const WheelCol({
+    super.key,
+    required this.labels,
+    required this.index,
+    required this.onIndex,
+    this.kind = WheelKind.label,
+  });
   final List<String> labels;
   final int index;
   final ValueChanged<int> onIndex;
+  final WheelKind kind;
 
   @override
   State<WheelCol> createState() => _WheelColState();
@@ -142,26 +219,55 @@ class _WheelColState extends State<WheelCol> {
     super.dispose();
   }
 
+  int? _indexFromType(String val) {
+    final raw = val.trim();
+    if (raw.isEmpty) return null;
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (widget.kind == WheelKind.month && digits.isNotEmpty) {
+      final n = int.tryParse(digits);
+      if (n != null && n >= 1 && n <= 12) return n - 1;
+    }
+    if (widget.kind == WheelKind.year && digits.isNotEmpty) {
+      final n = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
+      if (n >= 0) return n;
+    }
+    var i = widget.labels.indexWhere((l) => l.toLowerCase() == raw.toLowerCase());
+    if (i >= 0) return i;
+    i = widget.labels.indexWhere((l) => l.toLowerCase().startsWith(raw.toLowerCase()));
+    if (i >= 0) return i;
+    if (digits.isNotEmpty) {
+      i = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
+      if (i >= 0) return i;
+    }
+    return null;
+  }
+
   void _commitType() {
-    final val = _type.text.trim();
-    var n = widget.labels.indexWhere((l) => l.toLowerCase() == val.toLowerCase());
-    if (n < 0) {
-      n = widget.labels.indexWhere((l) => l.toLowerCase().startsWith(val.toLowerCase()));
-    }
-    if (n < 0) {
-      final digits = val.replaceAll(RegExp(r'\D'), '');
-      if (digits.isNotEmpty) n = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
-    }
+    final n = _indexFromType(_type.text);
     setState(() => _typing = false);
-    if (n >= 0) {
+    if (n != null && n >= 0 && n < widget.labels.length) {
       _ctrl.jumpToItem(n);
       widget.onIndex(n);
     }
   }
 
+  void _startType() {
+    final i = _ctrl.hasClients ? _ctrl.selectedItem : widget.index;
+    if (widget.kind == WheelKind.month) {
+      _type.text = '${i + 1}';
+    } else if (widget.kind == WheelKind.year) {
+      _type.text = widget.labels[i];
+    } else {
+      _type.text = widget.labels[i];
+    }
+    _type.selection = TextSelection(baseOffset: 0, extentOffset: _type.text.length);
+    setState(() => _typing = true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final numeric = widget.kind == WheelKind.month || widget.kind == WheelKind.year;
     return SizedBox(
       height: wheelItemExtent * wheelVisible,
       child: Stack(
@@ -185,8 +291,12 @@ class _WheelColState extends State<WheelCol> {
                 controller: _type,
                 autofocus: true,
                 textAlign: TextAlign.center,
+                keyboardType: numeric ? TextInputType.number : TextInputType.text,
                 style: Theme.of(context).textTheme.titleMedium,
-                inputFormatters: [LengthLimitingTextInputFormatter(16)],
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(widget.kind == WheelKind.month ? 2 : 16),
+                  if (numeric) FilteringTextInputFormatter.digitsOnly,
+                ],
                 decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),
                 onSubmitted: (_) => _commitType(),
                 onTapOutside: (_) => _commitType(),
@@ -215,8 +325,7 @@ class _WheelColState extends State<WheelCol> {
                   builder: (_, i) => GestureDetector(
                     onTap: () {
                       if (i == (_ctrl.hasClients ? _ctrl.selectedItem : widget.index)) {
-                        _type.text = widget.labels[i];
-                        setState(() => _typing = true);
+                        _startType();
                       } else {
                         _ctrl.animateToItem(i, duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
                       }

@@ -166,30 +166,35 @@ class _SlideTrackState extends State<SlideTrack> with SingleTickerProviderStateM
           onHorizontalDragUpdate: _onDragUpdate,
           onHorizontalDragEnd: _onDragEnd,
           onHorizontalDragCancel: _onDragCancel,
-          child: ClipRect(
-            child: OverflowBox(
-              minWidth: w * 3,
-              maxWidth: w * 3,
-              minHeight: h.isFinite ? h : 0,
-              maxHeight: h.isFinite ? h : double.infinity,
-              alignment: Alignment.centerLeft,
-              child: Transform.translate(
-                offset: Offset(-w + _offset, 0),
-                child: SizedBox(
-                  width: w * 3,
-                  height: h.isFinite ? h : null,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(width: w, child: IgnorePointer(child: widget.previous)),
-                      SizedBox(
-                        width: w,
-                        child: IgnorePointer(ignoring: suppressTap || _dragging || _pending != 0, child: widget.current),
-                      ),
-                      SizedBox(width: w, child: IgnorePointer(child: widget.next)),
-                    ],
+          child: SizedBox(
+            width: w,
+            height: h.isFinite ? h : null,
+            child: ClipRect(
+              clipBehavior: Clip.hardEdge,
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
+                children: [
+                  Positioned(
+                    left: -w + _offset,
+                    top: 0,
+                    bottom: 0,
+                    width: w * 3,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SizedBox(width: w, child: IgnorePointer(child: widget.previous)),
+                        SizedBox(
+                          width: w,
+                          child: IgnorePointer(
+                            ignoring: suppressTap || _dragging || _pending != 0,
+                            child: widget.current,
+                          ),
+                        ),
+                        SizedBox(width: w, child: IgnorePointer(child: widget.next)),
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

@@ -388,9 +388,22 @@ ThemeData buildTheme({
       style: FilledButton.styleFrom(
         backgroundColor: color.primary,
         foregroundColor: color.onPrimary,
-        minimumSize: const Size.fromHeight(48),
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      ),
+    ),
+    dialogTheme: DialogThemeData(
+      actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,

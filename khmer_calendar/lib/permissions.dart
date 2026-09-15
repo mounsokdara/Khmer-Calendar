@@ -12,6 +12,7 @@ import 'location.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
 import 'reminders.dart';
 import 'store.dart';
+import 'widgets/dialog_actions.dart';
 
 const _channel = MethodChannel('khmer.permissions');
 
@@ -97,10 +98,18 @@ Future<bool> _confirm(
     builder: (ctx) => AlertDialog(
       title: Text(t(lang, titleKey)),
       content: Text(t(lang, bodyKey)),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t(lang, 'cancel'))),
-        FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t(lang, 'ok'))),
-      ],
+      actions: equalDialogActions([
+        OutlinedButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'cancel')),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(lang, 'ok')),
+        ),
+      ]),
     ),
   );
   return ok == true;
@@ -196,10 +205,18 @@ Future<bool> promptIfDenied(
     builder: (d) => AlertDialog(
       title: Text(t(store.lang, 'permNotAllowed')),
       content: Text('${t(store.lang, _kindTitleKey(kind))}\n\n${t(store.lang, 'permOpenSettingsBody')}'),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(d, false), child: Text(t(store.lang, 'cancel'))),
-        FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(t(store.lang, 'permOpenSettings'))),
-      ],
+      actions: equalDialogActions([
+        OutlinedButton(
+          onPressed: () => Navigator.pop(d, false),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(store.lang, 'cancel')),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          style: dialogBtnStyle(),
+          child: dlgLabel(t(store.lang, 'permOpenSettings')),
+        ),
+      ]),
     ),
   );
   if (open != true) return false;

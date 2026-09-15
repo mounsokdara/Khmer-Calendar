@@ -15,6 +15,7 @@ import '../theme.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/scheme_chips.dart';
 import '../widgets/segmented_list.dart';
+import '../widgets/dialog_actions.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Carlendar/releases/latest/download';
 
@@ -226,9 +227,10 @@ class ThemePage extends StatelessWidget {
               ),
               SegmentedGroup(
                 children: [
-                  SwitchListTile(
-                    title: Text(t(lang, 'dynamicColor')),
-                    subtitle: Text(t(lang, 'dynamicColorSub')),
+                  SegmentedSwitch(
+                    icon: Icons.wallpaper,
+                    title: t(lang, 'dynamicColor'),
+                    subtitle: t(lang, 'dynamicColorSub'),
                     value: store.dynamicColor,
                     onChanged: store.setDynamicColor,
                   ),
@@ -244,9 +246,10 @@ class ThemePage extends StatelessWidget {
                     children: [
                       SegmentedGroup(
                         children: [
-                          SwitchListTile(
-                            title: Text(t(lang, 'materialYou')),
-                            subtitle: Text(t(lang, 'materialYouSub')),
+                          SegmentedSwitch(
+                            icon: Icons.palette,
+                            title: t(lang, 'materialYou'),
+                            subtitle: t(lang, 'materialYouSub'),
                             value: store.materialYou,
                             onChanged: store.dynamicColor ? null : store.setMaterialYou,
                           ),
@@ -255,40 +258,47 @@ class ThemePage extends StatelessWidget {
                       SchemeChipScroller(store: store),
                       SegmentedGroup(
                         children: [
-                          SwitchListTile(
-                            title: Text(t(lang, 'extraDark')),
-                            subtitle: Text(t(lang, 'extraDarkSub')),
+                          SegmentedSwitch(
+                            icon: Icons.contrast,
+                            title: t(lang, 'extraDark'),
+                            subtitle: t(lang, 'extraDarkSub'),
                             value: store.extraDark,
                             onChanged: store.dynamicColor ? null : store.setExtraDark,
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      ColorRow(
-                        title: t(lang, 'accent'),
-                        subtitle: t(lang, 'accentSub'),
-                        value: store.accentColor,
-                        disabled: store.materialYou && !store.dynamicColor,
-                        onPick: () => showColorPicker(
-                          context,
-                          lang: lang,
-                          title: t(lang, 'accent'),
-                          value: store.accentColor,
-                          onSave: store.setAccentColor,
-                        ),
-                      ),
-                      ColorRow(
-                        title: t(lang, 'highlight'),
-                        subtitle: t(lang, 'highlightSub'),
-                        value: store.highlightColor,
-                        disabled: store.materialYou && !store.dynamicColor,
-                        onPick: () => showColorPicker(
-                          context,
-                          lang: lang,
-                          title: t(lang, 'highlight'),
-                          value: store.highlightColor,
-                          onSave: store.setHighlightColor,
-                        ),
+                      SegmentedGroup(
+                        children: [
+                          ColorRow(
+                            title: t(lang, 'accent'),
+                            subtitle: t(lang, 'accentSub'),
+                            value: store.accentColor,
+                            icon: Icons.brush,
+                            disabled: store.materialYou && !store.dynamicColor,
+                            onPick: () => showColorPicker(
+                              context,
+                              lang: lang,
+                              title: t(lang, 'accent'),
+                              value: store.accentColor,
+                              onSave: store.setAccentColor,
+                            ),
+                          ),
+                          ColorRow(
+                            title: t(lang, 'highlight'),
+                            subtitle: t(lang, 'highlightSub'),
+                            value: store.highlightColor,
+                            icon: Icons.highlight,
+                            disabled: store.materialYou && !store.dynamicColor,
+                            onPick: () => showColorPicker(
+                              context,
+                              lang: lang,
+                              title: t(lang, 'highlight'),
+                              value: store.highlightColor,
+                              onSave: store.setHighlightColor,
+                            ),
+                          ),
+                        ],
                       ),
                       Opacity(
                         opacity: store.materialYou && !store.dynamicColor ? 0.38 : 1,
@@ -356,9 +366,10 @@ class _PrivacyPageState extends State<PrivacyPage> {
             children: [
               SegmentedGroup(
                 children: [
-                  SwitchListTile(
-                    title: Text(t(lang, 'permNotify')),
-                    subtitle: Text(t(lang, 'permNotifySub')),
+                  SegmentedSwitch(
+                    icon: Icons.notifications,
+                    title: t(lang, 'permNotify'),
+                    subtitle: t(lang, 'permNotifySub'),
                     value: store.notifyOn,
                     onChanged: (v) async {
                       if (!v) {
@@ -374,9 +385,10 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (context.mounted) showPermSnack(context, lang, 'notify', store.notifyOn);
                     },
                   ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'permBackground')),
-                    subtitle: Text(t(lang, 'permBackgroundSub')),
+                  SegmentedSwitch(
+                    icon: Icons.sync,
+                    title: t(lang, 'permBackground'),
+                    subtitle: t(lang, 'permBackgroundSub'),
                     value: store.backgroundOn,
                     onChanged: (v) async {
                       if (!v) {
@@ -397,9 +409,10 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (context.mounted) showPermSnack(context, lang, 'background', store.backgroundOn);
                     },
                   ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'autoLaunch')),
-                    subtitle: Text(t(lang, 'autoLaunchSub')),
+                  SegmentedSwitch(
+                    icon: Icons.rocket_launch,
+                    title: t(lang, 'autoLaunch'),
+                    subtitle: t(lang, 'autoLaunchSub'),
                     value: store.autoLaunchOn,
                     onChanged: (v) async {
                       if (!v) {
@@ -420,9 +433,10 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (context.mounted) showPermSnack(context, lang, 'auto', store.autoLaunchOn);
                     },
                   ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'permLocation')),
-                    subtitle: Text(t(lang, 'permLocationSub')),
+                  SegmentedSwitch(
+                    icon: Icons.location_on,
+                    title: t(lang, 'permLocation'),
+                    subtitle: t(lang, 'permLocationSub'),
                     value: store.locationOn,
                     onChanged: (v) async {
                       if (!v) {
@@ -482,21 +496,24 @@ class NotificationsPage extends StatelessWidget {
             children: [
               SegmentedGroup(
                 children: [
-                  SwitchListTile(
-                    title: Text(t(lang, 'remindEvents')),
-                    subtitle: Text(t(lang, 'remindEventsSub')),
+                  SegmentedSwitch(
+                    icon: Icons.event,
+                    title: t(lang, 'remindEvents'),
+                    subtitle: t(lang, 'remindEventsSub'),
                     value: store.notifyEvents,
                     onChanged: (v) => toggle(v, store.setNotifyEvents),
                   ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'remindHolidays')),
-                    subtitle: Text(t(lang, 'remindHolidaysSub')),
+                  SegmentedSwitch(
+                    icon: Icons.celebration,
+                    title: t(lang, 'remindHolidays'),
+                    subtitle: t(lang, 'remindHolidaysSub'),
                     value: store.notifyHolidays,
                     onChanged: (v) => toggle(v, store.setNotifyHolidays),
                   ),
-                  SwitchListTile(
-                    title: Text(t(lang, 'remindTasks')),
-                    subtitle: Text(t(lang, 'remindTasksSub')),
+                  SegmentedSwitch(
+                    icon: Icons.task_alt,
+                    title: t(lang, 'remindTasks'),
+                    subtitle: t(lang, 'remindTasksSub'),
                     value: store.notifyTasks,
                     onChanged: (v) => toggle(v, store.setNotifyTasks),
                   ),
@@ -526,10 +543,18 @@ class ClearPage extends StatelessWidget {
             context: context,
             builder: (ctx) => AlertDialog(
               title: Text(t(lang, key)),
-              actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t(lang, 'cancel'))),
-                FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t(lang, 'ok'))),
-              ],
+              actions: equalDialogActions([
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  style: dialogBtnStyle(),
+                  child: dlgLabel(t(lang, 'cancel')),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  style: dialogBtnStyle(),
+                  child: dlgLabel(t(lang, 'ok')),
+                ),
+              ]),
             ),
           );
           if (ok == true) {

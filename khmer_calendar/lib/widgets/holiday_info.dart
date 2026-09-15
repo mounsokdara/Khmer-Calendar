@@ -4,6 +4,7 @@ import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
+import 'dialog_actions.dart';
 
 Future<void> showHolidayInfo(BuildContext context, AppStore store, Observance item) {
   final lang = store.lang;
@@ -40,7 +41,13 @@ Future<void> showHolidayInfo(BuildContext context, AppStore store, Observance it
             ],
           ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t(lang, 'close')))],
+        actions: equalDialogActions([
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: dialogBtnStyle(),
+            child: dlgLabel(t(lang, 'close')),
+          ),
+        ]),
       );
     },
   );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../i18n.dart';
+import 'dialog_actions.dart';
 
 Widget swipeToDelete({
   required BuildContext context,
@@ -25,10 +26,21 @@ Widget swipeToDelete({
               context: context,
               builder: (ctx) => AlertDialog(
                 title: Text(t(lang, 'confirmDelete')),
-                actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t(lang, 'dontDelete'))),
-                  FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t(lang, 'delete'))),
-                ],
+                actions: equalDialogActions([
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    style: dialogBtnStyle(),
+                    child: dlgLabel(t(lang, 'dontDelete')),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    style: dialogBtnStyle(
+                      background: Theme.of(ctx).colorScheme.error,
+                      foreground: Theme.of(ctx).colorScheme.onError,
+                    ),
+                    child: dlgLabel(t(lang, 'delete')),
+                  ),
+                ]),
               ),
             );
             return ok ?? false;
