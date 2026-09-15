@@ -289,6 +289,7 @@ class ThemePage extends StatelessWidget {
                 ),
               ),
               SegmentedGroup(
+                filled: false,
                 children: [
                   SegmentedSwitch(
                     icon: Icons.wallpaper,
@@ -308,6 +309,7 @@ class ThemePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SegmentedGroup(
+                        filled: false,
                         children: [
                           SegmentedSwitch(
                             icon: Icons.palette,
@@ -320,6 +322,7 @@ class ThemePage extends StatelessWidget {
                       ),
                       SchemeChipScroller(store: store),
                       SegmentedGroup(
+                        filled: false,
                         children: [
                           SegmentedSwitch(
                             icon: Icons.contrast,
@@ -332,6 +335,7 @@ class ThemePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       SegmentedGroup(
+                        filled: false,
                         children: [
                           ColorRow(
                             title: t(lang, 'accent'),
@@ -351,7 +355,7 @@ class ThemePage extends StatelessWidget {
                             title: t(lang, 'highlight'),
                             subtitle: t(lang, 'highlightSub'),
                             value: store.highlightColor,
-                            icon: Icons.highlight,
+                            icon: Icons.water_drop_outlined,
                             disabled: store.materialYou && !store.dynamicColor,
                             onPick: () => showColorPicker(
                               context,

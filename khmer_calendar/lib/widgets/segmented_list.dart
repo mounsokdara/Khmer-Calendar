@@ -4,9 +4,15 @@ import 'package:flutter/material.dart';
 /// corners are large, inner corners small, with a short gap. Same pattern
 /// as Booming's `SegmentedListItem` / the original `.set-group`.
 class SegmentedGroup extends StatelessWidget {
-  const SegmentedGroup({super.key, required this.children, this.padding = const EdgeInsets.symmetric(horizontal: 16)});
+  const SegmentedGroup({
+    super.key,
+    required this.children,
+    this.padding = const EdgeInsets.symmetric(horizontal: 16),
+    this.filled = true,
+  });
   final List<Widget> children;
   final EdgeInsetsGeometry padding;
+  final bool filled;
 
   static const _gap = 7.0;
   static const _big = 26.0;
@@ -44,9 +50,12 @@ class SegmentedGroup extends StatelessWidget {
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0) const SizedBox(height: _gap),
             Material(
-              color: cs.surfaceContainer,
+              color: filled ? cs.surfaceContainer : Colors.transparent,
               clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(borderRadius: radiusFor(i, children.length)),
+              shape: RoundedRectangleBorder(
+                borderRadius: radiusFor(i, children.length),
+                side: filled ? BorderSide.none : BorderSide(color: cs.outlineVariant),
+              ),
               child: children[i],
             ),
           ],
