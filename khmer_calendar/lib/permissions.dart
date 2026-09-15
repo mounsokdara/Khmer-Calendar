@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -102,6 +104,108 @@ Future<bool> _confirm(
     ),
   );
   return ok == true;
+}
+
+bool _canGrant(String kind) {
+  if (kIsWeb) return kind == 'notify' || kind == 'location';
+  if (kind == 'auto' && defaultTargetPlatform == TargetPlatform.iOS) return false;
+  return true;
+}
+
+String _kindTitleKey(String kind) {
+  switch (kind) {
+    case 'notify':
+      return 'setupAllowNotify';
+    case 'background':
+      return 'setupAllowBackground';
+    case 'auto':
+      return 'setupAllowAutoLaunch';
+    default:
+      return 'setupAllowGps';
+  }
+}
+
+Future<void> _waitForResume() async {
+  var left = false;
+  final done = Completer<void>();
+  final listener = AppLifecycleListener(
+    onHide: () => left = true,
+    onPause: () => left = true,
+    onInactive: () => left = true,
+    onResume: () {
+      if (!done.isCompleted) done.complete();
+    },
+  );
+  try {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (!left) return;
+    await done.future.timeout(const Duration(minutes: 10), onTimeout: () {});
+  } finally {
+    listener.dispose();
+  }
+}
+
+Future<void> _openSettingsFor(String kind) async {
+  if (_android) {
+    switch (kind) {
+      case 'notify':
+        await _native('openAppSettings');
+        return;
+      case 'background':
+        await _native('requestBatteryExemption');
+        if (!await backgroundAllowed()) {
+          await _native('openBatterySettings');
+        }
+        return;
+      case 'auto':
+        await _native('openAutoStart');
+        return;
+      case 'location':
+        await _native('openLocationSettings');
+        await _native('openAppSettings');
+        return;
+    }
+  }
+  final wait = _waitForResume();
+  try {
+    if (kind == 'location') {
+      await Geolocator.openAppSettings();
+    } else {
+      await openAppSettings();
+    }
+  } catch (e) {
+    debugPrint('openSettings $kind: $e');
+  }
+  await wait;
+}
+
+/// If the OS still denies this permission, pause and send the user to settings.
+Future<bool> promptIfDenied(
+  AppStore store, {
+  BuildContext? context,
+  required String kind,
+  required Future<bool> Function() allowed,
+}) async {
+  if (await allowed()) return true;
+  if (!_canGrant(kind)) return true;
+  final ctx = context;
+  if (ctx == null || !ctx.mounted) return false;
+  final open = await showDialog<bool>(
+    context: ctx,
+    barrierDismissible: false,
+    builder: (d) => AlertDialog(
+      title: Text(t(store.lang, 'permNotAllowed')),
+      content: Text('${t(store.lang, _kindTitleKey(kind))}\n\n${t(store.lang, 'permOpenSettingsBody')}'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(d, false), child: Text(t(store.lang, 'cancel'))),
+        FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(t(store.lang, 'permOpenSettings'))),
+      ],
+    ),
+  );
+  if (open != true) return false;
+  await _openSettingsFor(kind);
+  await _pause();
+  return allowed();
 }
 
 Future<bool> notificationsAllowed() async {
@@ -359,42 +463,68 @@ Future<GpsResult> requestLocationPerm(AppStore store) async {
   return r;
 }
 
-/// Continue: ask every OS prompt, then store only what the OS actually allowed.
-Future<void> requestAllPermissions(
+/// Continue: ask every OS prompt. If one is not allowed, pause and open settings.
+/// Returns false when setup should stay on the permissions screen.
+Future<bool> requestAllPermissions(
   AppStore store, {
   BuildContext? context,
   void Function(String key)? onStep,
 }) async {
-  onStep?.call('askingNotify');
-  try {
-    await requestNotifications(store);
-  } catch (e) {
-    debugPrint('all/notify: $e');
+  Future<bool> step(String asking, String kind, Future<void> Function() ask, Future<bool> Function() allowed) async {
+    onStep?.call(asking);
+    try {
+      await ask();
+    } catch (e) {
+      debugPrint('all/$kind: $e');
+    }
+    onStep?.call(asking);
+    final ctx = context;
+    final ok = await promptIfDenied(
+      store,
+      context: ctx != null && ctx.mounted ? ctx : null,
+      kind: kind,
+      allowed: allowed,
+    );
+    return ok;
+  }
+
+  if (!await step('askingNotify', 'notify', () => requestNotifications(store), notificationsAllowed)) {
+    await writeGrantedFlags(store);
+    return false;
   }
   await _pause();
-  onStep?.call('askingBackground');
-  try {
-    final bgCtx = context;
-    await requestBackground(store, context: bgCtx != null && bgCtx.mounted ? bgCtx : null);
-  } catch (e) {
-    debugPrint('all/bg: $e');
+  if (!await step(
+    'askingBackground',
+    'background',
+    () async {
+      final bgCtx = context;
+      await requestBackground(store, context: bgCtx != null && bgCtx.mounted ? bgCtx : null);
+    },
+    backgroundAllowed,
+  )) {
+    await writeGrantedFlags(store);
+    return false;
   }
   await _pause();
-  onStep?.call('askingAutoLaunch');
-  try {
-    final autoCtx = context;
-    await requestAutoLaunch(store, context: autoCtx != null && autoCtx.mounted ? autoCtx : null);
-  } catch (e) {
-    debugPrint('all/auto: $e');
+  if (!await step(
+    'askingAutoLaunch',
+    'auto',
+    () async {
+      final autoCtx = context;
+      await requestAutoLaunch(store, context: autoCtx != null && autoCtx.mounted ? autoCtx : null);
+    },
+    autoLaunchAllowed,
+  )) {
+    await writeGrantedFlags(store);
+    return false;
   }
   await _pause();
-  onStep?.call('askingLocation');
-  try {
-    await requestLocationPerm(store);
-  } catch (e) {
-    debugPrint('all/gps: $e');
+  if (!await step('askingLocation', 'location', () => requestLocationPerm(store), locationAllowed)) {
+    await writeGrantedFlags(store);
+    return false;
   }
   await writeGrantedFlags(store);
+  return true;
 }
 
 /// Re-apply saved flags after boot / hydrate, but drop any the OS no longer allows.

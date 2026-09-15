@@ -90,6 +90,8 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build windows --release
         working-directory: khmer_calendar
+        env:
+          CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip

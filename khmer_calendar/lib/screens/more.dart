@@ -337,7 +337,11 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final ok = await requestNotifications(store);
-                      if (context.mounted) showPermSnack(context, lang, 'notify', ok);
+                      if (!ok && context.mounted) {
+                        await promptIfDenied(store, context: context, kind: 'notify', allowed: notificationsAllowed);
+                        store.setNotifyOn(await notificationsAllowed());
+                      }
+                      if (context.mounted) showPermSnack(context, lang, 'notify', store.notifyOn);
                     },
                   ),
                   SwitchListTile(
@@ -356,7 +360,11 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final ok = await requestBackground(store, context: context);
-                      if (context.mounted) showPermSnack(context, lang, 'background', ok);
+                      if (!ok && context.mounted) {
+                        await promptIfDenied(store, context: context, kind: 'background', allowed: backgroundAllowed);
+                        store.setBackgroundOn(await backgroundAllowed());
+                      }
+                      if (context.mounted) showPermSnack(context, lang, 'background', store.backgroundOn);
                     },
                   ),
                   SwitchListTile(
@@ -375,7 +383,11 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final ok = await requestAutoLaunch(store, context: context);
-                      if (context.mounted) showPermSnack(context, lang, 'auto', ok);
+                      if (!ok && context.mounted) {
+                        await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed);
+                        store.setAutoLaunchOn(await autoLaunchAllowed());
+                      }
+                      if (context.mounted) showPermSnack(context, lang, 'auto', store.autoLaunchOn);
                     },
                   ),
                   SwitchListTile(
@@ -388,7 +400,11 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final r = await requestLocationPerm(store);
-                      if (context.mounted) showGpsSnack(context, store.lang, r);
+                      if (!store.locationOn && context.mounted) {
+                        await promptIfDenied(store, context: context, kind: 'location', allowed: locationAllowed);
+                        store.setLocationOn(await locationAllowed());
+                      }
+                      if (context.mounted) showGpsSnack(context, store.lang, store.locationOn ? r : GpsResult.denied);
                     },
                   ),
                 ],
@@ -821,10 +837,17 @@ class _GetStartedPageState extends State<GetStartedPage> {
       await cancelAllReminders();
       return;
     }
-    final ok = await requestNotifications(store);
+    await requestNotifications(store);
     if (!mounted) return;
-    setState(() => notify = ok);
-    showPermSnack(context, store.lang, 'notify', ok);
+    if (!store.notifyOn) {
+      if (await promptIfDenied(store, context: context, kind: 'notify', allowed: notificationsAllowed)) {
+        if (!mounted) return;
+        await requestNotifications(store);
+      }
+    }
+    if (!mounted) return;
+    setState(() => notify = store.notifyOn);
+    showPermSnack(context, store.lang, 'notify', store.notifyOn);
   }
 
   Future<void> _askBg(bool v) async {
@@ -841,10 +864,17 @@ class _GetStartedPageState extends State<GetStartedPage> {
       }
       return;
     }
-    final ok = await requestBackground(store, context: context);
+    await requestBackground(store, context: context);
     if (!mounted) return;
-    setState(() => bg = ok);
-    showPermSnack(context, store.lang, 'background', ok);
+    if (!store.backgroundOn) {
+      if (await promptIfDenied(store, context: context, kind: 'background', allowed: backgroundAllowed)) {
+        if (!mounted) return;
+        await requestBackground(store, context: context);
+      }
+    }
+    if (!mounted) return;
+    setState(() => bg = store.backgroundOn);
+    showPermSnack(context, store.lang, 'background', store.backgroundOn);
   }
 
   Future<void> _askAuto(bool v) async {
@@ -861,10 +891,17 @@ class _GetStartedPageState extends State<GetStartedPage> {
       }
       return;
     }
-    final ok = await requestAutoLaunch(store, context: context);
+    await requestAutoLaunch(store, context: context);
     if (!mounted) return;
-    setState(() => auto = ok);
-    showPermSnack(context, store.lang, 'auto', ok);
+    if (!store.autoLaunchOn) {
+      if (await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed)) {
+        if (!mounted) return;
+        await requestAutoLaunch(store, context: context);
+      }
+    }
+    if (!mounted) return;
+    setState(() => auto = store.autoLaunchOn);
+    showPermSnack(context, store.lang, 'auto', store.autoLaunchOn);
   }
 
   Future<void> _askGps(bool v) async {
@@ -876,8 +913,12 @@ class _GetStartedPageState extends State<GetStartedPage> {
     }
     final r = await requestLocationPerm(store);
     if (!mounted) return;
+    if (!store.locationOn) {
+      await promptIfDenied(store, context: context, kind: 'location', allowed: locationAllowed);
+    }
+    if (!mounted) return;
     setState(() => gps = store.locationOn);
-    showGpsSnack(context, store.lang, r);
+    showGpsSnack(context, store.lang, store.locationOn ? r : GpsResult.denied);
   }
 
   Future<void> _continue() async {
@@ -887,7 +928,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       busy = true;
       asking = 'askingNotify';
     });
-    await requestAllPermissions(
+    final allOk = await requestAllPermissions(
       store,
       context: context,
       onStep: (key) {
@@ -910,6 +951,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       busy = false;
       asking = '';
     });
+    if (!allOk) return;
     store.setSetupDone(true);
     if (!mounted) return;
     context.go('/months');
