@@ -130,6 +130,58 @@ WxMeta wmoOf(int code) {
   return const WxMeta('thunderstorm', 'ព្យុះផ្គររន្ទះ', 'storm');
 }
 
+String wmoIconUrl(int code) {
+  final icon =
+      code <= 1
+          ? '01d'
+          : code <= 2
+              ? '02d'
+              : code <= 3
+                  ? '04d'
+                  : code <= 48
+                      ? '50d'
+                      : code <= 57
+                          ? '09d'
+                          : code <= 67
+                              ? '10d'
+                              : code <= 77
+                                  ? '13d'
+                                  : code <= 82
+                                      ? '09d'
+                                      : code <= 86
+                                          ? '13d'
+                                          : '11d';
+  return 'https://openweathermap.org/img/wn/$icon@2x.png';
+}
+
+const _wikiHeaders = {
+  'User-Agent': 'KhmerCalendar/1.0 (https://khmercalendar.pages.dev)',
+  'Accept': 'application/json',
+};
+
+final _photoMem = <String, String?>{};
+
+Future<String?> cityPhotoUrl(City city) async {
+  if (_photoMem.containsKey(city.id)) return _photoMem[city.id];
+  try {
+    final url = Uri.parse(
+      'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(city.nameEn)}',
+    );
+    final res = await http.get(url, headers: _wikiHeaders);
+    if (res.statusCode != 200) {
+      _photoMem[city.id] = null;
+      return null;
+    }
+    final j = jsonDecode(res.body) as Map<String, dynamic>;
+    final src = (j['thumbnail']?['source'] ?? j['originalimage']?['source']) as String?;
+    _photoMem[city.id] = src;
+    return src;
+  } catch (_) {
+    _photoMem[city.id] = null;
+    return null;
+  }
+}
+
 Future<WeatherSnap> fetchWeather(City city) async {
   final url = Uri.parse(
     'https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}'

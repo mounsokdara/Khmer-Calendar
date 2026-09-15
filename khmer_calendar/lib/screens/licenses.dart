@@ -60,7 +60,16 @@ const _other = [
   _Credit('Flutter engine', 'Skia, Impeller, Dart VM, and platform embedders'),
   _Credit('Kantumruy Pro', 'Khmer and Latin typeface'),
   _Credit('Material Icons', 'Icons in the app'),
-  _Credit('Weather photos', 'City photos bundled with the app'),
+  _Credit(
+    'OpenWeather icons',
+    'Weather icons from openweathermap.org',
+    url: 'https://openweathermap.org/weather-conditions',
+  ),
+  _Credit(
+    'Wikipedia',
+    'City photos from Wikipedia page summaries',
+    url: 'https://www.wikipedia.org',
+  ),
   _Credit('Zodiac artwork', 'Khmer animal-year marks'),
 ];
 

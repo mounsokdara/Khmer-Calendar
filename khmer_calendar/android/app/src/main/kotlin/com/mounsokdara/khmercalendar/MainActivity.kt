@@ -104,9 +104,10 @@ class MainActivity : FlutterActivity() {
         }
         listOf(
             "iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang",
-            "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en",
+            "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list",
         ).forEach { putStr(it) }
         (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }
+        (map["wx_index"] as? Number)?.let { ed.putInt("wx_index", it.toInt()) }
         (map["notifyOn"] as? Boolean)?.let { ed.putBoolean("notifyOn", it) }
         ed.apply()
     }

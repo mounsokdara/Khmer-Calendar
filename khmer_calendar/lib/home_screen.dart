@@ -10,6 +10,7 @@ import 'i18n.dart';
 import 'net.dart';
 import 'store.dart';
 import 'weather.dart';
+import 'wx_cache.dart';
 
 const _ch = MethodChannel('khmer.permissions');
 var _bound = false;
@@ -102,26 +103,71 @@ Future<void> syncWeatherWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
   if (store.weatherCities.isEmpty) return;
   if (NetStatus.isOffline) return;
-  final city = cityById(store.weatherCities.first);
-  if (city == null) return;
-  try {
-    final snap = await fetchWeather(city);
-    await pushWeather(store, city, snap);
-  } catch (_) {}
+  final cache = <String, WeatherSnap>{};
+  for (final id in store.weatherCities) {
+    final city = cityById(id);
+    if (city == null) continue;
+    try {
+      cache[id] = await fetchWeather(city);
+    } catch (_) {}
+  }
+  await pushWeatherList(store, cache);
 }
 
 Future<void> pushWeather(AppStore store, City city, WeatherSnap snap) async {
+  await pushWeatherList(store, {city.id: snap}, selectId: city.id);
+}
+
+Future<void> pushWeatherList(
+  AppStore store,
+  Map<String, WeatherSnap> cache, {
+  String? selectId,
+}) async {
   if (!canPinHomeWidget) return;
-  final meta = wmoOf(snap.code);
+  final rows = <Map<String, String>>[];
+  var index = 0;
+  for (var i = 0; i < store.weatherCities.length; i++) {
+    final id = store.weatherCities[i];
+    final city = cityById(id);
+    if (city == null) continue;
+    final snap = cache[id];
+    if (selectId != null && id == selectId) index = rows.length;
+    final meta = snap == null ? null : wmoOf(snap.code);
+    String icon = '';
+    String photo = '';
+    if (snap != null) {
+      icon = await cacheUrl(wmoIconUrl(snap.code), 'wx_icon_$id.png') ?? '';
+    }
+    final remote = await cityPhotoUrl(city);
+    if (remote != null) {
+      photo = await cacheUrl(remote, 'wx_photo_$id.jpg') ?? '';
+    }
+    rows.add({
+      'id': id,
+      'name': city.name,
+      'nameEn': city.nameEn,
+      'temp': snap == null ? '' : '${snap.temp}',
+      'high': snap == null ? '' : '${snap.high}',
+      'low': snap == null ? '' : '${snap.low}',
+      'label': meta?.km ?? '',
+      'labelEn': meta?.en ?? '',
+      'icon': icon,
+      'photo': photo,
+    });
+  }
+  if (rows.isEmpty) return;
+  final first = rows[index.clamp(0, rows.length - 1)];
   try {
     await _ch.invokeMethod<void>('updateWidget', {
-      'wx_city': city.name,
-      'wx_city_en': city.nameEn,
-      'wx_temp': '${snap.temp}',
-      'wx_high': '${snap.high}',
-      'wx_low': '${snap.low}',
-      'wx_label': meta.km,
-      'wx_label_en': meta.en,
+      'wx_list': jsonEncode(rows),
+      'wx_index': index,
+      'wx_city': first['name'],
+      'wx_city_en': first['nameEn'],
+      'wx_temp': first['temp'],
+      'wx_high': first['high'],
+      'wx_low': first['low'],
+      'wx_label': first['label'],
+      'wx_label_en': first['labelEn'],
       'lang': store.lang == Lang.en ? 'en' : 'km',
     });
   } catch (_) {}

@@ -2,7 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/widget_weather_description"
     android:initialLayout="@layout/khmer_weather_widget"
-    android:minWidth="110dp"
+    android:minWidth="180dp"
     android:minHeight="110dp"
     android:minResizeWidth="110dp"
     android:minResizeHeight="80dp"

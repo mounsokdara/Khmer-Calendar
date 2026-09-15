@@ -55,13 +55,11 @@ class _WeatherPageState extends State<WeatherPage> {
       try {
         _cache[id] = await fetchWeather(city);
         _err.remove(id);
-        if (id == widget.store.weatherCities.first) {
-          await pushWeather(widget.store, city, _cache[id]!);
-        }
       } catch (_) {
         _err[id] = 'fail';
       }
     }
+    await pushWeatherList(widget.store, _cache);
     if (mounted) setState(() => _loading = false);
   }
 
@@ -148,7 +146,10 @@ class _WeatherPageState extends State<WeatherPage> {
                           snap: snap,
                           error: err != null,
                           lang: lang,
-                          onOpen: () => _openCity(city, snap),
+                          onOpen: () {
+                            pushWeatherList(widget.store, _cache, selectId: id);
+                            _openCity(city, snap);
+                          },
                         ),
                       );
                     },
@@ -242,7 +243,7 @@ class _WeatherPageState extends State<WeatherPage> {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(city.photo, height: 140, fit: BoxFit.cover),
+                  child: SizedBox(height: 140, width: double.infinity, child: CloudPhoto(city: city)),
                 ),
                 const SizedBox(height: 12),
                 Text(lang == Lang.en ? city.nameEn : city.name, style: Theme.of(ctx).textTheme.headlineSmall),
@@ -263,7 +264,7 @@ class _WeatherPageState extends State<WeatherPage> {
                   const SizedBox(height: 16),
                   Text(t(lang, 'hourly'), style: Theme.of(ctx).textTheme.titleMedium),
                   SizedBox(
-                    height: 88,
+                    height: 108,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
@@ -273,6 +274,12 @@ class _WeatherPageState extends State<WeatherPage> {
                             child: Column(
                               children: [
                                 Text(h.time.substring(11, 16)),
+                                Image.network(
+                                  wmoIconUrl(h.code),
+                                  width: 32,
+                                  height: 32,
+                                  errorBuilder: (_, _, _) => const SizedBox(height: 32),
+                                ),
                                 Text('${h.temp}°', style: const TextStyle(fontWeight: FontWeight.w700)),
                               ],
                             ),
@@ -326,7 +333,7 @@ class _CityCard extends StatelessWidget {
         onTap: onOpen,
         child: Stack(
           children: [
-            Image.asset(city.photo, height: 168, width: double.infinity, fit: BoxFit.cover),
+            Positioned.fill(child: CloudPhoto(city: city)),
             Container(
               height: 168,
               decoration: const BoxDecoration(
@@ -356,12 +363,48 @@ class _CityCard extends StatelessWidget {
                     ),
                   ),
                   Text(snap == null ? '-' : '${snap!.temp}°', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w600)),
+                  if (snap != null)
+                    Image.network(
+                      wmoIconUrl(snap!.code),
+                      width: 48,
+                      height: 48,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class CloudPhoto extends StatelessWidget {
+  const CloudPhoto({super.key, required this.city});
+  final City city;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String?>(
+      future: cityPhotoUrl(city),
+      builder: (context, snap) {
+        final url = snap.data;
+        if (url == null || url.isEmpty) {
+          return Container(
+            color: const Color(0xFF38618D),
+            alignment: Alignment.center,
+            child: const Icon(Icons.location_city, color: Colors.white54, size: 48),
+          );
+        }
+        return Image.network(
+          url,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (_, _, _) => Container(color: const Color(0xFF38618D)),
+        );
+      },
     );
   }
 }
