@@ -424,8 +424,8 @@ const appVersion = '1.0.0';
 const appBuildNumber = 1;
 const appAuthor = 'Moun Sokdara';
 const appLicense = 'MIT License';
-const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Carlendar';
-const appWebsiteUrl = 'https://khmercarlendar.pages.dev';
+const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
+const appWebsiteUrl = 'https://khmercalendar.pages.dev';
 
 const mitLicenseText = '''MIT License
 

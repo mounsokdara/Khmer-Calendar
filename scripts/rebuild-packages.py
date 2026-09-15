@@ -41,7 +41,7 @@ def main() -> int:
         print("skip installer packaging on hosted web deploy (Flutter packs are GitHub Releases)")
         return 0
     print("Flutter native installers (APK / Windows / macOS / Linux) are built on GitHub Actions.")
-    print("See https://github.com/mounsokdara/Khmer-Carlendar/releases/latest")
+    print("See https://github.com/mounsokdara/Khmer-Calendar/releases/latest")
     return 0
 
 

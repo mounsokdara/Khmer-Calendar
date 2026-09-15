@@ -4,7 +4,7 @@ Native Flutter app: Khmer lunar calendar, holidays, weather, and reminders.
 
 Package id: `com.mounsokdara.khmercalendar`
 
-Website: https://khmercarlendar.pages.dev
+Website: https://khmercalendar.pages.dev
 
 ```bash
 flutter pub get

@@ -20,7 +20,7 @@ import '../widgets/scheme_chips.dart';
 import '../widgets/segmented_list.dart';
 import '../widgets/dialog_actions.dart';
 
-const _release = 'https://github.com/mounsokdara/Khmer-Carlendar/releases/latest/download';
+const _release = 'https://github.com/mounsokdara/Khmer-Calendar/releases/latest/download';
 
 Future<void> openPackDownload(BuildContext context, {required Lang lang, required String file}) async {
   if (NetStatus.isOffline) {
