@@ -60,6 +60,8 @@ Future<void> syncHomeWidget(AppStore store) async {
         flag(o.date, o.holidayType == HolidayType.public ? 'p' : 'h');
       } else if (o.kind == Kind.event) {
         flag(o.date, 't');
+      } else if (o.kind == Kind.sil) {
+        flag(o.date, 's');
       }
     }
   }

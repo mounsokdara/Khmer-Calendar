@@ -10,7 +10,7 @@ import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
-import android.text.style.ForegroundColorSpan
+import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
 import java.util.Calendar
@@ -53,8 +53,7 @@ class MonthWidgetProvider : AppWidgetProvider() {
         const val EXTRA_DIR = "dir"
         private val COLOR_TODAY = Color.parseColor("#FFFFD54F")
         private val COLOR_PUBLIC = Color.parseColor("#FFFF8A80")
-        private val COLOR_HOLIDAY = Color.parseColor("#FFFFCC80")
-        private val COLOR_TASK = Color.parseColor("#FFA5D6A7")
+        private val COLOR_OTHER = Color.parseColor("#FF90CAF9")
         private val COLOR_DIM = Color.parseColor("#66FFFFFF")
 
         fun refreshAll(context: Context) {
@@ -132,34 +131,19 @@ class MonthWidgetProvider : AppWidgetProvider() {
             return context.resources.getIdentifier("cell_$i", "id", context.packageName)
         }
 
+        private fun silId(context: Context, i: Int): Int {
+            return context.resources.getIdentifier("sil_$i", "id", context.packageName)
+        }
+
         private fun headId(context: Context, i: Int): Int {
             return context.resources.getIdentifier("head_$i", "id", context.packageName)
         }
 
-        private fun cellLabel(day: Int, flags: String, inMonth: Boolean): CharSequence {
+        private fun cellLabel(day: Int, task: Boolean): CharSequence {
             val num = day.toString()
-            if (!inMonth) return num
-            val publicH = flags.contains('p')
-            val event = flags.contains('h')
-            val task = flags.contains('t')
-            val dots = buildString {
-                if (publicH) append('●')
-                if (event) append('◆')
-                if (task) append('■')
-            }
-            if (dots.isEmpty()) return num
-            val s = SpannableString("$num\n$dots")
-            var from = num.length + 1
-            fun paint(ch: Char, color: Int) {
-                val at = s.indexOf(ch, from)
-                if (at < 0) return
-                s.setSpan(ForegroundColorSpan(color), at, at + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                s.setSpan(AbsoluteSizeSpan(9, true), at, at + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                from = at + 1
-            }
-            if (publicH) paint('●', COLOR_PUBLIC)
-            if (event) paint('◆', COLOR_HOLIDAY)
-            if (task) paint('■', COLOR_TASK)
+            if (!task) return num
+            val s = SpannableString("$num\n•")
+            s.setSpan(AbsoluteSizeSpan(8, true), num.length + 1, s.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             return s
         }
 
@@ -190,17 +174,22 @@ class MonthWidgetProvider : AppWidgetProvider() {
                 val flags = markMap.optString(isoOf(d), "")
                 val sunday = d.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                 val id = cellId(context, i)
-                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), flags, inMonth))
+                val task = inMonth && flags.contains('t')
+                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), task))
                 views.setInt(id, "setMaxLines", 2)
                 val color =
                     when {
                         isToday -> COLOR_TODAY
                         !inMonth -> COLOR_DIM
                         flags.contains('p') || sunday -> COLOR_PUBLIC
-                        flags.contains('h') -> COLOR_HOLIDAY
+                        flags.contains('h') -> COLOR_OTHER
                         else -> Color.WHITE
                     }
                 views.setTextColor(id, color)
+                views.setViewVisibility(
+                    silId(context, i),
+                    if (inMonth && flags.contains('s')) View.VISIBLE else View.GONE,
+                )
             }
             views.setOnClickPendingIntent(R.id.year_prev, shiftPi(context, widgetId, "year", -1, 1))
             views.setOnClickPendingIntent(R.id.year_next, shiftPi(context, widgetId, "year", 1, 2))
