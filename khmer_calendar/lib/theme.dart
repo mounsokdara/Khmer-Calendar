@@ -327,6 +327,7 @@ ThemeData buildTheme({
   required ColorSchemeId scheme,
   required bool extraDark,
   required bool materialYou,
+  required bool dynamicColor,
   required String accentColor,
   required String highlightColor,
   required double highlightAlpha,
@@ -334,7 +335,7 @@ ThemeData buildTheme({
 }) {
   final ColorScheme color;
   final CalColors cal;
-  if (materialYou && dynamicScheme != null) {
+  if (dynamicColor && dynamicScheme != null) {
     color = dynamicScheme;
     cal = CalColors(
       accent: color.primary,
@@ -343,7 +344,7 @@ ThemeData buildTheme({
     );
   } else {
     final schemeId = materialYou ? scheme : ColorSchemeId.rose;
-    final tokens = schemeTokens(schemeId, brightness, extraDark && !materialYou);
+    final tokens = schemeTokens(schemeId, brightness, extraDark);
     color = colorSchemeFromTokens(tokens, brightness);
     cal = CalColors(
       accent: materialYou ? color.primary : hexColor(accentColor),

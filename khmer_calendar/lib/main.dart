@@ -117,10 +117,11 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       scheme: s.colorScheme,
       extraDark: extraDark,
       materialYou: s.materialYou,
+      dynamicColor: s.dynamicColor,
       accentColor: s.accentColor,
       highlightColor: s.highlightColor,
       highlightAlpha: s.highlightAlpha,
-      dynamicScheme: s.materialYou ? dynamicScheme : null,
+      dynamicScheme: s.dynamicColor ? dynamicScheme : null,
     );
   }
 

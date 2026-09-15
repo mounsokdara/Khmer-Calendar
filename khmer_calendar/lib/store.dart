@@ -89,6 +89,7 @@ class AppStore extends ChangeNotifier {
   String theme = 'system';
   ColorSchemeId colorScheme = ColorSchemeId.slate;
   bool materialYou = true;
+  bool dynamicColor = false;
   bool extraDark = false;
   String accentColor = '#F5C400';
   String highlightColor = '#FF3B30';
@@ -136,6 +137,7 @@ class AppStore extends ChangeNotifier {
           );
         }
         materialYou = p['materialYou'] as bool? ?? true;
+        dynamicColor = p['dynamicColor'] as bool? ?? false;
         extraDark = p['extraDark'] as bool? ?? false;
         accentColor = p['accentColor'] as String? ?? accentColor;
         highlightColor = p['highlightColor'] as String? ?? highlightColor;
@@ -179,6 +181,7 @@ class AppStore extends ChangeNotifier {
         'theme': theme,
         'colorScheme': colorScheme.name,
         'materialYou': materialYou,
+        'dynamicColor': dynamicColor,
         'extraDark': extraDark,
         'accentColor': accentColor,
         'highlightColor': highlightColor,
@@ -254,11 +257,17 @@ class AppStore extends ChangeNotifier {
 
   void setColorScheme(ColorSchemeId id) {
     colorScheme = id;
+    materialYou = true;
     _touch();
   }
 
   void setMaterialYou(bool v) {
     materialYou = v;
+    _touch();
+  }
+
+  void setDynamicColor(bool v) {
+    dynamicColor = v;
     _touch();
   }
 
@@ -381,6 +390,7 @@ class AppStore extends ChangeNotifier {
     theme = 'system';
     colorScheme = ColorSchemeId.slate;
     materialYou = true;
+    dynamicColor = false;
     extraDark = false;
     accentColor = '#F5C400';
     highlightColor = '#FF3B30';

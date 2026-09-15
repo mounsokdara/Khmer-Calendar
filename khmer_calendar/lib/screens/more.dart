@@ -227,21 +227,31 @@ class ThemePage extends StatelessWidget {
               SegmentedGroup(
                 children: [
                   SwitchListTile(
-                    title: Text(t(lang, 'materialYou')),
-                    subtitle: Text(t(lang, 'materialYouSub')),
-                    value: store.materialYou,
-                    onChanged: store.setMaterialYou,
+                    title: Text(t(lang, 'dynamicColor')),
+                    subtitle: Text(t(lang, 'dynamicColorSub')),
+                    value: store.dynamicColor,
+                    onChanged: store.setDynamicColor,
                   ),
                 ],
               ),
               IgnorePointer(
-                ignoring: store.materialYou,
+                ignoring: store.dynamicColor,
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 180),
-                  opacity: store.materialYou ? 0.38 : 1,
+                  opacity: store.dynamicColor ? 0.38 : 1,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      SegmentedGroup(
+                        children: [
+                          SwitchListTile(
+                            title: Text(t(lang, 'materialYou')),
+                            subtitle: Text(t(lang, 'materialYouSub')),
+                            value: store.materialYou,
+                            onChanged: store.dynamicColor ? null : store.setMaterialYou,
+                          ),
+                        ],
+                      ),
                       SchemeChipScroller(store: store),
                       SegmentedGroup(
                         children: [
@@ -249,7 +259,7 @@ class ThemePage extends StatelessWidget {
                             title: Text(t(lang, 'extraDark')),
                             subtitle: Text(t(lang, 'extraDarkSub')),
                             value: store.extraDark,
-                            onChanged: store.materialYou ? null : store.setExtraDark,
+                            onChanged: store.dynamicColor ? null : store.setExtraDark,
                           ),
                         ],
                       ),
@@ -258,7 +268,7 @@ class ThemePage extends StatelessWidget {
                         title: t(lang, 'accent'),
                         subtitle: t(lang, 'accentSub'),
                         value: store.accentColor,
-                        disabled: store.materialYou,
+                        disabled: store.materialYou && !store.dynamicColor,
                         onPick: () => showColorPicker(
                           context,
                           lang: lang,
@@ -271,7 +281,7 @@ class ThemePage extends StatelessWidget {
                         title: t(lang, 'highlight'),
                         subtitle: t(lang, 'highlightSub'),
                         value: store.highlightColor,
-                        disabled: store.materialYou,
+                        disabled: store.materialYou && !store.dynamicColor,
                         onPick: () => showColorPicker(
                           context,
                           lang: lang,
@@ -280,22 +290,27 @@ class ThemePage extends StatelessWidget {
                           onSave: store.setHighlightColor,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(t(lang, 'highlightAlpha'), style: Theme.of(context).textTheme.titleSmall),
-                            Text(t(lang, 'highlightAlphaSub'), style: Theme.of(context).textTheme.bodySmall),
-                            Slider(
-                              min: 0,
-                              max: 100,
-                              divisions: 100,
-                              label: '${(store.highlightAlpha * 100).round()}%',
-                              value: (store.highlightAlpha * 100).clamp(0, 100),
-                              onChanged: store.materialYou ? null : (n) => store.setHighlightAlpha(n / 100),
-                            ),
-                          ],
+                      Opacity(
+                        opacity: store.materialYou && !store.dynamicColor ? 0.38 : 1,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(t(lang, 'highlightAlpha'), style: Theme.of(context).textTheme.titleSmall),
+                              Text(t(lang, 'highlightAlphaSub'), style: Theme.of(context).textTheme.bodySmall),
+                              Slider(
+                                min: 0,
+                                max: 100,
+                                divisions: 100,
+                                label: '${(store.highlightAlpha * 100).round()}%',
+                                value: (store.highlightAlpha * 100).clamp(0, 100),
+                                onChanged: (store.materialYou || store.dynamicColor)
+                                    ? null
+                                    : (n) => store.setHighlightAlpha(n / 100),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
