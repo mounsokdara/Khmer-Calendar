@@ -278,7 +278,7 @@ class _WeatherPageState extends State<WeatherPage> {
                                   wmoIconUrl(h.code),
                                   width: 32,
                                   height: 32,
-                                  errorBuilder: (_, _, _) => const SizedBox(height: 32),
+                                  errorBuilder: (_, _, _) => Icon(wxMaterialIcon(h.code), size: 28),
                                 ),
                                 Text('${h.temp}°', style: const TextStyle(fontWeight: FontWeight.w700)),
                               ],
@@ -291,7 +291,14 @@ class _WeatherPageState extends State<WeatherPage> {
                   for (final d in snap.daily)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
+                      leading: Image.network(
+                        wmoIconUrl(d.code),
+                        width: 36,
+                        height: 36,
+                        errorBuilder: (_, _, _) => Icon(wxMaterialIcon(d.code), size: 32),
+                      ),
                       title: Text(d.date),
+                      subtitle: Text(lang == Lang.en ? wmoOf(d.code).en : wmoOf(d.code).km),
                       trailing: Text('${d.high}° / ${d.low}°'),
                     ),
                 ] else
@@ -368,7 +375,7 @@ class _CityCard extends StatelessWidget {
                       wmoIconUrl(snap!.code),
                       width: 48,
                       height: 48,
-                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      errorBuilder: (_, _, _) => Icon(wxMaterialIcon(snap!.code), size: 40, color: Colors.white),
                     ),
                 ],
               ),
@@ -378,6 +385,14 @@ class _CityCard extends StatelessWidget {
       ),
     );
   }
+}
+
+IconData wxMaterialIcon(int code) {
+  if (code <= 1) return Icons.wb_sunny;
+  if (code <= 3) return Icons.cloud;
+  if (code <= 48) return Icons.dehaze;
+  if (code <= 86) return Icons.umbrella;
+  return Icons.flash_on;
 }
 
 class CloudPhoto extends StatelessWidget {

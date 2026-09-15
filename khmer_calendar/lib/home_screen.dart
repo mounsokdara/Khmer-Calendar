@@ -133,15 +133,6 @@ Future<void> pushWeatherList(
     final snap = cache[id];
     if (selectId != null && id == selectId) index = rows.length;
     final meta = snap == null ? null : wmoOf(snap.code);
-    String icon = '';
-    String photo = '';
-    if (snap != null) {
-      icon = await cacheUrl(wmoIconUrl(snap.code), 'wx_icon_$id.png') ?? '';
-    }
-    final remote = await cityPhotoUrl(city);
-    if (remote != null) {
-      photo = await cacheUrl(remote, 'wx_photo_$id.jpg') ?? '';
-    }
     rows.add({
       'id': id,
       'name': city.name,
@@ -151,13 +142,14 @@ Future<void> pushWeatherList(
       'low': snap == null ? '' : '${snap.low}',
       'label': meta?.km ?? '',
       'labelEn': meta?.en ?? '',
-      'icon': icon,
-      'photo': photo,
+      'code': '${snap?.code ?? 2}',
+      'icon': '',
+      'photo': '',
     });
   }
   if (rows.isEmpty) return;
-  final first = rows[index.clamp(0, rows.length - 1)];
-  try {
+  Future<void> send() async {
+    final first = rows[index.clamp(0, rows.length - 1)];
     await _ch.invokeMethod<void>('updateWidget', {
       'wx_list': jsonEncode(rows),
       'wx_index': index,
@@ -170,6 +162,26 @@ Future<void> pushWeatherList(
       'wx_label_en': first['labelEn'],
       'lang': store.lang == Lang.en ? 'en' : 'km',
     });
+  }
+
+  try {
+    await send();
+  } catch (_) {}
+  for (final row in rows) {
+    final id = row['id'] ?? '';
+    final city = cityById(id);
+    final snap = cache[id];
+    if (city == null) continue;
+    if (snap != null) {
+      row['icon'] = await cacheUrl(wmoIconUrl(snap.code), 'wx_icon_$id.png') ?? '';
+    }
+    final remote = await cityPhotoUrl(city);
+    if (remote != null) {
+      row['photo'] = await cacheUrl(remote, 'wx_photo_$id.jpg') ?? '';
+    }
+  }
+  try {
+    await send();
   } catch (_) {}
 }
 

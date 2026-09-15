@@ -154,6 +154,14 @@ String wmoIconUrl(int code) {
   return 'https://openweathermap.org/img/wn/$icon@2x.png';
 }
 
+String wmoKind(int code) {
+  if (code <= 1) return 'clear';
+  if (code <= 3) return 'cloudy';
+  if (code <= 48) return 'fog';
+  if (code <= 86) return 'rain';
+  return 'storm';
+}
+
 const _wikiHeaders = {
   'User-Agent': 'KhmerCalendar/1.0 (https://khmercalendar.pages.dev)',
   'Accept': 'application/json',
@@ -167,7 +175,7 @@ Future<String?> cityPhotoUrl(City city) async {
     final url = Uri.parse(
       'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(city.nameEn)}',
     );
-    final res = await http.get(url, headers: _wikiHeaders);
+    final res = await http.get(url, headers: _wikiHeaders).timeout(const Duration(seconds: 6));
     if (res.statusCode != 200) {
       _photoMem[city.id] = null;
       return null;

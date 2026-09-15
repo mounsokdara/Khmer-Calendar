@@ -91,13 +91,54 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             return try {
                 val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(path, bounds)
+                if (bounds.outWidth <= 0) return null
                 var sample = 1
-                val w = bounds.outWidth.coerceAtLeast(1)
-                while (w / sample > max) sample *= 2
-                BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample })
+                while (bounds.outWidth / sample > max) sample *= 2
+                val out = BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sample })
+                if (out != null && out.byteCount > 350_000) {
+                    out.recycle()
+                    null
+                } else {
+                    out
+                }
             } catch (_: Exception) {
                 null
             }
+        }
+
+        private fun iconRes(code: Int): Int {
+            return when {
+                code <= 1 -> R.drawable.ic_wx_clear
+                code <= 3 -> R.drawable.ic_wx_cloudy
+                code <= 48 -> R.drawable.ic_wx_fog
+                code <= 86 -> R.drawable.ic_wx_rain
+                else -> R.drawable.ic_wx_storm
+            }
+        }
+
+        private fun applyLegacy(context: Context, views: RemoteViews, lang: String): Boolean {
+            val p = WidgetStore.prefs(context)
+            val temp = p.getString("wx_temp", "") ?: ""
+            if (temp.isEmpty()) return false
+            val city = if (lang == "en") p.getString("wx_city_en", "") else p.getString("wx_city", "")
+            val label = if (lang == "en") p.getString("wx_label_en", "") else p.getString("wx_label", "")
+            val high = p.getString("wx_high", "") ?: ""
+            val low = p.getString("wx_low", "") ?: ""
+            views.setTextViewText(R.id.wx_city, if (city.isNullOrEmpty()) WidgetStore.title(context) else city)
+            views.setTextViewText(R.id.wx_temp, "$temp°")
+            views.setTextViewText(R.id.wx_label, label ?: "")
+            if (high.isEmpty()) {
+                views.setViewVisibility(R.id.wx_range, View.GONE)
+            } else {
+                views.setViewVisibility(R.id.wx_range, View.VISIBLE)
+                views.setTextViewText(R.id.wx_range, "H $high°   L $low°")
+            }
+            views.setImageViewResource(R.id.wx_icon, R.drawable.ic_wx_cloudy)
+            views.setViewVisibility(R.id.wx_icon, View.VISIBLE)
+            views.setViewVisibility(R.id.wx_count, View.GONE)
+            views.setViewVisibility(R.id.wx_prev, View.GONE)
+            views.setViewVisibility(R.id.wx_next, View.GONE)
+            return true
         }
 
         private fun build(context: Context, widgetId: Int): RemoteViews {
@@ -109,17 +150,19 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.wx_root, open)
             views.setOnClickPendingIntent(R.id.wx_city, open)
             if (n <= 0) {
-                views.setTextViewText(R.id.wx_city, WidgetStore.title(context))
-                views.setTextViewText(R.id.wx_temp, "--")
-                views.setTextViewText(
-                    R.id.wx_label,
-                    if (lang == "en") "Open the app for weather" else "បើកកម្មវិធីសម្រាប់អាកាសធាតុ",
-                )
-                views.setViewVisibility(R.id.wx_range, View.GONE)
+                if (!applyLegacy(context, views, lang)) {
+                    views.setTextViewText(R.id.wx_city, WidgetStore.title(context))
+                    views.setTextViewText(R.id.wx_temp, "--")
+                    views.setTextViewText(
+                        R.id.wx_label,
+                        if (lang == "en") "Open the app for weather" else "បើកកម្មវិធីសម្រាប់អាកាសធាតុ",
+                    )
+                    views.setViewVisibility(R.id.wx_range, View.GONE)
+                    views.setImageViewResource(R.id.wx_icon, R.drawable.ic_wx_cloudy)
+                }
                 views.setViewVisibility(R.id.wx_count, View.GONE)
                 views.setViewVisibility(R.id.wx_prev, View.GONE)
                 views.setViewVisibility(R.id.wx_next, View.GONE)
-                views.setViewVisibility(R.id.wx_icon, View.GONE)
                 return views
             }
             val i = shownIndex(context, widgetId, n)
@@ -129,6 +172,7 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             val high = item.optString("high")
             val low = item.optString("low")
             val label = if (lang == "en") item.optString("labelEn") else item.optString("label")
+            val code = item.optString("code").toIntOrNull() ?: 2
             views.setTextViewText(R.id.wx_city, city.ifEmpty { WidgetStore.title(context) })
             views.setTextViewText(R.id.wx_temp, if (temp.isEmpty()) "--" else "$temp°")
             views.setTextViewText(R.id.wx_label, label)
@@ -142,15 +186,22 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             views.setViewVisibility(R.id.wx_count, if (n > 1) View.VISIBLE else View.GONE)
             views.setViewVisibility(R.id.wx_prev, if (n > 1) View.VISIBLE else View.GONE)
             views.setViewVisibility(R.id.wx_next, if (n > 1) View.VISIBLE else View.GONE)
-            val icon = bmp(item.optString("icon"), 128)
-            if (icon != null) {
-                views.setViewVisibility(R.id.wx_icon, View.VISIBLE)
-                views.setImageViewBitmap(R.id.wx_icon, icon)
+            views.setViewVisibility(R.id.wx_icon, View.VISIBLE)
+            val downloaded = bmp(item.optString("icon"), 96)
+            if (downloaded != null) {
+                try {
+                    views.setImageViewBitmap(R.id.wx_icon, downloaded)
+                } catch (_: Exception) {
+                    views.setImageViewResource(R.id.wx_icon, iconRes(code))
+                }
             } else {
-                views.setViewVisibility(R.id.wx_icon, View.GONE)
+                views.setImageViewResource(R.id.wx_icon, iconRes(code))
             }
-            val photo = bmp(item.optString("photo"), 480)
-            if (photo != null) views.setImageViewBitmap(R.id.wx_photo, photo)
+            try {
+                val photo = bmp(item.optString("photo"), 240)
+                if (photo != null) views.setImageViewBitmap(R.id.wx_photo, photo)
+            } catch (_: Exception) {
+            }
             views.setOnClickPendingIntent(R.id.wx_prev, shiftPi(context, widgetId, -1, 1))
             views.setOnClickPendingIntent(R.id.wx_next, shiftPi(context, widgetId, 1, 2))
             return views
