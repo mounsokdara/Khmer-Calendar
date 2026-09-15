@@ -48,6 +48,10 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       redirect: (ctx, state) {
         if (!widget.store.hydrated) return '/splash';
         if (!widget.store.setupDone && state.uri.path != '/get-started') return '/get-started';
+        if (widget.store.setupDone) {
+          final pending = widget.store.takePendingRoute();
+          if (pending != null) return pending;
+        }
         if (widget.store.setupDone && (state.uri.path == '/get-started' || state.uri.path == '/splash' || state.uri.path == '/')) {
           switch (widget.store.lastTab) {
             case TabId.today:

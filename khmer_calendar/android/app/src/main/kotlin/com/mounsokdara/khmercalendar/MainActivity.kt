@@ -21,10 +21,12 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private var pending: MethodChannel.Result? = null
     private var pendingCode = 0
+    private var channel: MethodChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        channel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "setFlags" -> {
                     val bg = call.argument<Boolean>("background") ?: false
@@ -75,9 +77,22 @@ class MainActivity : FlutterActivity() {
                     DailyNotify.cancel(this)
                     result.success(true)
                 }
+                "getLaunch" -> result.success(launchMap(intent))
                 else -> result.notImplemented()
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        channel?.invokeMethod("open", launchMap(intent))
+    }
+
+    private fun launchMap(src: Intent?): HashMap<String, String> {
+        val tab = src?.getStringExtra("tab") ?: ""
+        val date = src?.getStringExtra("date") ?: ""
+        return hashMapOf("tab" to tab, "date" to date)
     }
 
     private fun saveWidget(args: Any?) {

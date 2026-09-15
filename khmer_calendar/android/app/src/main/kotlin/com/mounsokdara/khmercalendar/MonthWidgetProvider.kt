@@ -213,13 +213,20 @@ class MonthWidgetProvider : AppWidgetProvider() {
                     silId(context, i),
                     if (inMonth && flags.contains('s')) View.VISIBLE else View.GONE,
                 )
+                views.setOnClickPendingIntent(
+                    id,
+                    WidgetStore.launch(context, "today", isoOf(d)),
+                )
             }
             views.setOnClickPendingIntent(R.id.year_prev, shiftPi(context, widgetId, "year", -1, 1))
             views.setOnClickPendingIntent(R.id.year_next, shiftPi(context, widgetId, "year", 1, 2))
             views.setOnClickPendingIntent(R.id.month_prev, shiftPi(context, widgetId, "month", -1, 3))
             views.setOnClickPendingIntent(R.id.month_next, shiftPi(context, widgetId, "month", 1, 4))
             views.setOnClickPendingIntent(R.id.month_today, shiftPi(context, widgetId, "today", 0, 5))
-            views.setOnClickPendingIntent(R.id.month_root, WidgetStore.launch(context, "months"))
+            val openMonths = WidgetStore.launch(context, "months")
+            views.setOnClickPendingIntent(R.id.month_root, openMonths)
+            views.setOnClickPendingIntent(R.id.month_year, openMonths)
+            views.setOnClickPendingIntent(R.id.month_name, openMonths)
             return views
         }
     }

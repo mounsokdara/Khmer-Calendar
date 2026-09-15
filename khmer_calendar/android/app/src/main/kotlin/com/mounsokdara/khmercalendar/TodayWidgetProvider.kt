@@ -1,6 +1,5 @@
 package com.mounsokdara.khmercalendar
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -87,11 +86,7 @@ class TodayWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.widget_holiday, View.GONE)
             }
 
-            val launch =
-                Intent(context, MainActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            views.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getActivity(context, 0, launch, flags))
+            views.setOnClickPendingIntent(R.id.widget_root, WidgetStore.launch(context, "today"))
             return views
         }
     }

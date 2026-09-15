@@ -25,6 +25,18 @@ void bindHomeWidget(AppStore store) {
   store.addListener(() => syncHomeWidget(store));
   syncHomeWidget(store);
   syncWeatherWidget(store);
+  _ch.setMethodCallHandler((call) async {
+    if (call.method == 'open') applyWidgetLaunch(store, call.arguments);
+  });
+  _ch.invokeMethod<dynamic>('getLaunch').then((raw) => applyWidgetLaunch(store, raw)).catchError((_) {});
+}
+
+void applyWidgetLaunch(AppStore store, Object? raw) {
+  if (raw is! Map) return;
+  final tab = raw['tab']?.toString() ?? '';
+  final date = raw['date']?.toString() ?? '';
+  if (tab.isEmpty && date.isEmpty) return;
+  store.applyLaunch(tab: tab, date: date);
 }
 
 Future<void> syncHomeWidget(AppStore store) async {

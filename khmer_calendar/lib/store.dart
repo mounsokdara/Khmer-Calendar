@@ -110,6 +110,7 @@ class AppStore extends ChangeNotifier {
   bool notifyTasks = true;
   int weekStartsOn = 1;
   bool hydrated = false;
+  String? pendingRoute;
 
   Brightness get brightness {
     if (theme == 'light') return Brightness.light;
@@ -247,6 +248,44 @@ class AppStore extends ChangeNotifier {
   void goToDate(String iso) {
     cursor = iso;
     selected = iso;
+    _touch();
+  }
+
+  String? takePendingRoute() {
+    final route = pendingRoute;
+    pendingRoute = null;
+    return route;
+  }
+
+  void applyLaunch({String? tab, String? date}) {
+    final iso = (date ?? '').trim();
+    if (iso.isNotEmpty) goToDate(iso);
+    final key = (tab ?? '').trim();
+    String? route;
+    switch (key) {
+      case 'today':
+      case 'day':
+        lastTab = TabId.today;
+        route = '/day';
+      case 'months':
+        lastTab = TabId.months;
+        route = '/months';
+      case 'events':
+        lastTab = TabId.events;
+        route = '/events';
+      case 'weather':
+        lastTab = TabId.weather;
+        route = '/weather';
+      case 'more':
+        lastTab = TabId.more;
+        route = '/more';
+      default:
+        if (iso.isNotEmpty) {
+          lastTab = TabId.today;
+          route = '/day';
+        }
+    }
+    if (route != null) pendingRoute = route;
     _touch();
   }
 

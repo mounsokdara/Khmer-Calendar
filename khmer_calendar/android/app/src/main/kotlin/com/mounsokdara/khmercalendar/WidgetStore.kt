@@ -52,13 +52,22 @@ object WidgetStore {
         }
     }
 
-    fun launch(context: Context, tab: String? = null): PendingIntent {
+    fun launch(context: Context, tab: String? = null, date: String? = null): PendingIntent {
         val intent =
             Intent(context, MainActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .setAction("khmer.OPEN")
         if (tab != null) intent.putExtra("tab", tab)
+        if (date != null) intent.putExtra("date", date)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        val req = if (tab == null) 0 else tab.hashCode()
+        val req =
+            if (!date.isNullOrEmpty()) {
+                date.replace("-", "").toIntOrNull() ?: date.hashCode()
+            } else if (!tab.isNullOrEmpty()) {
+                100000 + tab.hashCode()
+            } else {
+                0
+            }
         return PendingIntent.getActivity(context, req, intent, flags)
     }
 
