@@ -177,12 +177,15 @@ class MonthWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.month_year, year.toString())
             views.setTextViewText(R.id.month_name, months[(month - 1).coerceIn(0, 11)])
             views.setTextViewText(R.id.month_today, if (lang == "en") "Today" else "ថ្ងៃនេះ")
+            val today = Calendar.getInstance()
+            val onThisMonth =
+                year == today.get(Calendar.YEAR) && month == today.get(Calendar.MONTH) + 1
+            views.setViewVisibility(R.id.month_today, if (onThisMonth) View.GONE else View.VISIBLE)
             for (i in 0 until 7) {
                 val idx = (weekStart + i) % 7
                 views.setTextViewText(headId(context, i), short[idx])
             }
             val start = gridStart(year, month, weekStart)
-            val today = Calendar.getInstance()
             for (i in 0 until 42) {
                 val d = start.clone() as Calendar
                 d.add(Calendar.DATE, i)
