@@ -16,31 +16,18 @@ Future<void> showMonthWheel(BuildContext context, {required AppStore store}) {
   return showDialog<void>(
     context: context,
     builder: (ctx) {
-      return AlertDialog(
-        title: Text(t(lang, 'khmerCalendar')),
-        contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
-        content: SizedBox(
-          width: 360,
-          child: _MonthWheelSheet(
-            store: store,
-            lang: lang,
-            initialMonth: cursor.month - 1,
-            initialYear: cursor.year.clamp(wheelYearStart, wheelYearEnd),
-          ),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(t(lang, 'change')),
-          ),
-        ],
+      return _MonthWheelDialog(
+        store: store,
+        lang: lang,
+        initialMonth: cursor.month - 1,
+        initialYear: cursor.year.clamp(wheelYearStart, wheelYearEnd),
       );
     },
   );
 }
 
-class _MonthWheelSheet extends StatefulWidget {
-  const _MonthWheelSheet({
+class _MonthWheelDialog extends StatefulWidget {
+  const _MonthWheelDialog({
     required this.store,
     required this.lang,
     required this.initialMonth,
@@ -52,10 +39,10 @@ class _MonthWheelSheet extends StatefulWidget {
   final int initialYear;
 
   @override
-  State<_MonthWheelSheet> createState() => _MonthWheelSheetState();
+  State<_MonthWheelDialog> createState() => _MonthWheelDialogState();
 }
 
-class _MonthWheelSheetState extends State<_MonthWheelSheet> {
+class _MonthWheelDialogState extends State<_MonthWheelDialog> {
   late int month;
   late int year;
 
@@ -66,8 +53,9 @@ class _MonthWheelSheetState extends State<_MonthWheelSheet> {
     year = widget.initialYear;
   }
 
-  void _apply() {
+  void _commit() {
     widget.store.setCursor(isoOf(DateTime(year, month + 1, 1)));
+    Navigator.pop(context);
   }
 
   @override
@@ -75,32 +63,45 @@ class _MonthWheelSheetState extends State<_MonthWheelSheet> {
     final lang = widget.lang;
     final months = monthsOf(lang);
     final years = [for (var y = wheelYearStart; y <= wheelYearEnd; y++) y];
-    return SizedBox(
-      height: wheelItemExtent * wheelVisible,
-      child: Row(
-        children: [
-          Expanded(
-            child: WheelCol(
-              labels: months,
-              index: month,
-              onIndex: (i) {
-                setState(() => month = i);
-                _apply();
-              },
-            ),
-          ),
-          Expanded(
-            child: WheelCol(
-              labels: [for (final y in years) '$y'],
-              index: (year - wheelYearStart).clamp(0, years.length - 1),
-              onIndex: (i) {
-                setState(() => year = wheelYearStart + i);
-                _apply();
-              },
-            ),
-          ),
-        ],
+    final maxW = MediaQuery.sizeOf(context).width;
+    return AlertDialog(
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(t(lang, 'khmerCalendar'), maxLines: 1),
       ),
+      contentPadding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      content: SizedBox(
+        width: maxW < 408 ? maxW - 48 : 360,
+        child: SizedBox(
+          height: wheelItemExtent * wheelVisible,
+          child: Row(
+            children: [
+              Expanded(
+                child: WheelCol(
+                  labels: months,
+                  index: month,
+                  onIndex: (i) => setState(() => month = i),
+                ),
+              ),
+              Expanded(
+                child: WheelCol(
+                  labels: [for (final y in years) '$y'],
+                  index: (year - wheelYearStart).clamp(0, years.length - 1),
+                  onIndex: (i) => setState(() => year = wheelYearStart + i),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        FilledButton(
+          onPressed: _commit,
+          child: Text(t(lang, 'change')),
+        ),
+      ],
     );
   }
 }

@@ -4,7 +4,9 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'calendar/chhankitek.dart';
 import 'dates.dart';
+import 'i18n.dart';
 import 'store.dart';
 
 final _plugin = FlutterLocalNotificationsPlugin();
@@ -107,25 +109,16 @@ Future<void> syncReminders(AppStore store) async {
   if (!store.notifyOn) return;
   var id = 1;
   final now = DateTime.now();
-  for (final e in store.events) {
-    if (e.done == true) continue;
-    if ((e.reminderDate ?? '').isEmpty) continue;
-    final day = fromIso(e.reminderDate!);
-    var hour = 9;
-    var minute = 0;
-    final tm = e.reminderTime ?? '';
-    if (tm.contains(':')) {
-      final p = tm.split(':');
-      hour = int.tryParse(p[0]) ?? 9;
-      minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
-    }
-    final when = DateTime(day.year, day.month, day.day, hour, minute);
-    if (when.isBefore(now)) continue;
+  final lang = store.lang;
+
+  Future<void> schedule(String title, String? body, DateTime when) async {
+    if (when.isBefore(now)) return;
+    final nid = id++;
     try {
       await _plugin.zonedSchedule(
-        id++,
-        e.title,
-        e.notes?.isNotEmpty == true ? e.notes : e.title,
+        nid,
+        title,
+        (body != null && body.isNotEmpty) ? body : title,
         tz.TZDateTime.from(when, tz.local),
         const NotificationDetails(
           android: AndroidNotificationDetails(
@@ -144,7 +137,58 @@ Future<void> syncReminders(AppStore store) async {
             : AndroidScheduleMode.inexactAllowWhileIdle,
       );
     } catch (err) {
-      debugPrint('schedule $id: $err');
+      debugPrint('schedule $nid: $err');
+    }
+  }
+
+  if (store.notifyTasks) {
+    for (final e in store.events) {
+      if (e.done == true) continue;
+      if ((e.reminderDate ?? '').isEmpty) continue;
+      final day = fromIso(e.reminderDate!);
+      var hour = 9;
+      var minute = 0;
+      final tm = e.reminderTime ?? '';
+      if (tm.contains(':')) {
+        final p = tm.split(':');
+        hour = int.tryParse(p[0]) ?? 9;
+        minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
+      }
+      await schedule(e.title, e.notes, DateTime(day.year, day.month, day.day, hour, minute));
+    }
+  }
+
+  if (store.notifyEvents) {
+    for (final e in store.events) {
+      if (e.done == true) continue;
+      if (e.date.isEmpty) continue;
+      if (store.notifyTasks && (e.reminderDate ?? '') == e.date) continue;
+      final day = fromIso(e.date);
+      var hour = 9;
+      var minute = 0;
+      final tm = e.startTime ?? '';
+      if (e.allDay != true && tm.contains(':')) {
+        final p = tm.split(':');
+        hour = int.tryParse(p[0]) ?? 9;
+        minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
+      }
+      await schedule(e.title, e.notes, DateTime(day.year, day.month, day.day, hour, minute));
+    }
+  }
+
+  if (store.notifyHolidays) {
+    for (final y in {now.year, now.year + 1}) {
+      List<Holiday> list;
+      try {
+        list = holidaysOfYear(y);
+      } catch (_) {
+        continue;
+      }
+      for (final h in list) {
+        final day = fromIso(h.date);
+        final title = lang == Lang.en ? h.nameEn : h.nameKm;
+        await schedule(title, t(lang, 'kindHoliday'), DateTime(day.year, day.month, day.day, 8, 0));
+      }
     }
   }
 }

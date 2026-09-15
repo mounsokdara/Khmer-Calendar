@@ -297,7 +297,7 @@ Future<void> keepOnlyGranted(AppStore store) async {
   if (store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
   if (store.locationOn && !os.location) store.setLocationOn(false);
   await _syncNativeFlags(store);
-  if (!store.backgroundOn) await _native('stopKeepAlive');
+  await _native('stopKeepAlive');
   if (!store.notifyOn) await cancelAllReminders();
 }
 
@@ -309,11 +309,7 @@ Future<void> writeGrantedFlags(AppStore store) async {
   store.setAutoLaunchOn(os.autoLaunch);
   store.setLocationOn(os.location);
   await _syncNativeFlags(store);
-  if (os.background && !kIsWeb) {
-    await _native('startKeepAlive');
-  } else {
-    await _native('stopKeepAlive');
-  }
+  await _native('stopKeepAlive');
   if (os.notify) {
     await initReminderEngine();
     await syncReminders(store);
@@ -380,12 +376,10 @@ Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   final ok = await backgroundAllowed();
   store.setBackgroundOn(ok);
   await _syncNativeFlags(store);
+  await _native('stopKeepAlive');
   if (ok) {
-    await _native('startKeepAlive');
     await initReminderEngine();
     await syncReminders(store);
-  } else {
-    await _native('stopKeepAlive');
   }
   return ok;
 }
@@ -531,9 +525,7 @@ Future<bool> requestAllPermissions(
 Future<void> applyStoredPermissions(AppStore store) async {
   await keepOnlyGranted(store);
   bindReminderSync(store);
-  if (store.backgroundOn && !kIsWeb) {
-    await _native('startKeepAlive');
-  }
+  await _native('stopKeepAlive');
   if (store.notifyOn) {
     await initReminderEngine();
     await syncReminders(store);

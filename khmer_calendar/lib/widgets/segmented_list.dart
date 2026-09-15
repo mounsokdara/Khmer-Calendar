@@ -85,10 +85,20 @@ class SegmentedTile extends StatelessWidget {
       minVerticalPadding: 12,
       leading: leading,
       selected: selected,
-      title: Text(title, style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500)),
+      title: Text(
+        title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: titleColor, fontSize: 16, fontWeight: FontWeight.w500),
+      ),
       subtitle: subtitle == null
           ? null
-          : Text(subtitle!, style: TextStyle(color: danger ? cs.error.withValues(alpha: 0.8) : cs.onSurfaceVariant)),
+          : Text(
+              subtitle!,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: danger ? cs.error.withValues(alpha: 0.8) : cs.onSurfaceVariant),
+            ),
       trailing: trailing,
       onTap: onTap,
     );

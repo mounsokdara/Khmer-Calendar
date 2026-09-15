@@ -91,13 +91,9 @@ class _WeatherPageState extends State<WeatherPage> {
         Expanded(
           child: store.weatherCities.isEmpty
               ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(t(lang, 'noCity')),
-                      const SizedBox(height: 12),
-                      FilledButton(onPressed: () => _addCity(context), child: Text(t(lang, 'addCity'))),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Text(t(lang, 'noCity'), textAlign: TextAlign.center),
                   ),
                 )
               : RefreshIndicator(

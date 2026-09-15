@@ -102,6 +102,12 @@ class SettingsPage extends StatelessWidget {
                     onTap: () => context.push('/settings/theme'),
                   ),
                   SegmentedTile(
+                    leading: const Icon(Icons.notifications_outlined),
+                    title: t(lang, 'notifyPageTitle'),
+                    subtitle: t(lang, 'notifyPageSub'),
+                    onTap: () => context.push('/settings/notifications'),
+                  ),
+                  SegmentedTile(
                     leading: const Icon(Icons.translate),
                     title: t(lang, 'language'),
                     subtitle: store.langPref == 'auto' ? t(lang, 'langAuto') : (store.langPref == 'km' ? 'ខ្មែរ' : 'English'),
@@ -228,60 +234,69 @@ class ThemePage extends StatelessWidget {
                   ),
                 ],
               ),
-              SchemeChipScroller(store: store),
-              SegmentedGroup(
-                children: [
-                  SwitchListTile(
-                    title: Text(t(lang, 'extraDark')),
-                    subtitle: Text(t(lang, 'extraDarkSub')),
-                    value: store.extraDark,
-                    onChanged: store.setExtraDark,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ColorRow(
-                title: t(lang, 'accent'),
-                subtitle: t(lang, 'accentSub'),
-                value: store.accentColor,
-                disabled: store.materialYou,
-                onPick: () => showColorPicker(
-                  context,
-                  lang: lang,
-                  title: t(lang, 'accent'),
-                  value: store.accentColor,
-                  onSave: store.setAccentColor,
-                ),
-              ),
-              ColorRow(
-                title: t(lang, 'highlight'),
-                subtitle: t(lang, 'highlightSub'),
-                value: store.highlightColor,
-                disabled: store.materialYou,
-                onPick: () => showColorPicker(
-                  context,
-                  lang: lang,
-                  title: t(lang, 'highlight'),
-                  value: store.highlightColor,
-                  onSave: store.setHighlightColor,
-                ),
-              ),
-              Opacity(
-                opacity: store.materialYou ? 0.38 : 1,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              IgnorePointer(
+                ignoring: store.materialYou,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 180),
+                  opacity: store.materialYou ? 0.38 : 1,
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(t(lang, 'highlightAlpha'), style: Theme.of(context).textTheme.titleSmall),
-                      Text(t(lang, 'highlightAlphaSub'), style: Theme.of(context).textTheme.bodySmall),
-                      Slider(
-                        min: 0,
-                        max: 100,
-                        divisions: 100,
-                        label: '${(store.highlightAlpha * 100).round()}%',
-                        value: (store.highlightAlpha * 100).clamp(0, 100),
-                        onChanged: store.materialYou ? null : (n) => store.setHighlightAlpha(n / 100),
+                      SchemeChipScroller(store: store),
+                      SegmentedGroup(
+                        children: [
+                          SwitchListTile(
+                            title: Text(t(lang, 'extraDark')),
+                            subtitle: Text(t(lang, 'extraDarkSub')),
+                            value: store.extraDark,
+                            onChanged: store.materialYou ? null : store.setExtraDark,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ColorRow(
+                        title: t(lang, 'accent'),
+                        subtitle: t(lang, 'accentSub'),
+                        value: store.accentColor,
+                        disabled: store.materialYou,
+                        onPick: () => showColorPicker(
+                          context,
+                          lang: lang,
+                          title: t(lang, 'accent'),
+                          value: store.accentColor,
+                          onSave: store.setAccentColor,
+                        ),
+                      ),
+                      ColorRow(
+                        title: t(lang, 'highlight'),
+                        subtitle: t(lang, 'highlightSub'),
+                        value: store.highlightColor,
+                        disabled: store.materialYou,
+                        onPick: () => showColorPicker(
+                          context,
+                          lang: lang,
+                          title: t(lang, 'highlight'),
+                          value: store.highlightColor,
+                          onSave: store.setHighlightColor,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(t(lang, 'highlightAlpha'), style: Theme.of(context).textTheme.titleSmall),
+                            Text(t(lang, 'highlightAlphaSub'), style: Theme.of(context).textTheme.bodySmall),
+                            Slider(
+                              min: 0,
+                              max: 100,
+                              divisions: 100,
+                              label: '${(store.highlightAlpha * 100).round()}%',
+                              value: (store.highlightAlpha * 100).clamp(0, 100),
+                              onChanged: store.materialYou ? null : (n) => store.setHighlightAlpha(n / 100),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -406,6 +421,69 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       }
                       if (context.mounted) showGpsSnack(context, store.lang, store.locationOn ? r : GpsResult.denied);
                     },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class NotificationsPage extends StatelessWidget {
+  const NotificationsPage({super.key, required this.store});
+  final AppStore store;
+
+  @override
+  Widget build(BuildContext context) {
+    return WatchStore(
+      store: store,
+      builder: (context, store) {
+        final lang = store.lang;
+
+        Future<void> toggle(bool v, void Function(bool) set) async {
+          if (!v) {
+            set(false);
+            await syncReminders(store);
+            return;
+          }
+          if (!store.notifyOn) {
+            final ok = await requestNotifications(store);
+            if (!ok && context.mounted) {
+              await promptIfDenied(store, context: context, kind: 'notify', allowed: notificationsAllowed);
+            }
+            if (!store.notifyOn) return;
+          }
+          set(true);
+          await syncReminders(store);
+        }
+
+        return OverlayScaffold(
+          title: t(lang, 'notifyPageTitle'),
+          body: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            children: [
+              SegmentedGroup(
+                children: [
+                  SwitchListTile(
+                    title: Text(t(lang, 'remindEvents')),
+                    subtitle: Text(t(lang, 'remindEventsSub')),
+                    value: store.notifyEvents,
+                    onChanged: (v) => toggle(v, store.setNotifyEvents),
+                  ),
+                  SwitchListTile(
+                    title: Text(t(lang, 'remindHolidays')),
+                    subtitle: Text(t(lang, 'remindHolidaysSub')),
+                    value: store.notifyHolidays,
+                    onChanged: (v) => toggle(v, store.setNotifyHolidays),
+                  ),
+                  SwitchListTile(
+                    title: Text(t(lang, 'remindTasks')),
+                    subtitle: Text(t(lang, 'remindTasksSub')),
+                    value: store.notifyTasks,
+                    onChanged: (v) => toggle(v, store.setNotifyTasks),
                   ),
                 ],
               ),
@@ -754,39 +832,6 @@ class AboutPage extends StatelessWidget {
                     onTap: () => launchUrl(Uri.parse(appSourceUrl), mode: LaunchMode.externalApplication),
                   ),
                 ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class OssLicensePage extends StatelessWidget {
-  const OssLicensePage({super.key, required this.store});
-  final AppStore store;
-
-  @override
-  Widget build(BuildContext context) {
-    return WatchStore(
-      store: store,
-      builder: (context, store) {
-        final lang = store.lang;
-        final cs = Theme.of(context).colorScheme;
-        return OverlayScaffold(
-          title: t(lang, 'openSourceLicense'),
-          body: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            children: [
-              Text(t(lang, 'mitLicense'), style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
-              SelectableText(
-                mitLicenseText,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      height: 1.45,
-                      color: cs.onSurface,
-                    ),
               ),
             ],
           ),

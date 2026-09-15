@@ -330,15 +330,27 @@ ThemeData buildTheme({
   required String accentColor,
   required String highlightColor,
   required double highlightAlpha,
+  ColorScheme? dynamicScheme,
 }) {
-  final schemeId = materialYou ? scheme : ColorSchemeId.rose;
-  final tokens = schemeTokens(schemeId, brightness, extraDark);
-  final color = colorSchemeFromTokens(tokens, brightness);
-  final cal = CalColors(
-    accent: materialYou ? color.primary : hexColor(accentColor),
-    highlight: materialYou ? color.primary : hexColor(highlightColor),
-    highlightAlpha: materialYou ? 0 : highlightAlpha,
-  );
+  final ColorScheme color;
+  final CalColors cal;
+  if (materialYou && dynamicScheme != null) {
+    color = dynamicScheme;
+    cal = CalColors(
+      accent: color.primary,
+      highlight: color.primary,
+      highlightAlpha: 0,
+    );
+  } else {
+    final schemeId = materialYou ? scheme : ColorSchemeId.rose;
+    final tokens = schemeTokens(schemeId, brightness, extraDark && !materialYou);
+    color = colorSchemeFromTokens(tokens, brightness);
+    cal = CalColors(
+      accent: materialYou ? color.primary : hexColor(accentColor),
+      highlight: materialYou ? color.primary : hexColor(highlightColor),
+      highlightAlpha: materialYou ? 0 : highlightAlpha,
+    );
+  }
   return ThemeData(
     useMaterial3: true,
     colorScheme: color,

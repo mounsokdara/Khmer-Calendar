@@ -51,19 +51,26 @@ class MainActivity : FlutterActivity() {
                 "openLocationSettings" ->
                     startOrFail(result, REQ_LOCATION, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 "startKeepAlive" -> {
-                    try {
-                        ContextCompat.startForegroundService(this, Intent(this, KeepAliveService::class.java))
-                        result.success(true)
-                    } catch (_: Exception) {
-                        result.success(false)
-                    }
+                    stopKeepAlive()
+                    result.success(true)
                 }
                 "stopKeepAlive" -> {
-                    stopService(Intent(this, KeepAliveService::class.java))
+                    stopKeepAlive()
                     result.success(true)
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun stopKeepAlive() {
+        try {
+            stopService(Intent(this, KeepAliveService::class.java))
+        } catch (_: Exception) {
+        }
+        try {
+            getSystemService(NotificationManager::class.java)?.cancel(KeepAliveService.ID)
+        } catch (_: Exception) {
         }
     }
 

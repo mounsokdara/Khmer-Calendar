@@ -49,7 +49,11 @@ class OverlayScaffold extends StatelessWidget {
             tooltip: MaterialLocalizations.of(context).backButtonTooltip,
             onPressed: () => _back(context),
           ),
-          title: Text(title),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(title, maxLines: 1),
+          ),
           actions: actions,
         ),
         body: body,

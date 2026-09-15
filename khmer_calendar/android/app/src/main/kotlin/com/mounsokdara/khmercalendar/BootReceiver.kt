@@ -1,9 +1,9 @@
 package com.mounsokdara.khmercalendar
 
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -18,17 +18,11 @@ class BootReceiver : BroadcastReceiver() {
         ) {
             return
         }
-        val pending = goAsync()
         try {
-            val flags = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            val background = flags.getBoolean("background", false)
-            val autoLaunch = flags.getBoolean("autoLaunch", false)
-            if (background || autoLaunch) {
-                ContextCompat.startForegroundService(context, Intent(context, KeepAliveService::class.java))
-            }
+            context.stopService(Intent(context, KeepAliveService::class.java))
+            val nm = context.getSystemService(NotificationManager::class.java)
+            nm?.cancel(KeepAliveService.ID)
         } catch (_: Exception) {
-        } finally {
-            pending.finish()
         }
     }
 

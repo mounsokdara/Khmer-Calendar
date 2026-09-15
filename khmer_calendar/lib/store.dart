@@ -104,6 +104,9 @@ class AppStore extends ChangeNotifier {
   bool backgroundOn = false;
   bool locationOn = false;
   bool autoLaunchOn = false;
+  bool notifyEvents = true;
+  bool notifyHolidays = true;
+  bool notifyTasks = true;
   int weekStartsOn = 1;
   bool hydrated = false;
 
@@ -151,6 +154,9 @@ class AppStore extends ChangeNotifier {
         backgroundOn = p['backgroundOn'] as bool? ?? false;
         locationOn = p['locationOn'] as bool? ?? false;
         autoLaunchOn = p['autoLaunchOn'] as bool? ?? false;
+        notifyEvents = p['notifyEvents'] as bool? ?? true;
+        notifyHolidays = p['notifyHolidays'] as bool? ?? true;
+        notifyTasks = p['notifyTasks'] as bool? ?? true;
         weekStartsOn = p['weekStartsOn'] as int? ?? 1;
       }
     } catch (_) {
@@ -187,6 +193,9 @@ class AppStore extends ChangeNotifier {
         'backgroundOn': backgroundOn,
         'locationOn': locationOn,
         'autoLaunchOn': autoLaunchOn,
+        'notifyEvents': notifyEvents,
+        'notifyHolidays': notifyHolidays,
+        'notifyTasks': notifyTasks,
         'weekStartsOn': weekStartsOn,
       }),
     );
@@ -245,7 +254,6 @@ class AppStore extends ChangeNotifier {
 
   void setColorScheme(ColorSchemeId id) {
     colorScheme = id;
-    materialYou = true;
     _touch();
   }
 
@@ -328,6 +336,21 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
+  void setNotifyEvents(bool v) {
+    notifyEvents = v;
+    _touch();
+  }
+
+  void setNotifyHolidays(bool v) {
+    notifyHolidays = v;
+    _touch();
+  }
+
+  void setNotifyTasks(bool v) {
+    notifyTasks = v;
+    _touch();
+  }
+
   void setWeekStartsOn(int v) {
     weekStartsOn = v;
     _touch();
@@ -369,6 +392,9 @@ class AppStore extends ChangeNotifier {
     backgroundOn = false;
     locationOn = false;
     autoLaunchOn = false;
+    notifyEvents = true;
+    notifyHolidays = true;
+    notifyTasks = true;
     weekStartsOn = 1;
     _touch();
   }

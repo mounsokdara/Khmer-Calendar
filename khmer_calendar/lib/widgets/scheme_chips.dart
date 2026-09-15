@@ -25,7 +25,7 @@ class SchemeChipScroller extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = store.materialYou;
+    final enabled = !store.materialYou;
     return Semantics(
       label: t(store.lang, 'schemeAria'),
       child: SizedBox(
@@ -38,15 +38,12 @@ class SchemeChipScroller extends StatelessWidget {
         itemBuilder: (ctx, i) {
           final s = schemes[i];
           final selected = store.colorScheme == s.id;
-          return Opacity(
-            opacity: enabled ? 1 : 0.38,
-            child: Tooltip(
-              message: s.label,
-              child: _SchemeChipButton(
-                chip: s,
-                selected: selected,
-                onTap: enabled ? () => store.setColorScheme(s.id) : null,
-              ),
+          return Tooltip(
+            message: s.label,
+            child: _SchemeChipButton(
+              chip: s,
+              selected: selected,
+              onTap: enabled ? () => store.setColorScheme(s.id) : null,
             ),
           );
         },
@@ -119,22 +116,19 @@ class ColorRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: disabled ? 0.38 : 1,
-      child: ListTile(
-        title: Text(title),
-        subtitle: subtitle == null ? null : Text(subtitle!),
-        trailing: Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: hexColor(value),
-            shape: BoxShape.circle,
-            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-          ),
+    return ListTile(
+      title: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis),
+      subtitle: subtitle == null ? null : Text(subtitle!, maxLines: 3, overflow: TextOverflow.ellipsis),
+      trailing: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: hexColor(value),
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
-        onTap: disabled ? null : onPick,
       ),
+      onTap: disabled ? null : onPick,
     );
   }
 }
