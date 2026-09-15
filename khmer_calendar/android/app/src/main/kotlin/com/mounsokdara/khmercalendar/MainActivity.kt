@@ -88,7 +88,7 @@ class MainActivity : FlutterActivity() {
             if (v is String) ed.putString(key, v)
         }
         listOf(
-            "iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "lang",
+            "iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang",
             "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en",
         ).forEach { putStr(it) }
         (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }

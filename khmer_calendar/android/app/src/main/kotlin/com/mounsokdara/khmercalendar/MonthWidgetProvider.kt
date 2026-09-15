@@ -29,7 +29,7 @@ class MonthWidgetProvider : AppWidgetProvider() {
             val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
             val unit = intent.getStringExtra(EXTRA_UNIT) ?: "month"
             val dir = intent.getIntExtra(EXTRA_DIR, 0)
-            shift(context, widgetId, unit, dir)
+            if (unit == "today") goToday(context, widgetId) else shift(context, widgetId, unit, dir)
             if (widgetId != AppWidgetManager.INVALID_APPWIDGET_ID) {
                 AppWidgetManager.getInstance(context).updateAppWidget(widgetId, build(context, widgetId))
             } else {
@@ -68,6 +68,15 @@ class MonthWidgetProvider : AppWidgetProvider() {
             val y = p.getInt("month_y_$widgetId", now.get(Calendar.YEAR))
             val m = p.getInt("month_m_$widgetId", now.get(Calendar.MONTH) + 1)
             return y to m
+        }
+
+        private fun goToday(context: Context, widgetId: Int) {
+            if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+            val now = Calendar.getInstance()
+            WidgetStore.prefs(context).edit()
+                .putInt("month_y_$widgetId", now.get(Calendar.YEAR))
+                .putInt("month_m_$widgetId", now.get(Calendar.MONTH) + 1)
+                .apply()
         }
 
         private fun shift(context: Context, widgetId: Int, unit: String, dir: Int) {
@@ -127,6 +136,15 @@ class MonthWidgetProvider : AppWidgetProvider() {
             }
         }
 
+        private fun names(context: Context): JSONObject {
+            val raw = WidgetStore.prefs(context).getString("names", null) ?: return JSONObject()
+            return try {
+                JSONObject(raw)
+            } catch (_: Exception) {
+                JSONObject()
+            }
+        }
+
         private fun cellId(context: Context, i: Int): Int {
             return context.resources.getIdentifier("cell_$i", "id", context.packageName)
         }
@@ -139,10 +157,10 @@ class MonthWidgetProvider : AppWidgetProvider() {
             return context.resources.getIdentifier("head_$i", "id", context.packageName)
         }
 
-        private fun cellLabel(day: Int, task: Boolean): CharSequence {
+        private fun cellLabel(day: Int, name: String): CharSequence {
             val num = day.toString()
-            if (!task) return num
-            val s = SpannableString("$num\n•")
+            if (name.isEmpty()) return num
+            val s = SpannableString("$num\n$name")
             s.setSpan(AbsoluteSizeSpan(8, true), num.length + 1, s.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             return s
         }
@@ -155,8 +173,10 @@ class MonthWidgetProvider : AppWidgetProvider() {
             val months = if (lang == "en") WidgetStore.MONTHS_EN else WidgetStore.MONTHS_KM
             val short = if (lang == "en") WidgetStore.WEEK_SHORT_EN else WidgetStore.WEEK_SHORT_KM
             val markMap = marks(context)
+            val nameMap = names(context)
             views.setTextViewText(R.id.month_year, year.toString())
             views.setTextViewText(R.id.month_name, months[(month - 1).coerceIn(0, 11)])
+            views.setTextViewText(R.id.month_today, if (lang == "en") "Today" else "ថ្ងៃនេះ")
             for (i in 0 until 7) {
                 val idx = (weekStart + i) % 7
                 views.setTextViewText(headId(context, i), short[idx])
@@ -174,9 +194,9 @@ class MonthWidgetProvider : AppWidgetProvider() {
                 val flags = markMap.optString(isoOf(d), "")
                 val sunday = d.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                 val id = cellId(context, i)
-                val task = inMonth && flags.contains('t')
-                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), task))
-                views.setInt(id, "setMaxLines", 2)
+                val name = if (inMonth) nameMap.optString(isoOf(d), "") else ""
+                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), name))
+                views.setInt(id, "setMaxLines", 3)
                 val color =
                     when {
                         isToday -> COLOR_TODAY
@@ -195,6 +215,7 @@ class MonthWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.year_next, shiftPi(context, widgetId, "year", 1, 2))
             views.setOnClickPendingIntent(R.id.month_prev, shiftPi(context, widgetId, "month", -1, 3))
             views.setOnClickPendingIntent(R.id.month_next, shiftPi(context, widgetId, "month", 1, 4))
+            views.setOnClickPendingIntent(R.id.month_today, shiftPi(context, widgetId, "today", 0, 5))
             views.setOnClickPendingIntent(R.id.month_root, WidgetStore.launch(context, "months"))
             return views
         }

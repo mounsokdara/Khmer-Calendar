@@ -49,6 +49,7 @@ Future<void> syncHomeWidget(AppStore store) async {
     };
   }
   final marks = <String, String>{};
+  final names = <String, String>{};
   void flag(String iso, String f) {
     final cur = marks[iso] ?? '';
     if (!cur.contains(f)) marks[iso] = '$cur$f';
@@ -58,8 +59,10 @@ Future<void> syncHomeWidget(AppStore store) async {
       if (o.date.isEmpty) continue;
       if (o.kind == Kind.holiday) {
         flag(o.date, o.holidayType == HolidayType.public ? 'p' : 'h');
+        names.putIfAbsent(o.date, () => obsTitle(o, lang));
       } else if (o.kind == Kind.event) {
         flag(o.date, 't');
+        names.putIfAbsent(o.date, () => obsTitle(o, lang));
       } else if (o.kind == Kind.sil) {
         flag(o.date, 's');
       }
@@ -75,6 +78,7 @@ Future<void> syncHomeWidget(AppStore store) async {
       'title': t(lang, 'appName'),
       'days': jsonEncode(days),
       'marks': jsonEncode(marks),
+      'names': jsonEncode(names),
       'lang': lang == Lang.en ? 'en' : 'km',
       'weekStartsOn': store.weekStartsOn,
       'notifyOn': store.notifyOn,
