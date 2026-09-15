@@ -39,6 +39,7 @@ flutter:
     - assets/weather/
     - assets/zodiac/
     - assets/icons/
+    - assets/os/
   fonts:
     - family: KantumruyPro
       fonts:

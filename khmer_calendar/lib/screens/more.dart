@@ -12,6 +12,7 @@ import '../permissions.dart';
 import '../reminders.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../widgets/os_logo.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/scheme_chips.dart';
 import '../widgets/segmented_list.dart';
@@ -796,11 +797,11 @@ class DownloadPage extends StatelessWidget {
       builder: (context, store) {
         final lang = store.lang;
         final packs = [
-          ('android', 'KhmerCalendar.apk', Icons.android, 'exportApk', 'exportApkSub'),
-          ('windows', 'KhmerCalendar-windows.zip', Icons.desktop_windows, 'exportWindows', 'exportWindowsSub'),
-          ('macos', 'KhmerCalendar.dmg', Icons.laptop_mac, 'exportMac', 'exportMacSub'),
-          ('linux', 'KhmerCalendar-linux.tar.gz', Icons.computer, 'exportLinux', 'exportLinuxSub'),
-          ('project', 'KhmerCalendar-project.zip', Icons.folder_zip, 'downloadProject', 'downloadProjectSub'),
+          ('android', 'KhmerCalendar.apk', 'exportApk', 'exportApkSub'),
+          ('windows', 'KhmerCalendar-windows.zip', 'exportWindows', 'exportWindowsSub'),
+          ('macos', 'KhmerCalendar.dmg', 'exportMac', 'exportMacSub'),
+          ('linux', 'KhmerCalendar-linux.tar.gz', 'exportLinux', 'exportLinuxSub'),
+          ('project', 'KhmerCalendar-project.zip', 'downloadProject', 'downloadProjectSub'),
         ];
         return OverlayScaffold(
           title: t(lang, 'downloadTitle'),
@@ -814,9 +815,9 @@ class DownloadPage extends StatelessWidget {
                 children: [
                   for (final p in packs)
                     SegmentedTile(
-                      leading: Icon(p.$3),
-                      title: t(lang, p.$4),
-                      subtitle: t(lang, p.$5),
+                      leading: p.$1 == 'project' ? const Icon(Icons.folder_zip) : OsLogo(p.$1),
+                      title: t(lang, p.$3),
+                      subtitle: t(lang, p.$4),
                       trailing: const Icon(Icons.download),
                       onTap: () => launchUrl(Uri.parse('$_release/${p.$2}'), mode: LaunchMode.externalApplication),
                     ),
@@ -1084,12 +1085,36 @@ class _GetStartedPageState extends State<GetStartedPage> {
                 Text(t(ui, 'setupInstallTitle'), style: Theme.of(context).textTheme.headlineSmall),
                 Text(t(ui, 'nativeAppSub')),
                 const SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      SegmentedGroup(
+                        padding: EdgeInsets.zero,
+                        children: [
+                          for (final p in [
+                            ('android', 'KhmerCalendar.apk', 'exportApk', 'exportApkSub'),
+                            ('windows', 'KhmerCalendar-windows.zip', 'exportWindows', 'exportWindowsSub'),
+                            ('macos', 'KhmerCalendar.dmg', 'exportMac', 'exportMacSub'),
+                            ('linux', 'KhmerCalendar-linux.tar.gz', 'exportLinux', 'exportLinuxSub'),
+                          ])
+                            SegmentedTile(
+                              leading: OsLogo(p.$1),
+                              title: t(ui, p.$3),
+                              subtitle: t(ui, p.$4),
+                              trailing: const Icon(Icons.download),
+                              onTap: () => launchUrl(
+                                Uri.parse('$_release/${p.$2}'),
+                                mode: LaunchMode.externalApplication,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
                 FilledButton(
-                  onPressed: () {
-                    launchUrl(Uri.parse('$_release/KhmerCalendar.apk'), mode: LaunchMode.externalApplication);
-                    setState(() => step = 'permissions');
-                  },
-                  child: Text(t(ui, 'setupInstallAction')),
+                  onPressed: () => setState(() => step = 'permissions'),
+                  child: Text(t(ui, 'setupNext')),
                 ),
                 TextButton(onPressed: () => setState(() => step = 'permissions'), child: Text(t(ui, 'setupSkip'))),
               ] else ...[
