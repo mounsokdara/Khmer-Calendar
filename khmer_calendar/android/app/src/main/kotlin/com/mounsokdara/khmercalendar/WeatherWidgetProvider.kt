@@ -8,14 +8,25 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Calendar
 
 class WeatherWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (id in appWidgetIds) appWidgetManager.updateAppWidget(id, build(context, id))
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle,
+    ) {
+        appWidgetManager.updateAppWidget(appWidgetId, build(context, appWidgetId))
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -116,6 +127,54 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             }
         }
 
+        private fun showWeek(context: Context, widgetId: Int): Boolean {
+            val opts = AppWidgetManager.getInstance(context).getAppWidgetOptions(widgetId)
+            val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
+            val w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+            return h >= 140 || (w >= 250 && h >= 100)
+        }
+
+        private fun weekdayShort(date: String, lang: String): String {
+            val p = date.split("-")
+            if (p.size < 3) return date
+            return try {
+                val cal = Calendar.getInstance()
+                cal.set(p[0].toInt(), p[1].toInt() - 1, p[2].toInt())
+                val i = (cal.get(Calendar.DAY_OF_WEEK) - 1).coerceIn(0, 6)
+                if (lang == "en") WidgetStore.WEEK_SHORT_EN[i] else WidgetStore.WEEK_SHORT_KM[i]
+            } catch (_: Exception) {
+                date
+            }
+        }
+
+        private fun fillWeek(context: Context, views: RemoteViews, item: JSONObject, lang: String, show: Boolean) {
+            views.setViewVisibility(R.id.wx_week, if (show) View.VISIBLE else View.GONE)
+            if (!show) return
+            val days = item.optString("daily").split(";").filter { it.isNotEmpty() }
+            val pkg = context.packageName
+            for (i in 0 until 7) {
+                val col = context.resources.getIdentifier("wx_w$i", "id", pkg)
+                val day = context.resources.getIdentifier("wx_d$i", "id", pkg)
+                val icon = context.resources.getIdentifier("wx_di$i", "id", pkg)
+                val hi = context.resources.getIdentifier("wx_dh$i", "id", pkg)
+                val lo = context.resources.getIdentifier("wx_dl$i", "id", pkg)
+                if (i >= days.size) {
+                    views.setViewVisibility(col, View.GONE)
+                    continue
+                }
+                val bits = days[i].split("|")
+                val iso = bits.getOrNull(0) ?: ""
+                val high = bits.getOrNull(1) ?: ""
+                val low = bits.getOrNull(2) ?: ""
+                val code = bits.getOrNull(3)?.toIntOrNull() ?: 2
+                views.setViewVisibility(col, View.VISIBLE)
+                views.setTextViewText(day, weekdayShort(iso, lang))
+                views.setImageViewResource(icon, iconRes(code))
+                views.setTextViewText(hi, if (high.isEmpty()) "" else "$high°")
+                views.setTextViewText(lo, if (low.isEmpty()) "" else "$low°")
+            }
+        }
+
         private fun applyLegacy(context: Context, views: RemoteViews, lang: String): Boolean {
             val p = WidgetStore.prefs(context)
             val temp = p.getString("wx_temp", "") ?: ""
@@ -160,6 +219,7 @@ class WeatherWidgetProvider : AppWidgetProvider() {
                     views.setViewVisibility(R.id.wx_range, View.GONE)
                     views.setImageViewResource(R.id.wx_icon, R.drawable.ic_wx_cloudy)
                 }
+                views.setViewVisibility(R.id.wx_week, View.GONE)
                 views.setViewVisibility(R.id.wx_count, View.GONE)
                 views.setViewVisibility(R.id.wx_prev, View.GONE)
                 views.setViewVisibility(R.id.wx_next, View.GONE)
@@ -202,6 +262,7 @@ class WeatherWidgetProvider : AppWidgetProvider() {
                 if (photo != null) views.setImageViewBitmap(R.id.wx_photo, photo)
             } catch (_: Exception) {
             }
+            fillWeek(context, views, item, lang, showWeek(context, widgetId) && item.optString("daily").isNotEmpty())
             views.setOnClickPendingIntent(R.id.wx_prev, shiftPi(context, widgetId, -1, 1))
             views.setOnClickPendingIntent(R.id.wx_next, shiftPi(context, widgetId, 1, 2))
             return views

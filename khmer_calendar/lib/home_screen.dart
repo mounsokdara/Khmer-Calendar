@@ -143,6 +143,9 @@ Future<void> pushWeatherList(
       'label': meta?.km ?? '',
       'labelEn': meta?.en ?? '',
       'code': '${snap?.code ?? 2}',
+      'daily': snap == null
+          ? ''
+          : snap.daily.take(7).map((d) => '${d.date}|${d.high}|${d.low}|${d.code}').join(';'),
       'icon': '',
       'photo': '',
     });
