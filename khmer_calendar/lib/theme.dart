@@ -424,7 +424,7 @@ const appBuildNumber = 1;
 const appAuthor = 'Moun Sokdara';
 const appLicense = 'MIT License';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Carlendar';
-const appWebsiteUrl = 'https://khmer-carlendar.pnsdg.workers.dev';
+const appWebsiteUrl = 'https://khmercarlendar.pages.dev';
 
 const mitLicenseText = '''MIT License
 

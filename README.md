@@ -2,7 +2,7 @@
 
 Native Flutter Khmer lunar calendar for phone and desktop. Holy days, national holidays, weather, and reminders.
 
-**Website:** [khmer-carlendar.pnsdg.workers.dev](https://khmer-carlendar.pnsdg.workers.dev)
+**Website:** [khmercarlendar.pages.dev](https://khmercarlendar.pages.dev)
 
 The public website is the same Flutter app as the native packs. It is not the old HTML wrapper.
 
@@ -28,7 +28,7 @@ npm run dev
 Install packs are **not stored in the repo**. Pushing `main` builds native Flutter installers and publishes them on
 [GitHub Releases](https://github.com/mounsokdara/Khmer-Carlendar/releases/latest) as **v1.0.0** (first stable):
 
-- Website: https://khmer-carlendar.pnsdg.workers.dev
+- Website: https://khmercarlendar.pages.dev
 - `KhmerCalendar.apk`: Android
 - `KhmerCalendar-windows.zip`: Windows
 - `KhmerCalendar.dmg`: macOS
