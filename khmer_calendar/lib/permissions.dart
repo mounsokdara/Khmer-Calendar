@@ -353,10 +353,10 @@ Future<bool> requestNotifications(AppStore store) async {
   }
   final ok = await notificationsAllowed();
   store.setNotifyOn(ok);
-  if (ok && !kIsWeb) {
+  if (ok) {
     await initReminderEngine();
     await syncReminders(store);
-  } else if (!ok) {
+  } else {
     await cancelAllReminders();
   }
   return ok;

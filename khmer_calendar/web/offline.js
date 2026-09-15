@@ -85,3 +85,28 @@ self.addEventListener('fetch', (event) => {
   const nav = request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/index.html');
   event.respondWith(cacheFirst(request, nav));
 });
+
+self.addEventListener('message', (event) => {
+  const d = event.data;
+  if (!d || d.type !== 'khmer-notify') return;
+  event.waitUntil(
+    self.registration.showNotification(d.title || 'Khmer Calendar', {
+      body: d.body || '',
+      icon: './icons/Icon-192.png',
+      badge: './favicon.png',
+      tag: d.tag || 'khmer-reminder',
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if (c.url && 'focus' in c) return c.focus();
+      }
+      return self.clients.openWindow('./');
+    }),
+  );
+});

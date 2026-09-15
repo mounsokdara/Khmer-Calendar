@@ -28,6 +28,7 @@ dependencies:
   launch_at_startup: ^0.3.1
   dynamic_color: ^1.8.1
   connectivity_plus: ^6.1.4
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
