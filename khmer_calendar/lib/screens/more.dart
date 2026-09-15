@@ -290,6 +290,7 @@ class ThemePage extends StatelessWidget {
               ),
               SegmentedGroup(
                 filled: false,
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 children: [
                   SegmentedSwitch(
                     icon: Icons.wallpaper,
@@ -310,6 +311,7 @@ class ThemePage extends StatelessWidget {
                     children: [
                       SegmentedGroup(
                         filled: false,
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                         children: [
                           SegmentedSwitch(
                             icon: Icons.palette,

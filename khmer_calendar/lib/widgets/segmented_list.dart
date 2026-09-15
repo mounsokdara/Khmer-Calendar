@@ -52,10 +52,7 @@ class SegmentedGroup extends StatelessWidget {
             Material(
               color: filled ? cs.surfaceContainer : Colors.transparent,
               clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                borderRadius: radiusFor(i, children.length),
-                side: filled ? BorderSide.none : BorderSide(color: cs.outlineVariant),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: radiusFor(i, children.length)),
               child: children[i],
             ),
           ],
