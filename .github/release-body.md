@@ -5,7 +5,7 @@ First stable release of the native Khmer lunar calendar.
 **Website:** https://khmercalendar.pages.dev  
 **Source:** https://github.com/mounsokdara/Khmer-Calendar
 
-The public website is the same Flutter app as Android, Windows, macOS, and Linux. It is not the old HTML wrapper.
+The public website is the same Flutter app as Android, Windows, macOS, and Linux. 
 
 ## Install
 
