@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 ///
 /// Track is 300% wide, parked at -100% (center page). Drag is clamped to ±width.
 /// Snap uses the original 320ms `cubic-bezier(0.2, 0, 0, 1)` and
-/// `dx > max(48, 18% width)` threshold — no PageView, no spring, no fling.
+/// `dx > max(48, 18% width)` threshold. No PageView, no spring, no fling.
 class SlideTrack extends StatefulWidget {
   const SlideTrack({
     super.key,

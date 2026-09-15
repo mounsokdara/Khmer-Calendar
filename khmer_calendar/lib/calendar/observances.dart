@@ -126,10 +126,10 @@ List<Observance> _eventObservances(List<CalendarEvent> events) {
     if (end.isBefore(start)) end = start;
     final sub = n.allDay == true
         ? t(Lang.km, 'allDay')
-        : (n.startTime != null ? '${n.startTime}${n.endTime != null ? '–${n.endTime}' : ''}' : '');
+        : (n.startTime != null ? '${n.startTime}${n.endTime != null ? '-${n.endTime}' : ''}' : '');
     final subEn = n.allDay == true
         ? t(Lang.en, 'allDay')
-        : (n.startTime != null ? '${n.startTime}${n.endTime != null ? '–${n.endTime}' : ''}' : '');
+        : (n.startTime != null ? '${n.startTime}${n.endTime != null ? '-${n.endTime}' : ''}' : '');
     for (final d in _eachDay(start, end)) {
       final iso = isoOf(d);
       out.add(Observance(

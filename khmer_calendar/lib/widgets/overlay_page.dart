@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../i18n.dart';
 import '../store.dart';
 
-/// Rebuilds whenever [store] notifies — overlay routes are kept in the
+/// Rebuilds whenever [store] notifies. Overlay routes stay in the
 /// navigator stack and otherwise miss language / theme updates.
 class WatchStore extends StatelessWidget {
   const WatchStore({super.key, required this.store, required this.builder});

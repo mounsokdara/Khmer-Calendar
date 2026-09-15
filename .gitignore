@@ -27,6 +27,7 @@ AGENTS.md
 .project_id
 flutter-web/
 dist/
+website/canvaskit/
 khmer_calendar/build/
 khmer_calendar/.dart_tool/
 khmer_calendar/.flutter-plugins

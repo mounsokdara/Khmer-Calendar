@@ -5,6 +5,8 @@ First stable release of the native Khmer lunar calendar.
 **Website:** https://khmer-carlendar.pnsdg.workers.dev  
 **Source:** https://github.com/mounsokdara/Khmer-Carlendar
 
+The public website is the same Flutter app as Android, Windows, macOS, and Linux. It is not the old HTML wrapper.
+
 ## Install
 
 - Android: `KhmerCalendar.apk`
@@ -12,7 +14,7 @@ First stable release of the native Khmer lunar calendar.
 - macOS: `KhmerCalendar.dmg`
 - Linux: `KhmerCalendar-linux.tar.gz`
 - Source: `KhmerCalendar-project.zip`
-- Web: https://khmer-carlendar.pnsdg.workers.dev
+- Web: `KhmerCalendar-web.zip` or https://khmer-carlendar.pnsdg.workers.dev
 
 ## Calendar
 
@@ -20,6 +22,8 @@ First stable release of the native Khmer lunar calendar.
 - Scrollable month grid and day page
 - 3-slide month and day carousel
 - Jump to a month and year with the wheel, then press Change
+- Type 1 to 12 to pick a month
+- Custom year picker on the events page
 - Week start on Sunday, Monday, or Saturday
 - Khmer and English, including auto from the device
 

@@ -463,7 +463,7 @@ const en = <String, String>{
   'exportLinux': 'Linux',
   'exportLinuxSub': 'KhmerCalendar-linux.tar.gz',
   'nativeApp': 'Native Flutter app',
-  'nativeAppSub': 'Android, Windows, macOS, and Linux as real native apps — not a web wrapper',
+  'nativeAppSub': 'Android, Windows, macOS, and Linux as real native apps, not a web wrapper',
 };
 
 const monthsKm = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];

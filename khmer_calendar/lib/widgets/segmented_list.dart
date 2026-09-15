@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Material 3 segmented group: each row is its own surface, first/last
-/// corners are large, inner corners small, with a short gap — same pattern
+/// corners are large, inner corners small, with a short gap. Same pattern
 /// as Booming's `SegmentedListItem` / the original `.set-group`.
 class SegmentedGroup extends StatelessWidget {
   const SegmentedGroup({super.key, required this.children, this.padding = const EdgeInsets.symmetric(horizontal: 16)});

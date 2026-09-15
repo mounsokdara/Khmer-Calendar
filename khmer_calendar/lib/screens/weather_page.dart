@@ -335,7 +335,7 @@ class _CityCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Text(snap == null ? '—' : '${snap!.temp}°', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w600)),
+                  Text(snap == null ? '-' : '${snap!.temp}°', style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),

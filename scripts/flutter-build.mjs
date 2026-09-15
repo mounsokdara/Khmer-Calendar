@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 const root = process.cwd();
 const app = join(root, "khmer_calendar");
+const website = join(root, "website");
 const candidates = [
   process.env.FLUTTER,
   process.env.FLUTTER_ROOT ? join(process.env.FLUTTER_ROOT, "bin/flutter") : null,
@@ -44,45 +45,47 @@ function run(bin, args, cwd = app) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
-function stageWebsite(src) {
-  const dests = [join(root, "dist"), join(root, "flutter-web")];
-  for (const dest of dests) {
-    if (src === dest) continue;
-    rmSync(dest, { recursive: true, force: true });
-    mkdirSync(dest, { recursive: true });
-    cpSync(src, dest, { recursive: true });
-  }
+function isFlutterWebsite(dir) {
+  return existsSync(join(dir, "index.html")) && existsSync(join(dir, "flutter.js"));
 }
 
-function viteWebsite() {
-  console.log("Flutter SDK is not available on this host. Building the website with Vite.");
-  const r = spawnSync(process.execPath, [join(root, "scripts/with-app-env.mjs"), "vite", "build"], {
-    cwd: root,
-    stdio: "inherit",
-    env: process.env,
-  });
-  if (r.status !== 0) process.exit(r.status ?? 1);
-  const sources = [
-    join(root, ".output/public"),
-    join(root, ".vercel/output/static"),
-    join(root, "dist"),
-    join(root, "client"),
-  ];
-  const src = sources.find((s) => existsSync(join(s, "index.html")));
-  if (src) {
-    stageWebsite(src);
-    console.log(`Website static files staged from ${src}`);
+function copyDir(src, dest) {
+  if (src === dest) return;
+  rmSync(dest, { recursive: true, force: true });
+  mkdirSync(dest, { recursive: true });
+  cpSync(src, dest, { recursive: true });
+}
+
+function stageWebsite(src) {
+  copyDir(src, join(root, "dist"));
+  copyDir(src, join(root, "flutter-web"));
+}
+
+function useCommittedWebsite() {
+  if (!isFlutterWebsite(website)) {
+    console.error("No Flutter SDK here, and website/ is missing the Flutter web app.");
+    console.error("The public site is the Flutter app. Do not fall back to the old HTML app.");
+    process.exit(1);
   }
+  console.log("Using the committed Flutter website (same UI as the app preview).");
+  stageWebsite(website);
 }
 
 const bin = flutterBin();
 if (isCloudflareHost() || !flutterWorks(bin)) {
-  viteWebsite();
+  useCommittedWebsite();
   process.exit(0);
 }
 
 run(bin, ["pub", "get"]);
-run(bin, ["build", "web", "--release", "--no-web-resources-cdn", "--base-href", "/"]);
+run(bin, ["build", "web", "--release", "--web-resources-cdn", "--base-href", "/"]);
 
 const out = join(app, "build/web");
+if (!isFlutterWebsite(out)) {
+  console.error("Flutter web build did not produce flutter.js");
+  process.exit(1);
+}
 stageWebsite(out);
+copyDir(out, website);
+rmSync(join(website, "canvaskit"), { recursive: true, force: true });
+console.log("Flutter website staged to dist/, flutter-web/, and website/");
