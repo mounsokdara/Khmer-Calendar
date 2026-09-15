@@ -468,6 +468,7 @@ const en = <String, String>{
 
 const monthsKm = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
 const monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const monthsEnShort = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 const weekdaysFullKm = ['អាទិត្យ', 'ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហស្បតិ៍', 'សុក្រ', 'សៅរ៍'];
 const weekdaysFullEn = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const weekdaysMonKm = ['ចន្ទ', 'អង្គារ', 'ពុធ', 'ព្រហ.', 'សុក្រ', 'សៅរ៍', 'អាទិត្យ'];
@@ -495,6 +496,41 @@ String t(Lang lang, String key) {
 
 List<String> monthsOf(Lang lang) => lang == Lang.en ? monthsEn : monthsKm;
 List<String> weekdaysFull(Lang lang) => lang == Lang.en ? weekdaysFullEn : weekdaysFullKm;
+
+String _foldMonthQuery(String raw) {
+  const km = '០១២៣៤៥៦៧៨៩';
+  final b = StringBuffer();
+  for (final r in raw.trim().runes) {
+    final i = km.indexOf(String.fromCharCode(r));
+    b.write(i >= 0 ? '$i' : String.fromCharCode(r));
+  }
+  return b.toString().toLowerCase();
+}
+
+/// Month index 0-11 from a number or name. `jan`, `January`, `មក`, and `មករា` are all January.
+int? monthIndexFromQuery(String raw) {
+  final q = _foldMonthQuery(raw);
+  if (q.isEmpty) return null;
+  final asNum = int.tryParse(q);
+  if (asNum != null && asNum >= 1 && asNum <= 12) return asNum - 1;
+
+  const extra = <int, List<String>>{
+    8: ['sept'],
+  };
+  for (var i = 0; i < 12; i++) {
+    final names = <String>[monthsKm[i], monthsEn[i], monthsEnShort[i], ...?extra[i]];
+    for (final name in names) {
+      if (_foldMonthQuery(name) == q) return i;
+    }
+  }
+  for (var i = 0; i < 12; i++) {
+    final names = <String>[monthsKm[i], monthsEn[i], monthsEnShort[i], ...?extra[i]];
+    for (final name in names) {
+      if (_foldMonthQuery(name).startsWith(q)) return i;
+    }
+  }
+  return null;
+}
 
 List<String> weekdaysStarting(Lang lang, int start) {
   final src = List<String>.from(lang == Lang.en ? weekdaysMonEn : weekdaysMonKm);

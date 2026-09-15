@@ -222,11 +222,8 @@ class _WheelColState extends State<WheelCol> {
   int? _indexFromType(String val) {
     final raw = val.trim();
     if (raw.isEmpty) return null;
+    if (widget.kind == WheelKind.month) return monthIndexFromQuery(raw);
     final digits = raw.replaceAll(RegExp(r'\D'), '');
-    if (widget.kind == WheelKind.month && digits.isNotEmpty) {
-      final n = int.tryParse(digits);
-      if (n != null && n >= 1 && n <= 12) return n - 1;
-    }
     if (widget.kind == WheelKind.year && digits.isNotEmpty) {
       final n = widget.labels.indexWhere((l) => l.replaceAll(RegExp(r'\D'), '') == digits);
       if (n >= 0) return n;
@@ -254,7 +251,7 @@ class _WheelColState extends State<WheelCol> {
   void _startType() {
     final i = _ctrl.hasClients ? _ctrl.selectedItem : widget.index;
     if (widget.kind == WheelKind.month) {
-      _type.text = '${i + 1}';
+      _type.text = widget.labels[i];
     } else if (widget.kind == WheelKind.year) {
       _type.text = widget.labels[i];
     } else {
@@ -267,7 +264,7 @@ class _WheelColState extends State<WheelCol> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final numeric = widget.kind == WheelKind.month || widget.kind == WheelKind.year;
+    final numeric = widget.kind == WheelKind.year;
     return SizedBox(
       height: wheelItemExtent * wheelVisible,
       child: Stack(
@@ -294,7 +291,7 @@ class _WheelColState extends State<WheelCol> {
                 keyboardType: numeric ? TextInputType.number : TextInputType.text,
                 style: Theme.of(context).textTheme.titleMedium,
                 inputFormatters: [
-                  LengthLimitingTextInputFormatter(widget.kind == WheelKind.month ? 2 : 16),
+                  LengthLimitingTextInputFormatter(widget.kind == WheelKind.month ? 24 : 16),
                   if (numeric) FilteringTextInputFormatter.digitsOnly,
                 ],
                 decoration: const InputDecoration(isDense: true, contentPadding: EdgeInsets.symmetric(vertical: 8)),

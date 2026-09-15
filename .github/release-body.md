@@ -22,7 +22,7 @@ The public website is the same Flutter app as Android, Windows, macOS, and Linux
 - Scrollable month grid and day page
 - 3-slide month and day carousel
 - Jump to a month and year with the wheel, then press Change
-- Type 1 to 12 to pick a month
+- Type a month number or name (មក, មករា, jan, January) then press Change
 - Custom year picker on the events page
 - Week start on Sunday, Monday, or Saturday
 - Khmer and English, including auto from the device
