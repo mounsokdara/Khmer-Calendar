@@ -24,6 +24,13 @@ class BootReceiver : BroadcastReceiver() {
             nm?.cancel(KeepAliveService.ID)
         } catch (_: Exception) {
         }
+        val replaced = action == Intent.ACTION_MY_PACKAGE_REPLACED
+        val prefs = WidgetStore.prefs(context)
+        val want = if (prefs.contains("notifyOn")) prefs.getBoolean("notifyOn", true) else true
+        if (want) DailyNotify.arm(context, showNow = replaced) else DailyNotify.cancel(context)
+        TodayWidgetProvider.refreshAll(context)
+        MonthWidgetProvider.refreshAll(context)
+        WeatherWidgetProvider.refreshAll(context)
     }
 
     companion object {

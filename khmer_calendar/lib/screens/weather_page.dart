@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../home_screen.dart';
 import '../i18n.dart';
 import '../location.dart';
 import '../net.dart';
@@ -54,6 +55,9 @@ class _WeatherPageState extends State<WeatherPage> {
       try {
         _cache[id] = await fetchWeather(city);
         _err.remove(id);
+        if (id == widget.store.weatherCities.first) {
+          await pushWeather(widget.store, city, _cache[id]!);
+        }
       } catch (_) {
         _err[id] = 'fail';
       }

@@ -317,6 +317,7 @@ Future<void> keepOnlyGranted(AppStore store) async {
   await _syncNativeFlags(store);
   await _native('stopKeepAlive');
   if (!store.notifyOn) await cancelAllReminders();
+  if (!store.notifyOn) await cancelDailyNotify();
 }
 
 /// After Continue asked the OS, store only what is actually allowed.
@@ -331,8 +332,11 @@ Future<void> writeGrantedFlags(AppStore store) async {
   if (os.notify) {
     await initReminderEngine();
     await syncReminders(store);
+    await syncHomeWidget(store);
+    await armDailyNotify(showNow: true);
   } else {
     await cancelAllReminders();
+    await cancelDailyNotify();
   }
 }
 
@@ -357,8 +361,11 @@ Future<bool> requestNotifications(AppStore store) async {
   if (ok) {
     await initReminderEngine();
     await syncReminders(store);
+    await syncHomeWidget(store);
+    await armDailyNotify(showNow: true);
   } else {
     await cancelAllReminders();
+    await cancelDailyNotify();
   }
   return ok;
 }
@@ -548,6 +555,7 @@ Future<void> applyStoredPermissions(AppStore store) async {
   if (store.notifyOn) {
     await initReminderEngine();
     await syncReminders(store);
+    await armDailyNotify(showNow: false);
   }
   if (store.autoLaunchOn && _desktop) {
     try {

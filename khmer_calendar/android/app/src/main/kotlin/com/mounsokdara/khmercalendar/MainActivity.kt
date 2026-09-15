@@ -62,9 +62,19 @@ class MainActivity : FlutterActivity() {
                 "updateWidget" -> {
                     saveWidget(call.arguments)
                     TodayWidgetProvider.refreshAll(this)
+                    MonthWidgetProvider.refreshAll(this)
+                    WeatherWidgetProvider.refreshAll(this)
                     result.success(true)
                 }
-                "pinWidget" -> result.success(pinWidget())
+                "pinWidget" -> result.success(pinWidget(call.argument<String>("kind")))
+                "armDaily" -> {
+                    DailyNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
+                    result.success(true)
+                }
+                "cancelDaily" -> {
+                    DailyNotify.cancel(this)
+                    result.success(true)
+                }
                 else -> result.notImplemented()
             }
         }
@@ -72,24 +82,32 @@ class MainActivity : FlutterActivity() {
 
     private fun saveWidget(args: Any?) {
         val map = args as? Map<*, *> ?: return
-        getSharedPreferences(TodayWidgetProvider.PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putString("iso", map["iso"] as? String ?: "")
-            .putString("day", map["day"] as? String ?: "")
-            .putString("weekday", map["weekday"] as? String ?: "")
-            .putString("lunar", map["lunar"] as? String ?: "")
-            .putString("holiday", map["holiday"] as? String ?: "")
-            .putString("title", map["title"] as? String ?: "")
-            .apply()
+        val ed = getSharedPreferences(WidgetStore.PREFS, Context.MODE_PRIVATE).edit()
+        fun putStr(key: String) {
+            val v = map[key]
+            if (v is String) ed.putString(key, v)
+        }
+        listOf(
+            "iso", "day", "weekday", "lunar", "holiday", "title", "days", "lang",
+            "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en",
+        ).forEach { putStr(it) }
+        (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }
+        (map["notifyOn"] as? Boolean)?.let { ed.putBoolean("notifyOn", it) }
+        ed.apply()
     }
 
-    private fun pinWidget(): Boolean {
+    private fun pinWidget(kind: String?): Boolean {
         if (Build.VERSION.SDK_INT < 26) return false
         val mgr = getSystemService(AppWidgetManager::class.java) ?: return false
         if (!mgr.isRequestPinAppWidgetSupported) return false
-        val name = ComponentName(this, TodayWidgetProvider::class.java)
+        val cls =
+            when (kind) {
+                "month" -> MonthWidgetProvider::class.java
+                "weather" -> WeatherWidgetProvider::class.java
+                else -> TodayWidgetProvider::class.java
+            }
         return try {
-            mgr.requestPinAppWidget(name, null, null)
+            mgr.requestPinAppWidget(ComponentName(this, cls), null, null)
             true
         } catch (_: Exception) {
             false

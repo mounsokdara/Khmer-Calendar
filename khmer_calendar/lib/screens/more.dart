@@ -145,14 +145,7 @@ class MorePage extends StatelessWidget {
                     title: t(lang, 'homeWidget'),
                     subtitle: t(lang, 'homeWidgetSub'),
                     trailing: const Icon(Icons.add),
-                    onTap: () async {
-                      await syncHomeWidget(store);
-                      final ok = await pinHomeWidget();
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(t(lang, ok ? 'homeWidgetPinned' : 'homeWidgetHow'))),
-                      );
-                    },
+                    onTap: () => _pickWidget(context, store),
                   ),
                 ],
               ),
@@ -162,6 +155,44 @@ class MorePage extends StatelessWidget {
       },
     );
   }
+}
+
+Future<void> _pickWidget(BuildContext context, AppStore store) async {
+  final lang = store.lang;
+  final kind = await showDialog<String>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(t(lang, 'homeWidget')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.today),
+            title: Text(t(lang, 'widgetToday')),
+            onTap: () => Navigator.pop(d, 'today'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_month),
+            title: Text(t(lang, 'widgetMonth')),
+            onTap: () => Navigator.pop(d, 'month'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.cloud_outlined),
+            title: Text(t(lang, 'widgetWeather')),
+            onTap: () => Navigator.pop(d, 'weather'),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (kind == null || !context.mounted) return;
+  await syncHomeWidget(store);
+  if (kind == 'weather') await syncWeatherWidget(store);
+  final ok = await pinHomeWidget(kind);
+  if (!context.mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(t(lang, ok ? 'homeWidgetPinned' : 'homeWidgetHow'))),
+  );
 }
 
 class SettingsPage extends StatelessWidget {
@@ -467,6 +498,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (!v) {
                         store.setNotifyOn(false);
                         await cancelAllReminders();
+                        await cancelDailyNotify();
                         return;
                       }
                       final ok = await requestNotifications(store);
@@ -1040,6 +1072,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       setState(() => notify = false);
       store.setNotifyOn(false);
       await cancelAllReminders();
+      await cancelDailyNotify();
       return;
     }
     await requestNotifications(store);
