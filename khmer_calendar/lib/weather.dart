@@ -47,6 +47,7 @@ class WeatherSnap {
     required this.hourly,
     required this.daily,
     required this.cachedAt,
+    this.clouds = 0,
   });
   final int temp;
   final int high;
@@ -59,6 +60,7 @@ class WeatherSnap {
   final List<HourlyWx> hourly;
   final List<DailyWx> daily;
   final String cachedAt;
+  final int clouds;
 }
 
 const cities = [
@@ -193,7 +195,7 @@ Future<String?> cityPhotoUrl(City city) async {
 Future<WeatherSnap> fetchWeather(City city) async {
   final url = Uri.parse(
     'https://api.open-meteo.com/v1/forecast?latitude=${city.latitude}&longitude=${city.longitude}'
-    '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,apparent_temperature,uv_index'
+    '&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m,apparent_temperature,uv_index,cloud_cover'
     '&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia%2FPhnom_Penh',
   );
   final res = await http.get(url);
@@ -231,5 +233,6 @@ Future<WeatherSnap> fetchWeather(City city) async {
     hourly: hourly,
     daily: daily,
     cachedAt: DateTime.now().toIso8601String(),
+    clouds: (current['cloud_cover'] as num?)?.round() ?? 0,
   );
 }

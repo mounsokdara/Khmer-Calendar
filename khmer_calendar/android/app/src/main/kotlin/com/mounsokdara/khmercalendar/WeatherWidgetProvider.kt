@@ -127,11 +127,21 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        private fun showWeek(context: Context, widgetId: Int): Boolean {
+        private fun size(context: Context, widgetId: Int): Pair<Int, Int> {
             val opts = AppWidgetManager.getInstance(context).getAppWidgetOptions(widgetId)
             val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
             val w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
-            return h >= 140 || (w >= 250 && h >= 100)
+            return w to h
+        }
+
+        private fun showHour(context: Context, widgetId: Int): Boolean {
+            val (w, h) = size(context, widgetId)
+            return h >= 150 || w >= 200
+        }
+
+        private fun showWeek(context: Context, widgetId: Int): Boolean {
+            val (w, h) = size(context, widgetId)
+            return h >= 220 || (w >= 250 && h >= 180)
         }
 
         private fun weekdayShort(date: String, lang: String): String {
@@ -145,6 +155,43 @@ class WeatherWidgetProvider : AppWidgetProvider() {
             } catch (_: Exception) {
                 date
             }
+        }
+
+        private fun fillHour(context: Context, views: RemoteViews, item: JSONObject, show: Boolean) {
+            views.setViewVisibility(R.id.wx_hour, if (show) View.VISIBLE else View.GONE)
+            if (!show) return
+            val hours = item.optString("hourly").split(";").filter { it.isNotEmpty() }
+            val pkg = context.packageName
+            for (i in 0 until 6) {
+                val col = context.resources.getIdentifier("wx_hr$i", "id", pkg)
+                val time = context.resources.getIdentifier("wx_ht$i", "id", pkg)
+                val icon = context.resources.getIdentifier("wx_hi$i", "id", pkg)
+                val temp = context.resources.getIdentifier("wx_hv$i", "id", pkg)
+                if (i >= hours.size) {
+                    views.setViewVisibility(col, View.GONE)
+                    continue
+                }
+                val bits = hours[i].split("|")
+                val hh = bits.getOrNull(0) ?: ""
+                val t = bits.getOrNull(1) ?: ""
+                val code = bits.getOrNull(2)?.toIntOrNull() ?: 2
+                views.setViewVisibility(col, View.VISIBLE)
+                views.setTextViewText(time, if (hh.isEmpty()) "" else "$hh:00")
+                views.setImageViewResource(icon, iconRes(code))
+                views.setTextViewText(temp, if (t.isEmpty()) "" else "$t°")
+            }
+        }
+
+        private fun fillClouds(views: RemoteViews, cover: Int) {
+            val show1 = cover >= 18
+            val show2 = cover >= 45
+            val show3 = cover >= 75
+            views.setViewVisibility(R.id.wx_cloud1, if (show1) View.VISIBLE else View.GONE)
+            views.setViewVisibility(R.id.wx_cloud2, if (show2) View.VISIBLE else View.GONE)
+            views.setViewVisibility(R.id.wx_cloud3, if (show3) View.VISIBLE else View.GONE)
+            if (show1) views.setInt(R.id.wx_cloud1, "setImageAlpha", (90 + cover).coerceAtMost(200))
+            if (show2) views.setInt(R.id.wx_cloud2, "setImageAlpha", (80 + cover / 2).coerceAtMost(180))
+            if (show3) views.setInt(R.id.wx_cloud3, "setImageAlpha", 160)
         }
 
         private fun fillWeek(context: Context, views: RemoteViews, item: JSONObject, lang: String, show: Boolean) {
@@ -220,6 +267,10 @@ class WeatherWidgetProvider : AppWidgetProvider() {
                     views.setImageViewResource(R.id.wx_icon, R.drawable.ic_wx_cloudy)
                 }
                 views.setViewVisibility(R.id.wx_week, View.GONE)
+                views.setViewVisibility(R.id.wx_hour, View.GONE)
+                views.setViewVisibility(R.id.wx_cloud1, View.GONE)
+                views.setViewVisibility(R.id.wx_cloud2, View.GONE)
+                views.setViewVisibility(R.id.wx_cloud3, View.GONE)
                 views.setViewVisibility(R.id.wx_count, View.GONE)
                 views.setViewVisibility(R.id.wx_prev, View.GONE)
                 views.setViewVisibility(R.id.wx_next, View.GONE)
@@ -262,7 +313,9 @@ class WeatherWidgetProvider : AppWidgetProvider() {
                 if (photo != null) views.setImageViewBitmap(R.id.wx_photo, photo)
             } catch (_: Exception) {
             }
+            fillHour(context, views, item, showHour(context, widgetId) && item.optString("hourly").isNotEmpty())
             fillWeek(context, views, item, lang, showWeek(context, widgetId) && item.optString("daily").isNotEmpty())
+            fillClouds(views, item.optString("clouds").toIntOrNull() ?: 0)
             views.setOnClickPendingIntent(R.id.wx_prev, shiftPi(context, widgetId, -1, 1))
             views.setOnClickPendingIntent(R.id.wx_next, shiftPi(context, widgetId, 1, 2))
             return views

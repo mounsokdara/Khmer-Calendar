@@ -118,6 +118,22 @@ Future<void> pushWeather(AppStore store, City city, WeatherSnap snap) async {
   await pushWeatherList(store, {city.id: snap}, selectId: city.id);
 }
 
+String encodeHourly(WeatherSnap snap) {
+  final now = DateTime.now();
+  return snap.hourly
+      .where((h) {
+        final t = DateTime.tryParse(h.time);
+        return t != null && !t.isBefore(now.subtract(const Duration(minutes: 40)));
+      })
+      .take(6)
+      .map((h) {
+        final t = DateTime.tryParse(h.time);
+        final hh = (t?.hour ?? 0).toString().padLeft(2, '0');
+        return '$hh|${h.temp}|${h.code}';
+      })
+      .join(';');
+}
+
 Future<void> pushWeatherList(
   AppStore store,
   Map<String, WeatherSnap> cache, {
@@ -146,6 +162,8 @@ Future<void> pushWeatherList(
       'daily': snap == null
           ? ''
           : snap.daily.take(7).map((d) => '${d.date}|${d.high}|${d.low}|${d.code}').join(';'),
+      'hourly': snap == null ? '' : encodeHourly(snap),
+      'clouds': '${snap?.clouds ?? 0}',
       'icon': '',
       'photo': '',
     });
