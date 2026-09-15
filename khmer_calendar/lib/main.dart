@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'i18n.dart';
+import 'net.dart';
 import 'permissions.dart';
 import 'screens/events.dart';
 import 'screens/licenses.dart';
@@ -18,9 +19,10 @@ import 'theme.dart';
 
 final store = AppStore();
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  await NetStatus.start();
   runApp(KhmerCalendarApp(store: store));
   store.hydrate().then((_) => applyStoredPermissions(store));
 }

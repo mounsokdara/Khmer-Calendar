@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, cpSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, cpSync, rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 
 const root = process.cwd();
 const app = join(root, "khmer_calendar");
@@ -56,7 +56,36 @@ function copyDir(src, dest) {
   cpSync(src, dest, { recursive: true });
 }
 
+function walkFiles(dir, base = dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const name of readdirSync(dir)) {
+    if (name.startsWith(".")) continue;
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) {
+      walkFiles(p, base, out);
+      continue;
+    }
+    const rel = "./" + relative(base, p).split(sep).join("/");
+    if (rel.endsWith(".map")) continue;
+    if (rel.includes("/weather/")) continue;
+    out.push(rel);
+  }
+  return out;
+}
+
+function writeOfflineWorker(siteDir) {
+  const template = readFileSync(join(app, "web/offline.js"), "utf8");
+  const files = walkFiles(siteDir);
+  const stamp = Date.now();
+  const injected = template
+    .replace(/const CACHE = '[^']+';/, `const CACHE = 'khmer-calendar-web-${stamp}';`)
+    .replace(/const PRECACHE = \[[\s\S]*?\];/, `const PRECACHE = ${JSON.stringify(files, null, 2)};`);
+  writeFileSync(join(siteDir, "offline.js"), injected);
+  writeFileSync(join(siteDir, "flutter_service_worker.js"), injected);
+}
+
 function stageWebsite(src) {
+  writeOfflineWorker(src);
   copyDir(src, join(root, "dist"));
   copyDir(src, join(root, "flutter-web"));
 }
@@ -78,14 +107,15 @@ if (isCloudflareHost() || !flutterWorks(bin)) {
 }
 
 run(bin, ["pub", "get"]);
-run(bin, ["build", "web", "--release", "--web-resources-cdn", "--base-href", "/"]);
+run(bin, ["build", "web", "--release", "--no-web-resources-cdn", "--base-href", "/"]);
 
 const out = join(app, "build/web");
 if (!isFlutterWebsite(out)) {
   console.error("Flutter web build did not produce flutter.js");
   process.exit(1);
 }
-stageWebsite(out);
+writeOfflineWorker(out);
+copyDir(out, join(root, "dist"));
+copyDir(out, join(root, "flutter-web"));
 copyDir(out, website);
-rmSync(join(website, "canvaskit"), { recursive: true, force: true });
-console.log("Flutter website staged to dist/, flutter-web/, and website/");
+console.log("Flutter website staged to dist/, flutter-web/, and website/ with local CanvasKit and offline worker");

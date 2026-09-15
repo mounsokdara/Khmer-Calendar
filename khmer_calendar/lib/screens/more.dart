@@ -8,6 +8,7 @@ import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../location.dart';
+import '../net.dart';
 import '../permissions.dart';
 import '../reminders.dart';
 import '../store.dart';
@@ -20,6 +21,15 @@ import '../widgets/segmented_list.dart';
 import '../widgets/dialog_actions.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Carlendar/releases/latest/download';
+
+Future<void> openPackDownload(BuildContext context, {required Lang lang, required String file}) async {
+  if (NetStatus.isOffline) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t(lang, 'downloadOffline'))));
+    return;
+  }
+  await launchUrl(Uri.parse('$_release/$file'), mode: LaunchMode.externalApplication);
+}
 
 Future<void> openBrowserInstall(BuildContext context, {required AppStore store, required Lang lang}) async {
   if (browserIsStandalone()) {
@@ -857,40 +867,46 @@ class DownloadPage extends StatelessWidget {
         ];
         return OverlayScaffold(
           title: t(lang, 'downloadTitle'),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(t(lang, 'downloadSub')),
-              const SizedBox(height: 12),
-              if (kIsWeb) ...[
-                SegmentedGroup(
-                  padding: EdgeInsets.zero,
-                  children: [
-                    SegmentedTile(
-                      leading: const Icon(Icons.install_mobile),
-                      title: t(lang, store.installed || browserIsStandalone() ? 'exportInstalled' : 'exportBrowser'),
-                      subtitle: t(lang, 'exportBrowserSub'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => openBrowserInstall(context, store: store, lang: lang),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-              SegmentedGroup(
-                padding: EdgeInsets.zero,
+          body: ValueListenableBuilder<bool>(
+            valueListenable: NetStatus.online,
+            builder: (context, online, _) {
+              return ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  for (final p in packs)
-                    SegmentedTile(
-                      leading: p.$1 == 'project' ? const Icon(Icons.folder_zip) : OsLogo(p.$1),
-                      title: t(lang, p.$3),
-                      subtitle: t(lang, p.$4),
-                      trailing: const Icon(Icons.download),
-                      onTap: () => launchUrl(Uri.parse('$_release/${p.$2}'), mode: LaunchMode.externalApplication),
+                  Text(t(lang, 'downloadSub')),
+                  const SizedBox(height: 12),
+                  if (kIsWeb) ...[
+                    SegmentedGroup(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        SegmentedTile(
+                          leading: const Icon(Icons.install_mobile),
+                          title: t(lang, store.installed || browserIsStandalone() ? 'exportInstalled' : 'exportBrowser'),
+                          subtitle: t(lang, 'exportBrowserSub'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => openBrowserInstall(context, store: store, lang: lang),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 12),
+                  ],
+                  SegmentedGroup(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      for (final p in packs)
+                        SegmentedTile(
+                          dim: !online,
+                          leading: p.$1 == 'project' ? const Icon(Icons.folder_zip) : OsLogo(p.$1),
+                          title: t(lang, p.$3),
+                          subtitle: t(lang, p.$4),
+                          trailing: const Icon(Icons.download),
+                          onTap: () => openPackDownload(context, lang: lang, file: p.$2),
+                        ),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
         );
       },
@@ -1153,44 +1169,47 @@ class _GetStartedPageState extends State<GetStartedPage> {
                 Text(t(ui, 'nativeAppSub')),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: ListView(
-                    children: [
-                      if (kIsWeb)
-                        SegmentedGroup(
-                          padding: EdgeInsets.zero,
-                          children: [
-                            SegmentedTile(
-                              leading: const Icon(Icons.install_mobile),
-                              title: t(ui, 'exportBrowser'),
-                              subtitle: t(ui, 'exportBrowserSub'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () => openBrowserInstall(context, store: store, lang: ui),
-                            ),
-                          ],
-                        ),
-                      if (kIsWeb) const SizedBox(height: 12),
-                      SegmentedGroup(
-                        padding: EdgeInsets.zero,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: NetStatus.online,
+                    builder: (context, online, _) {
+                      return ListView(
                         children: [
-                          for (final p in [
-                            ('android', 'KhmerCalendar.apk', 'exportApk', 'exportApkSub'),
-                            ('windows', 'KhmerCalendar-windows.zip', 'exportWindows', 'exportWindowsSub'),
-                            ('macos', 'KhmerCalendar.dmg', 'exportMac', 'exportMacSub'),
-                            ('linux', 'KhmerCalendar-linux.tar.gz', 'exportLinux', 'exportLinuxSub'),
-                          ])
-                            SegmentedTile(
-                              leading: OsLogo(p.$1),
-                              title: t(ui, p.$3),
-                              subtitle: t(ui, p.$4),
-                              trailing: const Icon(Icons.download),
-                              onTap: () => launchUrl(
-                                Uri.parse('$_release/${p.$2}'),
-                                mode: LaunchMode.externalApplication,
-                              ),
+                          if (kIsWeb)
+                            SegmentedGroup(
+                              padding: EdgeInsets.zero,
+                              children: [
+                                SegmentedTile(
+                                  leading: const Icon(Icons.install_mobile),
+                                  title: t(ui, 'exportBrowser'),
+                                  subtitle: t(ui, 'exportBrowserSub'),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => openBrowserInstall(context, store: store, lang: ui),
+                                ),
+                              ],
                             ),
+                          if (kIsWeb) const SizedBox(height: 12),
+                          SegmentedGroup(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              for (final p in [
+                                ('android', 'KhmerCalendar.apk', 'exportApk', 'exportApkSub'),
+                                ('windows', 'KhmerCalendar-windows.zip', 'exportWindows', 'exportWindowsSub'),
+                                ('macos', 'KhmerCalendar.dmg', 'exportMac', 'exportMacSub'),
+                                ('linux', 'KhmerCalendar-linux.tar.gz', 'exportLinux', 'exportLinuxSub'),
+                              ])
+                                SegmentedTile(
+                                  dim: !online,
+                                  leading: OsLogo(p.$1),
+                                  title: t(ui, p.$3),
+                                  subtitle: t(ui, p.$4),
+                                  trailing: const Icon(Icons.download),
+                                  onTap: () => openPackDownload(context, lang: ui, file: p.$2),
+                                ),
+                            ],
+                          ),
                         ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
                 FilledButton(

@@ -1,25 +1,80 @@
 'use strict';
 
-const CACHE = 'khmer-calendar-web-v1';
+const CACHE = 'khmer-calendar-web-1789456202227';
 const PRECACHE = [
-  './',
-  './index.html',
-  './main.dart.js',
-  './flutter.js',
-  './flutter_bootstrap.js',
-  './manifest.json',
-  './favicon.png',
-  './version.json',
-  './offline.js',
+  "./_redirects",
+  "./assets/AssetManifest.bin",
+  "./assets/AssetManifest.bin.json",
+  "./assets/FontManifest.json",
+  "./assets/NOTICES",
+  "./assets/assets/fonts/KantumruyPro.ttf",
+  "./assets/assets/icons/apple-touch-icon.png",
+  "./assets/assets/icons/icon-192.png",
+  "./assets/assets/icons/icon-512.png",
+  "./assets/assets/os/android.svg",
+  "./assets/assets/os/linux.svg",
+  "./assets/assets/os/macos.svg",
+  "./assets/assets/os/windows.svg",
+  "./assets/assets/zodiac/dog.svg",
+  "./assets/assets/zodiac/dragon.svg",
+  "./assets/assets/zodiac/goat.svg",
+  "./assets/assets/zodiac/horse.svg",
+  "./assets/assets/zodiac/monkey.svg",
+  "./assets/assets/zodiac/ox.svg",
+  "./assets/assets/zodiac/pig.svg",
+  "./assets/assets/zodiac/rabbit.svg",
+  "./assets/assets/zodiac/rat.svg",
+  "./assets/assets/zodiac/rooster.svg",
+  "./assets/assets/zodiac/snake.svg",
+  "./assets/assets/zodiac/tiger.svg",
+  "./assets/fonts/MaterialIcons-Regular.otf",
+  "./assets/fonts/fallback/Roboto-Regular.ttf",
+  "./assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
+  "./assets/shaders/ink_sparkle.frag",
+  "./assets/shaders/stretch_effect.frag",
+  "./canvaskit/canvaskit.js",
+  "./canvaskit/canvaskit.js.symbols",
+  "./canvaskit/canvaskit.wasm",
+  "./canvaskit/chromium/canvaskit.js",
+  "./canvaskit/chromium/canvaskit.js.symbols",
+  "./canvaskit/chromium/canvaskit.wasm",
+  "./canvaskit/skwasm.js",
+  "./canvaskit/skwasm.js.symbols",
+  "./canvaskit/skwasm.wasm",
+  "./canvaskit/skwasm_heavy.js",
+  "./canvaskit/skwasm_heavy.js.symbols",
+  "./canvaskit/skwasm_heavy.wasm",
+  "./canvaskit/webparagraph/canvaskit.js",
+  "./canvaskit/webparagraph/canvaskit.js.symbols",
+  "./canvaskit/webparagraph/canvaskit.wasm",
+  "./canvaskit/wimp.js",
+  "./canvaskit/wimp.js.symbols",
+  "./canvaskit/wimp.wasm",
+  "./favicon.png",
+  "./flutter.js",
+  "./flutter_bootstrap.js",
+  "./flutter_service_worker.js",
+  "./icons/Icon-192.png",
+  "./icons/Icon-512.png",
+  "./icons/Icon-maskable-192.png",
+  "./icons/Icon-maskable-512.png",
+  "./index.html",
+  "./main.dart.js",
+  "./manifest.json",
+  "./offline.js",
+  "./version.json"
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting()),
+      .then((cache) =>
+        Promise.all(
+          PRECACHE.map((url) => cache.add(url).catch(() => {})),
+        ),
+      )
+      .then(() => self.skipWaiting()),
   );
 });
 
@@ -33,51 +88,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-function isWeather(url) {
+function isWeatherApi(url) {
   return url.hostname.endsWith('open-meteo.com');
-}
-
-function isCanvasKit(url) {
-  return url.hostname === 'www.gstatic.com' && url.pathname.includes('flutter-canvaskit');
 }
 
 function shouldHandle(url) {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
   if (url.hostname === 'grok.com') return false;
-  return url.origin === self.location.origin || isCanvasKit(url) || isWeather(url);
+  if (isWeatherApi(url)) return true;
+  return url.origin === self.location.origin;
 }
 
 async function cacheFirst(request, fallbackIndex) {
-  const cached = await caches.match(request);
-  if (cached) {
-    fetchAndStore(request);
-    return cached;
-  }
+  const cached = await caches.match(request, { ignoreSearch: true });
+  if (cached) return cached;
   try {
     const res = await fetch(request);
     store(request, res);
     return res;
   } catch (e) {
     if (fallbackIndex) {
-      const index = await caches.match('./index.html');
+      const index = (await caches.match('./index.html')) || (await caches.match('./'));
       if (index) return index;
-      const root = await caches.match('./');
-      if (root) return root;
     }
     throw e;
   }
 }
 
-async function networkFirst(request) {
-  try {
-    const res = await fetch(request);
-    store(request, res);
-    return res;
-  } catch (e) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
-    throw e;
-  }
+async function networkOnly(request) {
+  return fetch(request);
 }
 
 function store(request, res) {
@@ -86,19 +125,13 @@ function store(request, res) {
   caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
 }
 
-function fetchAndStore(request) {
-  fetch(request)
-    .then((res) => store(request, res))
-    .catch(() => {});
-}
-
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (!shouldHandle(url)) return;
-  if (isWeather(url)) {
-    event.respondWith(networkFirst(request));
+  if (isWeatherApi(url)) {
+    event.respondWith(networkOnly(request));
     return;
   }
   const nav = request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/index.html');

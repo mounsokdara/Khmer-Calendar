@@ -66,6 +66,7 @@ class SegmentedTile extends StatelessWidget {
     this.onTap,
     this.danger = false,
     this.selected = false,
+    this.dim = false,
   });
 
   final Widget? leading;
@@ -75,15 +76,17 @@ class SegmentedTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool danger;
   final bool selected;
+  final bool dim;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final titleColor = danger ? cs.error : cs.onSurface;
+    final titleColor = (danger ? cs.error : cs.onSurface).withValues(alpha: dim ? 0.38 : 1);
+    final subColor = (danger ? cs.error.withValues(alpha: 0.8) : cs.onSurfaceVariant).withValues(alpha: dim ? 0.38 : 1);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       minVerticalPadding: 12,
-      leading: leading,
+      leading: leading == null ? null : (dim ? Opacity(opacity: 0.45, child: leading!) : leading),
       selected: selected,
       title: Text(
         title,
@@ -97,9 +100,9 @@ class SegmentedTile extends StatelessWidget {
               subtitle!,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: danger ? cs.error.withValues(alpha: 0.8) : cs.onSurfaceVariant),
+              style: TextStyle(color: subColor),
             ),
-      trailing: trailing,
+      trailing: trailing == null ? null : (dim ? Opacity(opacity: 0.45, child: trailing!) : trailing),
       onTap: onTap,
     );
   }

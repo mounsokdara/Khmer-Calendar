@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../i18n.dart';
 import '../location.dart';
+import '../net.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../weather.dart';
@@ -26,12 +27,14 @@ class _WeatherPageState extends State<WeatherPage> {
   void initState() {
     super.initState();
     widget.store.addListener(_onStore);
+    NetStatus.online.addListener(_onStore);
     _refresh();
   }
 
   @override
   void dispose() {
     widget.store.removeListener(_onStore);
+    NetStatus.online.removeListener(_onStore);
     super.dispose();
   }
 
@@ -40,6 +43,10 @@ class _WeatherPageState extends State<WeatherPage> {
   }
 
   Future<void> _refresh() async {
+    if (NetStatus.isOffline) {
+      if (mounted) setState(() => _loading = false);
+      return;
+    }
     setState(() => _loading = true);
     for (final id in widget.store.weatherCities) {
       final city = cityById(id);
@@ -60,6 +67,15 @@ class _WeatherPageState extends State<WeatherPage> {
       store: widget.store,
       builder: (context, store) {
         final lang = store.lang;
+        if (NetStatus.isOffline) {
+          return _WeatherOffline(
+            lang: lang,
+            onRetry: () {
+              setState(() {});
+              _refresh();
+            },
+          );
+        }
         return Column(
       children: [
         Padding(
@@ -345,3 +361,32 @@ class _CityCard extends StatelessWidget {
     );
   }
 }
+
+class _WeatherOffline extends StatelessWidget {
+  const _WeatherOffline({required this.lang, required this.onRetry});
+  final Lang lang;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cloud_off, size: 64, color: cs.outline),
+            const SizedBox(height: 16),
+            Text(t(lang, 'wxOfflineTitle'), style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
+            const SizedBox(height: 8),
+            Text(t(lang, 'wxOfflineBody'), textAlign: TextAlign.center, style: TextStyle(color: cs.onSurfaceVariant)),
+            const SizedBox(height: 20),
+            OutlinedButton(onPressed: onRetry, child: Text(t(lang, 'wxRetry'))),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
