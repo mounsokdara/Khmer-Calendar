@@ -26,6 +26,7 @@ scripts/__pycache__/
 AGENTS.md
 .project_id
 flutter-web/
+dist/
 khmer_calendar/build/
 khmer_calendar/.dart_tool/
 khmer_calendar/.flutter-plugins

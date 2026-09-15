@@ -846,6 +846,13 @@ class AboutPage extends StatelessWidget {
                     trailing: const Icon(Icons.open_in_new, size: 18),
                     onTap: () => launchUrl(Uri.parse(appSourceUrl), mode: LaunchMode.externalApplication),
                   ),
+                  SegmentedTile(
+                    leading: const Icon(Icons.language),
+                    title: t(lang, 'website'),
+                    subtitle: appWebsiteUrl,
+                    trailing: const Icon(Icons.open_in_new, size: 18),
+                    onTap: () => launchUrl(Uri.parse(appWebsiteUrl), mode: LaunchMode.externalApplication),
+                  ),
                 ],
               ),
             ],
