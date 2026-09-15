@@ -7,7 +7,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.ForegroundColorSpan
 import android.widget.RemoteViews
+import org.json.JSONObject
 import java.util.Calendar
 
 class MonthWidgetProvider : AppWidgetProvider() {
@@ -46,6 +51,11 @@ class MonthWidgetProvider : AppWidgetProvider() {
         const val ACTION_SHIFT = "com.mounsokdara.khmercalendar.MONTH_SHIFT"
         const val EXTRA_UNIT = "unit"
         const val EXTRA_DIR = "dir"
+        private val COLOR_TODAY = Color.parseColor("#FFFFD54F")
+        private val COLOR_PUBLIC = Color.parseColor("#FFFF8A80")
+        private val COLOR_HOLIDAY = Color.parseColor("#FFFFCC80")
+        private val COLOR_TASK = Color.parseColor("#FFA5D6A7")
+        private val COLOR_DIM = Color.parseColor("#66FFFFFF")
 
         fun refreshAll(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
@@ -101,12 +111,56 @@ class MonthWidgetProvider : AppWidgetProvider() {
             return first
         }
 
+        private fun isoOf(cal: Calendar): String {
+            return "%04d-%02d-%02d".format(
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH),
+            )
+        }
+
+        private fun marks(context: Context): JSONObject {
+            val raw = WidgetStore.prefs(context).getString("marks", null) ?: return JSONObject()
+            return try {
+                JSONObject(raw)
+            } catch (_: Exception) {
+                JSONObject()
+            }
+        }
+
         private fun cellId(context: Context, i: Int): Int {
             return context.resources.getIdentifier("cell_$i", "id", context.packageName)
         }
 
         private fun headId(context: Context, i: Int): Int {
             return context.resources.getIdentifier("head_$i", "id", context.packageName)
+        }
+
+        private fun cellLabel(day: Int, flags: String, inMonth: Boolean): CharSequence {
+            val num = day.toString()
+            if (!inMonth) return num
+            val publicH = flags.contains('p')
+            val event = flags.contains('h')
+            val task = flags.contains('t')
+            val dots = buildString {
+                if (publicH) append('●')
+                if (event) append('◆')
+                if (task) append('■')
+            }
+            if (dots.isEmpty()) return num
+            val s = SpannableString("$num\n$dots")
+            var from = num.length + 1
+            fun paint(ch: Char, color: Int) {
+                val at = s.indexOf(ch, from)
+                if (at < 0) return
+                s.setSpan(ForegroundColorSpan(color), at, at + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                s.setSpan(AbsoluteSizeSpan(9, true), at, at + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                from = at + 1
+            }
+            if (publicH) paint('●', COLOR_PUBLIC)
+            if (event) paint('◆', COLOR_HOLIDAY)
+            if (task) paint('■', COLOR_TASK)
+            return s
         }
 
         private fun build(context: Context, widgetId: Int): RemoteViews {
@@ -116,6 +170,7 @@ class MonthWidgetProvider : AppWidgetProvider() {
             val (year, month) = shown(context, widgetId)
             val months = if (lang == "en") WidgetStore.MONTHS_EN else WidgetStore.MONTHS_KM
             val short = if (lang == "en") WidgetStore.WEEK_SHORT_EN else WidgetStore.WEEK_SHORT_KM
+            val markMap = marks(context)
             views.setTextViewText(R.id.month_year, year.toString())
             views.setTextViewText(R.id.month_name, months[(month - 1).coerceIn(0, 11)])
             for (i in 0 until 7) {
@@ -132,13 +187,18 @@ class MonthWidgetProvider : AppWidgetProvider() {
                     d.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                         d.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                         d.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH)
+                val flags = markMap.optString(isoOf(d), "")
+                val sunday = d.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                 val id = cellId(context, i)
-                views.setTextViewText(id, d.get(Calendar.DAY_OF_MONTH).toString())
+                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), flags, inMonth))
+                views.setInt(id, "setMaxLines", 2)
                 val color =
                     when {
-                        isToday -> Color.parseColor("#FFFFD54F")
-                        inMonth -> Color.WHITE
-                        else -> Color.parseColor("#66FFFFFF")
+                        isToday -> COLOR_TODAY
+                        !inMonth -> COLOR_DIM
+                        flags.contains('p') || sunday -> COLOR_PUBLIC
+                        flags.contains('h') -> COLOR_HOLIDAY
+                        else -> Color.WHITE
                     }
                 views.setTextColor(id, color)
             }

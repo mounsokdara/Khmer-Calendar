@@ -48,6 +48,21 @@ Future<void> syncHomeWidget(AppStore store) async {
       'weekday': weekdaysFull(lang)[d.weekday % 7],
     };
   }
+  final marks = <String, String>{};
+  void flag(String iso, String f) {
+    final cur = marks[iso] ?? '';
+    if (!cur.contains(f)) marks[iso] = '$cur$f';
+  }
+  for (var y = now.year - 5; y <= now.year + 5; y++) {
+    for (final o in yearObservances(y, store.events)) {
+      if (o.date.isEmpty) continue;
+      if (o.kind == Kind.holiday) {
+        flag(o.date, o.holidayType == HolidayType.public ? 'p' : 'h');
+      } else if (o.kind == Kind.event) {
+        flag(o.date, 't');
+      }
+    }
+  }
   try {
     await _ch.invokeMethod<void>('updateWidget', {
       'iso': iso,
@@ -57,6 +72,7 @@ Future<void> syncHomeWidget(AppStore store) async {
       'holiday': holiday,
       'title': t(lang, 'appName'),
       'days': jsonEncode(days),
+      'marks': jsonEncode(marks),
       'lang': lang == Lang.en ? 'en' : 'km',
       'weekStartsOn': store.weekStartsOn,
       'notifyOn': store.notifyOn,
