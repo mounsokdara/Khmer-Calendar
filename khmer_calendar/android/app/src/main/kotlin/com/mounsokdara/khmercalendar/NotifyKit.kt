@@ -10,8 +10,11 @@ import android.content.Intent
 import android.os.Build
 
 object NotifyKit {
-    const val CHANNEL_DAILY = "khmer_daily_digest"
+    const val CHANNEL_DAILY = "khmer_daily"
     const val CHANNEL_SIL = "khmer_sil"
+    const val CHANNEL_HOLIDAYS = "khmer_holidays"
+    const val CHANNEL_EVENTS = "khmer_events"
+    const val CHANNEL_TASKS = "khmer_tasks"
     const val DAILY_ID = 1001
     const val SIL_ID = 1002
     const val DAILY_REQ = 41
@@ -24,19 +27,29 @@ object NotifyKit {
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < 26) return
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
-        nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_DAILY, "Daily calendar", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "Optional morning calendar digest"
-                enableVibration(true)
-            },
-        )
-        nm.createNotificationChannel(
-            NotificationChannel(CHANNEL_SIL, "Silas day", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Reminder on Silas days"
-                enableVibration(true)
-            },
-        )
-        nm.createNotificationChannel(NotificationChannel(WidgetStore.CHANNEL, WidgetStore.CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT))
+        listOf("khmer_daily_digest", "khmer_reminders").forEach { id ->
+            try {
+                nm.deleteNotificationChannel(id)
+            } catch (_: Exception) {
+            }
+        }
+        val km = WidgetStore.lang(context) != "en"
+        fun ch(id: String, name: String, desc: String, high: Boolean = false) {
+            val c =
+                NotificationChannel(
+                    id,
+                    name,
+                    if (high) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT,
+                )
+            c.description = desc
+            c.enableVibration(true)
+            nm.createNotificationChannel(c)
+        }
+        ch(CHANNEL_DAILY, if (km) "រំលឹកប្រចាំថ្ងៃ" else "Daily reminder", if (km) "ជូនដំណឹងព្រឹកពីប្រតិទិនថ្ងៃនេះ" else "Morning calendar recap")
+        ch(CHANNEL_SIL, if (km) "ថ្ងៃសីល" else "Silas day", if (km) "ជូនដំណឹងនៅថ្ងៃសីល" else "Reminder on precept days", high = true)
+        ch(CHANNEL_HOLIDAYS, if (km) "ថ្ងៃឈប់សម្រាក" else "Holidays", if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holidays")
+        ch(CHANNEL_EVENTS, if (km) "ព្រឹត្តិការណ៍" else "Events", if (km) "ព្រឹត្តិការណ៍ក្នុងប្រតិទិន" else "Calendar events")
+        ch(CHANNEL_TASKS, if (km) "កិច្ចការ" else "Tasks", if (km) "ការរំលឹកកិច្ចការ" else "Task reminders")
     }
 
     fun post(context: Context, id: Int, channel: String, title: String, body: String, tab: String, date: String?) {

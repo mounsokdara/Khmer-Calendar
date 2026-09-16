@@ -8604,11 +8604,11 @@ this.b=b},
 k9:function k9(a,b){this.a=a
 this.b=b},
 bC:function bC(){},
-bD(a,b,c,d,e,f){var s=new A.l3(0,d,B.Nw,b,c,B.b3,B.R,new A.bu(A.b([],t.d),t.g),new A.hn(A.o(t.M,t.S),t.PD))
+bD(a,b,c,d,e,f){var s=new A.l3(0,d,B.Nw,b,c,B.b4,B.R,new A.bu(A.b([],t.d),t.g),new A.hn(A.o(t.M,t.S),t.PD))
 s.r=f.Aj(s.gKz())
 s.MI(e==null?0:e)
 return s},
-ahw(a,b,c){var s=new A.l3(-1/0,1/0,B.Nx,null,null,B.b3,B.R,new A.bu(A.b([],t.d),t.g),new A.hn(A.o(t.M,t.S),t.PD))
+ahw(a,b,c){var s=new A.l3(-1/0,1/0,B.Nx,null,null,B.b4,B.R,new A.bu(A.b([],t.d),t.g),new A.hn(A.o(t.M,t.S),t.PD))
 s.r=c.Aj(s.gKz())
 s.MI(b)
 return s},
@@ -15970,7 +15970,7 @@ At:function At(a,b){this.a=a
 this.b=b},
 acx:function acx(){},
 bcl(a){var s=a.pd(!1)
-return new A.adT(a,new A.cM(s,B.cP,B.b2),$.ae())},
+return new A.adT(a,new A.cM(s,B.cP,B.b3),$.ae())},
 b39(a,b){return new A.Ji(a,b,null)},
 bpa(a,b){return A.b1k(b)},
 adT:function adT(a,b,c){var _=this
@@ -23238,7 +23238,7 @@ o=o.tc(Math.min(o.a,r),Math.min(o.b,r))
 q=a.c
 p=q.a
 q=q.b
-return new A.cM(s,o,p!==q&&r>p?new A.c_(p,Math.min(q,r)):B.b2)},
+return new A.cM(s,o,p!==q&&r>p?new A.c_(p,Math.min(q,r)):B.b3)},
 ZR:function ZR(a,b){this.a=a
 this.b=b},
 p7:function p7(){},
@@ -32820,18 +32820,18 @@ return A.b90(n,o,k,l,i!=null?a0+" "+i:a0,q,g,c,b,a,null,s,j,e,o,f,h,r,d,p,i,m)},
 pF(a,b,c,d){return a.r===c&&a.w===d&&B.b.m(b,a.x)},
 buC(a,b){var s=B.b.oP(a,new A.aYP(b))
 if(s===-1){a.push(b)
-return}if(a[s].d!==B.b6&&b.d===B.b6)a[s]=b},
+return}if(a[s].d!==B.b_&&b.d===B.b_)a[s]=b},
 bsB(a,b,c){var s="\u1780\u17be\u178f",r="\u179c\u17b7\u179f\u17b6\u1781\u1794\u17bc\u1787\u17b6",q="\u1796\u17b7\u179f\u17b6\u1781",p="\u179a\u17c4\u1785",o="\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1794\u17bb\u178e\u17d2\u1799\u17a2\u17bb\u17c6\u1791\u17bc\u1780",n="Water Festival",m="\u1780\u178f\u17d2\u178f\u17b7\u1780",l=new A.aXX(a,c)
 l.$4("\u1798\u17b6\u1783\u1794\u17bc\u1787\u17b6","Meak Bochea",B.fE,A.pF(b,B.kq,"\u1798\u17b6\u1783",s))
 l.$4(r,"Visak Bochea",B.fE,A.pF(b,B.kq,q,s))
-l.$4(r,"Visak Bochea Day",B.b6,A.pF(b,B.kq,q,s))
-l.$4("\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u17d2\u179a\u178f\u17cb\u1796\u17d2\u179a\u17c7\u1793\u1784\u17d2\u1782\u17d0\u179b","Royal Ploughing Ceremony",B.b6,A.pF(b,B.a_n,q,p))
+l.$4(r,"Visak Bochea Day",B.b_,A.pF(b,B.kq,q,s))
+l.$4("\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u17d2\u179a\u178f\u17cb\u1796\u17d2\u179a\u17c7\u1793\u1784\u17d2\u1782\u17d0\u179b","Royal Ploughing Ceremony",B.b_,A.pF(b,B.a_n,q,p))
 l.$4("\u1797\u17d2\u1787\u17bb\u17c6\u1794\u17b7\u178e\u17d2\u178c","Pchum Ben",B.fE,A.pF(b,B.kq,"\u1797\u1791\u17d2\u179a\u1794\u1791",p))
-l.$4("\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1794\u17bb\u178e\u17d2\u1799\u1797\u17d2\u1787\u17bb\u17c6\u1794\u17b7\u178e\u17d2\u178c","Pchum Ben Festival",B.b6,A.pF(b,B.ox,"\u1797\u1791\u17d2\u179a\u1794\u1791",p)||A.pF(b,B.vt,"\u17a2\u179f\u17d2\u179f\u17bb\u1787",s))
+l.$4("\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1794\u17bb\u178e\u17d2\u1799\u1797\u17d2\u1787\u17bb\u17c6\u1794\u17b7\u178e\u17d2\u178c","Pchum Ben Festival",B.b_,A.pF(b,B.ox,"\u1797\u1791\u17d2\u179a\u1794\u1791",p)||A.pF(b,B.vt,"\u17a2\u179f\u17d2\u179f\u17bb\u1787",s))
 l.$4(o,n,B.on,A.pF(b,B.ox,m,s))
-l.$4(o,n,B.b6,A.pF(b,B.ox,m,s)||A.pF(b,B.vt,m,p))},
+l.$4(o,n,B.b_,A.pF(b,B.ox,m,s)||A.pF(b,B.vt,m,p))},
 bua(a){var s,r,q=A.bdl(a),p=q.b,o=J.uN(p,t.be)
-for(s=q.a,r=0;r<p;++r)o[r]=new A.cH(A.b0L(A.aP(A.b9(s),A.bz(s),A.ct(s)+r,0,0,0,0)),"\u1794\u17bb\u178e\u17d2\u1799\u1785\u17bc\u179b\u1786\u17d2\u1793\u17b6\u17c6\u1781\u17d2\u1798\u17c2\u179a","Khmer New Year",B.b6)
+for(s=q.a,r=0;r<p;++r)o[r]=new A.cH(A.b0L(A.aP(A.b9(s),A.bz(s),A.ct(s)+r,0,0,0,0)),"\u1794\u17bb\u178e\u17d2\u1799\u1785\u17bc\u179b\u1786\u17d2\u1793\u17b6\u17c6\u1781\u17d2\u1798\u17c2\u179a","Khmer New Year",B.b_)
 return o},
 aZZ(a){var s,r,q,p,o
 if(a<1900)throw A.h(A.bE("Year must be 1900 or later.",null))
@@ -32839,16 +32839,16 @@ s=$.be0.i(0,a)
 if(s!=null){r=A.a0(s).h("a5<1,cH>")
 r=A.V(new A.a5(s,new A.b__(),r),r.h("aw.E"))
 return r}r=""+a
-q=A.b([new A.cH(r+"-01-01","\u1794\u17bb\u178e\u17d2\u1799\u1785\u17bc\u179b\u1786\u17d2\u1793\u17b6\u17c6\u179f\u1780\u179b","International New Year's Day",B.b6),new A.cH(r+"-01-07","\u1791\u17b7\u179c\u17b6\u1787\u17d0\u1799\u1787\u1798\u17d2\u1793\u17c7\u179b\u17be\u179a\u1794\u1794\u1794\u17d2\u179a\u179b\u17d0\u1799\u1796\u17bc\u1787\u179f\u17b6\u179f\u1793\u17cd","Victory over Genocide Day",B.b6),new A.cH(r+"-03-08","\u1791\u17b7\u179c\u17b6\u1793\u17b6\u179a\u17b8\u17a2\u1793\u17d2\u178f\u179a\u1787\u17b6\u178f\u17b7","International Women's Day",B.b6)],t.w7)
+q=A.b([new A.cH(r+"-01-01","\u1794\u17bb\u178e\u17d2\u1799\u1785\u17bc\u179b\u1786\u17d2\u1793\u17b6\u17c6\u179f\u1780\u179b","International New Year's Day",B.b_),new A.cH(r+"-01-07","\u1791\u17b7\u179c\u17b6\u1787\u17d0\u1799\u1787\u1798\u17d2\u1793\u17c7\u179b\u17be\u179a\u1794\u1794\u1794\u17d2\u179a\u179b\u17d0\u1799\u1796\u17bc\u1787\u179f\u17b6\u179f\u1793\u17cd","Victory over Genocide Day",B.b_),new A.cH(r+"-03-08","\u1791\u17b7\u179c\u17b6\u1793\u17b6\u179a\u17b8\u17a2\u1793\u17d2\u178f\u179a\u1787\u17b6\u178f\u17b7","International Women's Day",B.b_)],t.w7)
 B.b.J(q,A.bua(a))
-q.push(new A.cH(r+"-05-01","\u1791\u17b7\u179c\u17b6\u1796\u179b\u1780\u1798\u17d2\u1798\u17a2\u1793\u17d2\u178f\u179a\u1787\u17b6\u178f\u17b7","International Labour Day",B.b6))
-q.push(new A.cH(r+"-05-14","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u1798\u17d2\u179a\u17be\u1793\u1796\u17d2\u179a\u17c7\u1787\u1793\u17d2\u1798 \u1796\u17d2\u179a\u17c7\u1798\u17a0\u17b6\u1780\u17d2\u179f\u178f\u17d2\u179a","King's Birthday",B.b6))
-q.push(new A.cH(r+"-06-18","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u1798\u17d2\u179a\u17be\u1793\u1796\u17d2\u179a\u17c7\u1787\u1793\u17d2\u1798 \u1796\u17d2\u179a\u17c7\u1798\u17a0\u17b6\u1780\u17d2\u179f\u178f\u17d2\u179a\u17b8","Queen Mother's Birthday",B.b6))
-q.push(new A.cH(r+"-09-24","\u1791\u17b7\u179c\u17b6\u179a\u178a\u17d2\u178b\u1792\u1798\u17d2\u1798\u1793\u17bb\u1789\u17d2\u1789","Constitution Day",B.b6))
-q.push(new A.cH(r+"-10-15","\u1791\u17b7\u179c\u17b6\u1782\u17c4\u179a\u1796\u1796\u17d2\u179a\u17c7\u179c\u17b7\u1789\u17d2\u1789\u17b6\u178e\u1780\u17d2\u1781\u1793\u17d2\u1792 \u1796\u17d2\u179a\u17c7\u1794\u179a\u1798\u179a\u178f\u1793\u1780\u17c4\u178a\u17d2\u178b","Commemoration Day of King's Father",B.b6))
-q.push(new A.cH(r+"-10-29","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1782\u17d2\u179a\u1784\u179a\u17b6\u1787\u17d2\u1799","Coronation Day",B.b6))
-q.push(new A.cH(r+"-11-09","\u1794\u17bb\u178e\u17d2\u1799\u17af\u1780\u179a\u17b6\u1787\u17d2\u1799\u1787\u17b6\u178f\u17b7","Independence Day",B.b6))
-q.push(new A.cH(r+"-12-29","\u1791\u17b7\u179c\u17b6\u179f\u1793\u17d2\u178f\u17b7\u1797\u17b6\u1796\u1793\u17c5\u1780\u1798\u17d2\u1796\u17bb\u1787\u17b6","Peace Day in Cambodia",B.b6))
+q.push(new A.cH(r+"-05-01","\u1791\u17b7\u179c\u17b6\u1796\u179b\u1780\u1798\u17d2\u1798\u17a2\u1793\u17d2\u178f\u179a\u1787\u17b6\u178f\u17b7","International Labour Day",B.b_))
+q.push(new A.cH(r+"-05-14","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u1798\u17d2\u179a\u17be\u1793\u1796\u17d2\u179a\u17c7\u1787\u1793\u17d2\u1798 \u1796\u17d2\u179a\u17c7\u1798\u17a0\u17b6\u1780\u17d2\u179f\u178f\u17d2\u179a","King's Birthday",B.b_))
+q.push(new A.cH(r+"-06-18","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1785\u1798\u17d2\u179a\u17be\u1793\u1796\u17d2\u179a\u17c7\u1787\u1793\u17d2\u1798 \u1796\u17d2\u179a\u17c7\u1798\u17a0\u17b6\u1780\u17d2\u179f\u178f\u17d2\u179a\u17b8","Queen Mother's Birthday",B.b_))
+q.push(new A.cH(r+"-09-24","\u1791\u17b7\u179c\u17b6\u179a\u178a\u17d2\u178b\u1792\u1798\u17d2\u1798\u1793\u17bb\u1789\u17d2\u1789","Constitution Day",B.b_))
+q.push(new A.cH(r+"-10-15","\u1791\u17b7\u179c\u17b6\u1782\u17c4\u179a\u1796\u1796\u17d2\u179a\u17c7\u179c\u17b7\u1789\u17d2\u1789\u17b6\u178e\u1780\u17d2\u1781\u1793\u17d2\u1792 \u1796\u17d2\u179a\u17c7\u1794\u179a\u1798\u179a\u178f\u1793\u1780\u17c4\u178a\u17d2\u178b","Commemoration Day of King's Father",B.b_))
+q.push(new A.cH(r+"-10-29","\u1796\u17d2\u179a\u17c7\u179a\u17b6\u1787\u1796\u17b7\u1792\u17b8\u1782\u17d2\u179a\u1784\u179a\u17b6\u1787\u17d2\u1799","Coronation Day",B.b_))
+q.push(new A.cH(r+"-11-09","\u1794\u17bb\u178e\u17d2\u1799\u17af\u1780\u179a\u17b6\u1787\u17d2\u1799\u1787\u17b6\u178f\u17b7","Independence Day",B.b_))
+q.push(new A.cH(r+"-12-29","\u1791\u17b7\u179c\u17b6\u179f\u1793\u17d2\u178f\u17b7\u1797\u17b6\u1796\u1793\u17c5\u1780\u1798\u17d2\u1796\u17bb\u1787\u17b6","Peace Day in Cambodia",B.b_))
 p=A.aP(a,1,1,0,0,0,0)
 o=A.aP(a,12,31,0,0,0,0)
 for(;;){r=p.a
@@ -32969,7 +32969,7 @@ else{p=q.f
 if(p!=null){o=q.r
 p+=o!=null?"-"+o:""
 i=p}else i=""}for(p=A.b4f(l,k),o=p.length,n=q.b,m=q.a,h=0;h<p.length;p.length===o||(0,A.t)(p),++h)g.push(new A.fO(A.dh(p[h]),n,n,j,i,B.fG,null,m))}return g},
-b4V(a,b){if(a===B.b6)return A.P(b,"holidayPublic")
+b4V(a,b){if(a===B.b_)return A.P(b,"holidayPublic")
 if(a===B.fE)return A.P(b,"holidayReligious")
 return A.P(b,"holidayTraditional")},
 b5c(a3,a4,a5){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a=A.b4f(a3,a4),a0=new A.a5(a,new A.b_K(),A.a0(a).h("a5<1,m>")).jF(0),a1=t.N,a2=A.o(a1,t.zy)
@@ -33028,7 +33028,7 @@ return q},
 b4G(a){var s=a.r
 if(s===B.eH)return"sil"
 if(s===B.fG)return"event"
-return a.w===B.b6?"sunday":"holiday"},
+return a.w===B.b_?"sunday":"holiday"},
 bxl(a){return B.b.eK(A.b4W(a),new A.b_c())},
 bwj(a,b){var s,r,q
 if(!b)return"muted"
@@ -33342,11 +33342,12 @@ case 1:return A.A(p.at(-1),r)}})
 return A.C($async$a_6,r)},
 avE:function avE(){},
 avF:function avF(){},
-rc:function rc(a,b,c,d){var _=this
+rc:function rc(a,b,c,d,e){var _=this
 _.a=a
 _.b=b
 _.c=c
-_.d=d},
+_.d=d
+_.e=e},
 oH:function oH(){},
 Vo:function Vo(){},
 a1Y:function a1Y(){},
@@ -34845,7 +34846,7 @@ k=h?null:c.y
 j.e=k==null?"":k
 h=h?null:c.z
 s=2
-return A.n(A.agL(new A.b0x(j,c,i,new A.lJ(new A.cM(q,B.cP,B.b2),p),h===!0,d),a,!0,!0,t.H),$async$ty)
+return A.n(A.agL(new A.b0x(j,c,i,new A.lJ(new A.cM(q,B.cP,B.b3),p),h===!0,d),a,!0,!0,t.H),$async$ty)
 case 2:return A.B(null,r)}})
 return A.C($async$ty,r)},
 b0x:function b0x(a,b,c,d,e,f){var _=this
@@ -39974,7 +39975,7 @@ s=B.b.fO(o,t.m)
 r=a.a
 for(o=s.$ti,q=new A.br(s,s.gK(0),o.h("br<Y.E>")),o=o.h("Y.E");q.A();){p=q.d
 if(p==null)p=o.a(p)
-if(r>=p.startIndex&&r<=p.endIndex)return new A.c_(J.aD(p.startIndex),J.aD(p.endIndex))}return B.b2},
+if(r>=p.startIndex&&r<=p.endIndex)return new A.c_(J.aD(p.startIndex),J.aD(p.endIndex))}return B.b3},
 w4(){var s,r,q,p,o=this.a
 o===$&&A.a()
 o=o.a.getLineMetrics()
@@ -47801,7 +47802,7 @@ b0=Math.max(b0,a6)
 a9=Math.min(a9,o)
 b2=new A.jn(b0,a9)
 b3=d1.Cb(b1.bT(b2))
-b4=b0<a9?d1.Cb(b2):B.b2
+b4=b0<a9?d1.Cb(b2):B.b3
 for(a9=a1.length,a8=a8.a,b0=b4.a,b5=b4.b,b6=(a8&1)===0,b7=b3.a,b8=b3.b,b9=0;b9<a1.length;a1.length===a9||(0,A.t)(a1),++b9){c0=a1[b9]
 c1=c0.a
 c2=c0.b
@@ -47991,7 +47992,7 @@ while(p<q){if((s[p]&16)!==0)break;++p}return new A.c_(r,p)},
 xX(a){var s,r,q,p,o
 for(s=this.e,r=s.length,q=0;q<r;++q){p=s[q].e
 o=p.a
-if(o<=a&&p.b>a)return new A.c_(o,p.b)}return B.b2}}
+if(o<=a&&p.b>a)return new A.c_(o,p.b)}return B.b3}}
 A.aEY.prototype={
 $2(a,b){return B.e.c1(a.gcw().a+a.ghP(),b.gcw().a+b.ghP())},
 $S:463}
@@ -55944,7 +55945,7 @@ gbb(){var s=this.Q
 s===$&&A.a()
 return s},
 ni(a){var s=this
-s.z=B.b3
+s.z=B.b4
 if(a!=null)s.sp(a)
 return s.W9(s.b)},
 cA(){return this.ni(null)},
@@ -55969,7 +55970,7 @@ r=o.a
 if(r===0){r=m.x
 r===$&&A.a()
 if(r!==a){m.x=A.v(a,m.a,m.b)
-m.ah()}m.Q=m.z===B.b3?B.ac:B.R
+m.ah()}m.Q=m.z===B.b4?B.ac:B.R
 m.yF()
 return A.b3r()}n=m.x
 n===$&&A.a()
@@ -55983,10 +55984,10 @@ r=n.a/1e6
 s=o===p?0:(A.v(s,p,o)-p)/(o-p)*r
 return q.Fa(new A.aSU(p,o,!1,null,q.ganE(),r,s,B.cQ))},
 anF(a){this.z=a
-this.Q=a===B.b3?B.bR:B.bd
+this.Q=a===B.b4?B.bR:B.bd
 this.yF()},
 AY(a){var s,r,q,p=this,o=$.bhK(),n=a<0
-p.z=n?B.mp:B.b3
+p.z=n?B.mp:B.b4
 s=n?p.a-0.01:p.b+0.01
 r=p.d.gYn()?1:200
 n=p.x
@@ -55997,14 +55998,14 @@ p.fM()
 return p.Fa(q)},
 aQK(){return this.AY(1)},
 zZ(a){this.fM()
-this.z=B.b3
+this.z=B.b4
 return this.Fa(a)},
 Fa(a){var s,r=this
 r.w=a
 r.y=B.P
 r.x=A.v(a.fY(0),r.a,r.b)
 s=r.r.uX()
-r.Q=r.z===B.b3?B.bR:B.bd
+r.Q=r.z===B.b4?B.bR:B.bd
 r.yF()
 return s},
 uY(a){this.y=this.w=null
@@ -56024,7 +56025,7 @@ akK(a){var s,r=this
 r.y=a
 s=a.a/1e6
 r.x=A.v(r.w.fY(s),r.a,r.b)
-if(r.w.oR(s)){r.Q=r.z===B.b3?B.ac:B.R
+if(r.w.oR(s)){r.Q=r.z===B.b4?B.ac:B.R
 r.uY(!1)}r.ah()
 r.yF()},
 Ca(){var s,r=this.r,q=r==null,p=!q&&r.a!=null?"":"; paused"
@@ -56046,7 +56047,7 @@ oR(a){return a>this.b}}
 A.aSU.prototype={
 fY(a){var s=this,r=a+s.w,q=s.r,p=B.d.ak(r/q,1)
 B.d.lV(r,q)
-s.f.$1(B.b3)
+s.f.$1(B.b4)
 q=A.a3(s.b,s.c,p)
 q.toString
 return q},
@@ -56505,8 +56506,8 @@ p===$&&A.a()
 s=p.r
 if(s!=null&&s.a!=null)return
 r=this.w
-if(r){p.z=B.b3
-q=p.jR(1,B.dB,B.Vg)}else{p.z=B.b3
+if(r){p.z=B.b4
+q=p.jR(1,B.dB,B.Vg)}else{p.z=B.b4
 q=p.jR(0,B.Um,B.jT)}q.ce(new A.aJi(this,r),t.H)},
 ax6(a){this.S(new A.aJn(this,a))},
 F(a4){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a=this,a0=null,a1=a.a,a2=a1.w==null,a3=!a2
@@ -57046,7 +57047,7 @@ else if(Math.abs(a)>=1)s=a<=0
 else{r=o.a.x
 r===$&&A.a()
 s=r>0.5}if(s){r=o.a
-r.z=B.b3
+r.z=B.b4
 r.jR(1,B.me,B.u2)}else{if(n)o.b.hc()
 r=o.a
 q=r.r
@@ -57569,7 +57570,7 @@ A.aS_.prototype={
 $1(a){var s,r
 t.x.a(a)
 s=this.b
-r=a.ap(B.b4,t.k.a(A.p.prototype.ga0.call(s)).b,a.gcu())
+r=a.ap(B.b5,t.k.a(A.p.prototype.ga0.call(s)).b,a.gcu())
 s=this.a
 if(r>s.a)s.a=r},
 $S:24}
@@ -58801,7 +58802,7 @@ L(){return"_ForceState."+this.b}}
 A.uv.prototype={}
 A.lf.prototype={
 kz(a){var s=this
-if(a.gBW()<=1)s.T(B.b5)
+if(a.gBW()<=1)s.T(B.b6)
 else{s.yp(a)
 if(s.dy===B.qM){s.dy=B.mq
 s.db=new A.fP(a.geO(),a.gbH())}}},
@@ -58810,14 +58811,14 @@ if(t.n2.b(a)||t.pY.b(a)){s=A.b8a(a.gIs(),a.gBW(),a.gaac())
 r.db=new A.fP(a.geO(),a.gbH())
 r.dx=s
 if(r.dy===B.mq)if(s>0.4){r.dy=B.mr
-r.T(B.cZ)}else if(a.gtj().gAE()>A.tu(a.gen(),r.b))r.T(B.b5)
+r.T(B.cZ)}else if(a.gtj().gAE()>A.tu(a.gen(),r.b))r.T(B.b6)
 if(s>0.4&&r.dy===B.N6){r.dy=B.mr
 if(r.at!=null)r.em("onStart",new A.aoo(r,s))}}r.D3(a)},
 jn(a){var s=this,r=s.dy
 if(r===B.mq)r=s.dy=B.N6
 if(s.at!=null&&r===B.mr)s.em("onStart",new A.aom(s))},
 wk(a){var s=this,r=s.dy,q=r===B.mr||r===B.asY
-if(r===B.mq){s.T(B.b5)
+if(r===B.mq){s.T(B.b6)
 return}if(q&&s.ch!=null)if(s.ch!=null)s.em("onEnd",new A.aon(s))
 s.dy=B.qM},
 i2(a){this.jO(a)
@@ -58922,11 +58923,11 @@ r.Y=s
 s.FM(a.gmy(),a.geO())}if(t.n2.b(a)){s=r.Y
 s.toString
 s.FM(a.gmy(),a.geO())}}if(t.oN.b(a)){if(r.k2)r.am3(a)
-else r.T(B.b5)
+else r.T(B.b6)
 r.MR()}else if(t.Ko.b(a)){r.WW()
 r.MR()}else if(t.pY.b(a)){r.k3=new A.fP(a.geO(),a.gbH())
 r.k4=a.gfm()
-r.am2(a)}else if(t.n2.b(a))if(a.gfm()!==r.k4&&!r.k2){r.T(B.b5)
+r.am2(a)}else if(t.n2.b(a))if(a.gfm()!==r.k4&&!r.k2){r.T(B.b6)
 s=r.CW
 s.toString
 r.jO(s)}else if(r.k2)r.am4(a)},
@@ -58967,7 +58968,7 @@ MR(){var s=this
 s.k2=!1
 s.Y=s.k4=s.k3=null},
 T(a){var s=this
-if(a===B.b5)if(s.k2)s.MR()
+if(a===B.b6)if(s.k2)s.MR()
 else s.WW()
 s.Ve(a)},
 jn(a){}}
@@ -59176,7 +59177,7 @@ if(!s.fr||s.p1)s.WR(a)},
 i2(a){this.Mc(a)},
 wk(a){var s,r=this
 switch(r.fy.a){case 0:break
-case 1:r.T(B.b5)
+case 1:r.T(B.b6)
 s=r.cy
 if(s!=null)r.em("onCancel",s)
 break
@@ -59188,7 +59189,7 @@ r.fy=B.dG},
 Mc(a){var s,r=this
 r.jO(a)
 s=r.RG
-if(!B.b.G(s,a))r.IU(a,B.b5)
+if(!B.b.G(s,a))r.IU(a,B.b6)
 r.p3.G(0,a)
 if(r.rx===a)r.rx=s.length!==0?B.b.gac(s):null},
 alW(){var s,r=this
@@ -59377,7 +59378,7 @@ if(q!=null)r.zv(q)},
 zv(a){var s,r=this,q=r.z
 q.G(0,a.b)
 s=a.c
-s.a.rS(s.b,s.c,B.b5)
+s.a.rS(s.b,s.c,B.b6)
 a.jO(r.gEG())
 s=r.y
 if(s!=null)if(a===s)r.rO()
@@ -59464,7 +59465,7 @@ em(a,b){return this.a8P(a,b,null,t.z)},
 aKX(a,b,c){return this.a8P(a,b,c,t.z)}}
 A.dd.prototype={
 kz(a){this.D2(a.gcO(),a.gdC())},
-B2(a){this.T(B.b5)},
+B2(a){this.T(B.b6)},
 jn(a){},
 i2(a){},
 T(a){var s,r=this.f,q=A.V(new A.bF(r,A.l(r).h("bF<2>")),t.SP)
@@ -59474,7 +59475,7 @@ IU(a,b){var s=this.f,r=s.i(0,a)
 if(r!=null){s.G(0,a)
 r.T(b)}},
 l(){var s,r,q,p,o,n,m,l=this
-l.T(B.b5)
+l.T(B.b6)
 for(s=l.r,r=A.l(s),q=new A.j7(s,s.v9(),r.h("j7<1>")),r=r.c;q.A();){p=q.d
 if(p==null)p=r.a(p)
 o=$.h3.c8$
@@ -59525,7 +59526,7 @@ r.toString
 r=p>r
 o=r}}if(t.n2.b(a))r=s||o
 else r=!1
-if(r){n.T(B.b5)
+if(r){n.T(B.b6)
 r=n.CW
 r.toString
 n.jO(r)}else n.a82(a)}n.D3(a)},
@@ -59567,15 +59568,15 @@ s.k4=a}if(s.k4!=null)s.afV(a)},
 D2(a,b){this.afQ(a,b)},
 a82(a){var s,r=this
 if(t.oN.b(a)){r.ok=a
-r.X_()}else if(t.Ko.b(a)){r.T(B.b5)
+r.X_()}else if(t.Ko.b(a)){r.T(B.b6)
 if(r.k2){s=r.k4
 s.toString
-r.Ho(a,s,"")}r.zy()}else if(a.gfm()!==r.k4.gfm()){r.T(B.b5)
+r.Ho(a,s,"")}r.zy()}else if(a.gfm()!==r.k4.gfm()){r.T(B.b6)
 s=r.CW
 s.toString
 r.jO(s)}else if(t.n2.b(a))r.a87(a)},
 T(a){var s,r=this
-if(r.k3&&a===B.b5){s=r.k4
+if(r.k3&&a===B.b6){s=r.k4
 s.toString
 r.Ho(null,s,"spontaneous")
 r.zy()}r.Ve(a)},
@@ -59730,15 +59731,15 @@ r.Do(s)}s=r.wy$
 if(s!=null)r.WZ(s)},
 wk(a){var s,r=this
 switch(r.k2.a){case 0:r.a2R()
-r.T(B.b5)
+r.T(B.b6)
 break
-case 1:if(r.fr)if(r.fy){if(r.oG$!=null){if(!r.R8.G(0,a))r.IU(a,B.b5)
+case 1:if(r.fr)if(r.fy){if(r.oG$!=null){if(!r.R8.G(0,a))r.IU(a,B.b6)
 r.k2=B.ho
 s=r.oG$
 s.toString
 r.Do(s)
 r.WS()}}else{r.a2R()
-r.T(B.b5)}else{s=r.wy$
+r.T(B.b6)}else{s=r.wy$
 if(s!=null)r.WZ(s)}break
 case 2:r.WS()
 break}r.Fe()
@@ -59819,7 +59820,7 @@ q=a.geO()
 p=o.ne$
 if(o.cx!=null)o.em("onTapUp",new A.aij(o,new A.Kj(r,q,s,p)))
 o.EW()
-if(!o.R8.G(0,a.gcO()))o.IU(a.gcO(),B.b5)},
+if(!o.R8.G(0,a.gcO()))o.IU(a.gcO(),B.b6)},
 alX(a){var s,r,q=this
 if(q.cy!=null){s=a.gmy()
 r=q.k4
@@ -59854,7 +59855,7 @@ if(s!=null)r.em("onCancel",s)
 r.EV()
 r.EW()},
 O1(a){this.jO(a)
-if(!this.R8.G(0,a))this.IU(a,B.b5)},
+if(!this.R8.G(0,a))this.IU(a,B.b6)},
 EW(){this.fy=this.fx=!1
 this.go=null},
 EV(){return},
@@ -61321,7 +61322,7 @@ bR(a){var s=this.E$
 if(s!=null)return Math.max(s.ap(B.ah,a,s.gc_()),this.B.a)
 return 0},
 bQ(a){var s=this.E$
-if(s!=null)return Math.max(s.ap(B.b4,a,s.gcu()),this.B.b)
+if(s!=null)return Math.max(s.ap(B.b5,a,s.gcu()),this.B.b)
 return 0},
 WF(a,b){var s,r,q=this.E$
 if(q!=null){s=b.$2(q,a)
@@ -65125,7 +65126,7 @@ s===$&&A.a()
 s.cA()
 s=this.db
 s===$&&A.a()
-s.z=B.b3
+s.z=B.b4
 s.jR(1,B.a7,B.u3)},
 bL(){var s,r=this,q=r.cx
 q===$&&A.a()
@@ -65137,7 +65138,7 @@ q=r.db
 q===$&&A.a()
 q.sp(s)
 if(s<1){q=r.db
-q.z=B.b3
+q.z=B.b4
 q.jR(1,B.a7,B.eB)}},
 auU(a){if(a===B.ac)this.l()},
 l(){var s=this,r=s.ch
@@ -65814,12 +65815,12 @@ p.a.toString
 r=p.e
 r.toString
 r=p.f=s.a7G(r)
-q=new A.cM(r,B.cP,B.b2)
+q=new A.cM(r,B.cP,B.b3)
 p.a.toString
 s=p.r
 if(!s){q=q.kE(A.cJ(B.k,0,r.length,!1))
 p.r=!0}p.d.mM(q)}else{p.f=""
-p.d.mM(new A.cM("",B.cP,B.b2))}},
+p.d.mM(new A.cM("",B.cP,B.b3))}},
 a0B(a){var s=this.c
 s.toString
 s=A.c8(s,B.V,t.A)
@@ -68287,7 +68288,7 @@ b4.a.toString
 a.push(new A.O0(n,m,a2,a5.e,a7,f,a1,a4,a8,a9,new A.aQ3(b4,a0),a3,b5,e,b0,b1,!1,b5))}b3=A.bT(a,B.F,B.m,B.aO,0,B.I)
 q=b4.r
 q===$&&A.a()
-h=A.b([B.b1],h)
+h=A.b([B.b2],h)
 b4.a.toString
 h.push(new A.hO(1,B.cm,new A.e_(new A.eF(0,g),b5,b5,b3,b5),b5))
 b4.a.toString
@@ -69663,14 +69664,14 @@ default:s=4
 break}break
 case 5:p=q.e
 p===$&&A.a()
-p.z=B.b3
+p.z=B.b4
 s=11
 return A.n(p.jR(1,B.a7,B.L),$async$o5)
 case 11:s=4
 break
 case 6:p=q.d
 p===$&&A.a()
-p.z=B.b3
+p.z=B.b4
 s=12
 return A.n(p.jR(0,B.a7,B.L),$async$o5)
 case 12:s=4
@@ -69685,7 +69686,7 @@ r.y=B.po
 r.a.toString
 s=r.d
 s===$&&A.a()
-s.z=B.b3
+s.z=B.b4
 s.jR(0.6666666666666666,B.a7,B.cD).ce(new A.axY(r,new A.be(new A.an(q,t.V),t.h)),t.H)},
 F(a){var s,r,q,p=this,o=null,n=p.a.c,m=p.y,l=m===B.lH||m===B.pp
 n=A.b([new A.dH(p.gaz6(),new A.dH(p.garP(),n,o,t.eq),o,t.WA)],t.p)
@@ -70794,7 +70795,7 @@ for(s=t.Fk,r=0;n!=null;){q=n.b
 q.toString
 s.a(q)
 p=n.gcu()
-o=B.b4.e7(n.dy,a,p)
+o=B.b5.e7(n.dy,a,p)
 r=Math.max(r,o)
 n=q.aw$}return r},
 hF(a){return this.At(a)},
@@ -70831,7 +70832,7 @@ r=n.b
 r.toString
 n=m.a(r).aw$}s=Math.min(s,a.b/o.cN$)}n=o.a2$
 for(m=o.$ti.h("af.1"),p=0;n!=null;){r=n.gcu()
-q=B.b4.e7(n.dy,s,r)
+q=B.b5.e7(n.dy,s,r)
 p=Math.max(p,q)
 r=n.b
 r.toString
@@ -70840,7 +70841,7 @@ alL(a){var s,r,q,p,o,n=this,m=n.a2$,l=n.cN$
 if(n.a7)s=a.d/l
 else{s=a.c/l
 for(l=n.$ti.h("af.1");m!=null;){r=m.gcu()
-q=B.b4.e7(m.dy,1/0,r)
+q=B.b5.e7(m.dy,1/0,r)
 s=Math.max(s,q)
 r=m.b
 r.toString
@@ -71099,7 +71100,7 @@ if(r===q.f)return
 q.S(new A.aTH(q,r))},
 aA8(){if(!this.grI().gcB()&&$.c3.R8$===B.cU){var s=this.d
 s===$&&A.a()
-s.mM(new A.cM(s.a.a,B.cP,B.b2))}},
+s.mM(new A.cM(s.a.a,B.cP,B.b3))}},
 atl(a,b){var s,r=this,q=r.aAD(b)
 if(q!==r.f)r.S(new A.aTG(r,q))
 r.a.toString
@@ -71522,7 +71523,7 @@ p=s.x
 p===$&&A.a()
 r=Math.abs(o-p)
 s.e=r!==0?new A.b3(B.d.au(75e3*(1/r))):B.P
-s.z=B.b3
+s.z=B.b4
 s.jR(o,B.ew,null)}else{s===$&&A.a()
 s.sp(o)}q.bN()},
 sad8(a){var s=this
@@ -73964,7 +73965,7 @@ s.yt()}r.afj()},
 GC(a){var s
 this.afh(a)
 if(this.gvF().a.a!==a){s=this.gvF()
-s.mM(new A.cM(a,B.cP,B.b2))}},
+s.mM(new A.cM(a,B.cP,B.b3))}},
 aqw(){var s=this
 if(s.gvF().a.a!==s.gOz())s.GC(s.gvF().a.a)}}
 A.ZP.prototype={}
@@ -74993,7 +74994,7 @@ bR(a){var s=this.E$
 if(s!=null)return Math.max(s.ap(B.ah,a,s.gc_()),this.B.a)
 return 0},
 bQ(a){var s=this.E$
-if(s!=null)return Math.max(s.ap(B.b4,a,s.gcu()),this.B.b)
+if(s!=null)return Math.max(s.ap(B.b5,a,s.gcu()),this.B.b)
 return 0},
 Xv(a,b){var s,r,q=this.E$
 if(q!=null){s=b.$2(q,a)
@@ -75562,7 +75563,7 @@ p.a.toString
 q=p.gYP()
 s=p.d.y
 s.toString
-s.mM(new A.cM(q,B.cP,B.b2))}},
+s.mM(new A.cM(q,B.cP,B.b3))}},
 l(){var s=this,r=s.d
 r.ve()
 r.yt()
@@ -80189,7 +80190,7 @@ a.r=!0
 if(s.TQ(r.d)!=null){a.sI1(e.gase())
 a.sI0(e.gasc())}if(s.TP(e.B.d)!=null){a.sI3(e.gasi())
 a.sI2(e.gasg())}}},
-atJ(a){this.c8.jG(new A.cM(a,A.p8(B.k,a.length),B.b2),B.aW)},
+atJ(a){this.c8.jG(new A.cM(a,A.p8(B.k,a.length),B.b3),B.aW)},
 q6(b8,b9,c0){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,b0,b1,b2,b3=this,b4=null,b5=A.b([],t.QF),b6=b3.b3,b7=b6.w
 b7.toString
 s=b3.a2$
@@ -80453,7 +80454,7 @@ q=n
 k=m.goi()
 k.ke(q,o.a)
 return k.b.a.c.gci()}return h},
-bX(a){return this.ap(B.b4,a,this.gcu())},
+bX(a){return this.ap(B.b5,a,this.gcu())},
 bQ(a){this.goi().kk(this.lz(a,A.h_(),A.je()))
 return this.a0O(a)},
 hF(a){this.lZ()
@@ -81166,7 +81167,7 @@ f_(){return this.agf()}}
 A.aye.prototype={
 $2(a,b){var s,r,q=this.a,p=q?b.b:b.d
 if(isFinite(p))s=p
-else s=q?a.ap(B.ah,1/0,a.gc_()):a.ap(B.b4,1/0,a.gcu())
+else s=q?a.ap(B.ah,1/0,a.gc_()):a.ap(B.b5,1/0,a.gcu())
 r=this.b
 return q?new A.r(s,r.$2(a,s)):new A.r(r.$2(a,s),s)},
 $S:55}
@@ -81180,7 +81181,7 @@ A.ayh.prototype={
 $2(a,b){return a.ap(B.aK,b,a.gco())},
 $S:75}
 A.ayf.prototype={
-$2(a,b){return a.ap(B.b4,b,a.gcu())},
+$2(a,b){return a.ap(B.b5,b,a.gcu())},
 $S:75}
 A.ayd.prototype={
 $1(a){var s,r,q=this,p=q.b.d
@@ -84573,7 +84574,7 @@ r.a8(0)
 r=s.ax
 new A.b0(r,A.l(r).h("b0<1>")).aO(0,A.dd.prototype.gUH.call(s))
 r.a8(0)
-s.T(B.b5)
+s.T(B.b6)
 this.ea()},
 l(){var s=this.wC$
 if(s!=null)s.l()
@@ -84591,7 +84592,7 @@ bX(a){var s=this.E$
 s=s==null?null:s.ap(B.aK,a,s.gco())
 return s==null?0:s},
 bQ(a){var s=this.E$
-s=s==null?null:s.ap(B.b4,a,s.gcu())
+s=s==null?null:s.ap(B.b5,a,s.gcu())
 return s==null?0:s},
 cY(a){var s=this.E$
 s=s==null?null:s.ap(B.W,a,s.gcX())
@@ -84697,7 +84698,7 @@ return s==null?0:s},
 bQ(a){var s
 if(isFinite(a))return a/this.B
 s=this.E$
-s=s==null?null:s.ap(B.b4,a,s.gcu())
+s=s==null?null:s.ap(B.b5,a,s.gcu())
 return s==null?0:s},
 akP(a){var s,r,q,p,o=a.a,n=a.b
 if(o>=n&&a.c>=a.d)return new A.r(A.v(0,o,n),A.v(0,a.c,a.d))
@@ -84735,7 +84736,7 @@ bQ(a){var s,r=this
 if(r.E$==null)return 0
 if(!isFinite(a))a=r.ap(B.ah,1/0,r.gc_())
 s=r.E$
-return A.aym(s.ap(B.b4,a,s.gcu()),r.U)},
+return A.aym(s.ap(B.b5,a,s.gcu()),r.U)},
 X1(a,b){var s=b.a>=b.b?null:A.aym(a.ap(B.ah,b.d,a.gc_()),this.B)
 return b.C5(null,s)},
 zt(a,b){var s=this.E$
@@ -85703,7 +85704,7 @@ bX(a){var s=this.E$
 s=s==null?null:s.ap(B.aK,a,s.gco())
 return s==null?0:s},
 bQ(a){var s=this.E$
-s=s==null?null:s.ap(B.b4,a,s.gcu())
+s=s==null?null:s.ap(B.b5,a,s.gcu())
 return s==null?0:s},
 hF(a){var s,r,q=this.E$
 if(q!=null){s=q.lQ(a)
@@ -85751,7 +85752,7 @@ bX(a){var s=this.grT(),r=this.E$
 if(r!=null)return r.ap(B.aK,Math.max(0,a-s.gel()),r.gco())+(s.gcS()+s.gcU())
 return s.gcS()+s.gcU()},
 bQ(a){var s=this.grT(),r=this.E$
-if(r!=null)return r.ap(B.b4,Math.max(0,a-s.gel()),r.gcu())+(s.gcS()+s.gcU())
+if(r!=null)return r.ap(B.b5,Math.max(0,a-s.gel()),r.gcu())+(s.gcS()+s.gcU())
 return s.gcS()+s.gcU()},
 cY(a){var s,r=this.grT(),q=this.E$
 if(q==null)return a.bS(new A.r(r.gel(),r.gcS()+r.gcU()))
@@ -85869,7 +85870,7 @@ r=this.dg
 return s/r},
 bQ(a){var s,r=this.E$
 if(r==null)s=this.Vr(a)
-else s=r.ap(B.b4,a,r.gcu())
+else s=r.ap(B.b5,a,r.gcu())
 r=this.dg
 return s/r},
 cY(a){var s=this.E$
@@ -87008,7 +87009,7 @@ A.ayX.prototype={
 $1(a){return a.ap(B.aK,this.a,a.gco())},
 $S:38}
 A.ayV.prototype={
-$1(a){return a.ap(B.b4,this.a,a.gcu())},
+$1(a){return a.ap(B.b5,this.a,a.gcu())},
 $S:38}
 A.abU.prototype={
 aA(a){var s,r,q
@@ -87719,7 +87720,7 @@ bQ(a){var s,r,q,p,o,n=this
 switch(n.q.a){case 0:return n.ap(B.W,new A.ah(0,a,0,1/0),n.gcX()).b
 case 1:s=n.a2$
 for(r=A.l(n).h("af.1"),q=0;s!=null;){p=s.gcu()
-o=B.b4.e7(s.dy,1/0,p)
+o=B.b5.e7(s.dy,1/0,p)
 q+=o
 p=s.b
 p.toString
@@ -90527,7 +90528,7 @@ m.Np(!0,n,n+p.c.length,f)}r=q==null?l:q.a+q.c.length
 if(r==null)r=0
 m.Np(!1,r,h.length,f)
 k=k.a
-h=g==null||g.a===g.b?B.b2:new A.c_(g.a,g.b)
+h=g==null||g.a===g.b?B.b3:new A.c_(g.a,g.b)
 j=i==null?B.cP:A.cJ(j.e,i.a,i.b,j.f)
 return new A.cM(k.charCodeAt(0)==0?k:k,j,h)},
 Np(a,b,c,d){var s,r,q,p
@@ -93981,7 +93982,7 @@ return A.ee(A.b([A.ee(p,p,p,p,p,p,p,p,p,p,B.c.Z(o,0,q)),A.ee(p,p,p,p,p,p,p,p,p,s
 suR(a){var s,r=this.a,q=r.a.length,p=a.b
 if(q<p||q<a.a)throw A.h(A.iP("invalid text selection: "+a.k(0)))
 s=r.c
-this.mM(r.aGs(a.a>=s.a&&p<=s.b?s:B.b2,a))}}
+this.mM(r.aGs(a.a>=s.a&&p<=s.b?s:B.b3,a))}}
 A.KS.prototype={}
 A.j8.prototype={}
 A.aLk.prototype={
@@ -94090,7 +94091,7 @@ if(a===B.aX){s.lb(s.a.c.a.b.gfE())
 s.mi(!1)
 switch(A.b6().a){case 2:case 4:case 3:case 5:break
 case 0:case 1:r=s.a.c.a
-s.jG(new A.cM(r.a,A.p8(B.k,r.b.b),B.b2),B.aX)
+s.jG(new A.cM(r.a,A.p8(B.k,r.b.b),B.b3),B.aX)
 break}}A.dS(null,t.H)},
 Gw(a){var s,r,q=this,p=q.a,o=p.x
 if(o)return
@@ -94520,7 +94521,7 @@ break
 case 2:if(l.a.d.gcB())l.zE()
 if(l.p2!=null&&l.p4!=null){l.id.sp(0)
 j=l.id
-j.z=B.b3
+j.z=B.b4
 j.jR(1,B.hE,B.nC)}break}},
 a0f(){var s,r,q,p,o=this,n=o.gaT(),m=o.p2
 m.toString
@@ -94547,7 +94548,7 @@ if(k!=null)try{k.$0()}catch(n){s=A.a8(n)
 r=A.aJ(n)
 l=A.aU("while calling onEditingComplete for "+a.k(0))
 A.cd(new A.ba(s,r,"widgets",l,null,!1))}else{l=l.c
-l.mM(l.a.PJ(B.b2))
+l.mM(l.a.PJ(B.b3))
 if(b)switch(a.a){case 0:case 1:case 2:case 3:case 4:case 5:case 8:case 9:case 10:case 11:case 12:m.a.d.kg()
 break
 case 6:l=m.a.d
@@ -94908,7 +94909,7 @@ aoc(){var s,r,q,p=this
 if(p.a.d.gcB()&&p.a.d.aFC())p.EM()
 else if(!p.a.d.gcB()){p.Xd()
 s=p.a.c
-s.mM(s.a.PJ(B.b2))}p.NY()
+s.mM(s.a.PJ(B.b3))}p.NY()
 p.a4_()
 s=p.a.d.gcB()
 r=$.a6
@@ -95158,7 +95159,7 @@ q=r.b
 if(o===s.length)r.a1v(2,q)
 else{r.a1v(1,q)
 r.Ds(1,r.b)}o=r.a
-p.jG(new A.cM(B.c.Z(o,0,r.b)+new A.f9(r.gR()).gai(0)+new A.f9(r.gR()).gac(0)+B.c.cD(o,r.c),A.p8(B.k,r.b+r.gR().length),B.b2),B.aW)},
+p.jG(new A.cM(B.c.Z(o,0,r.b)+new A.f9(r.gR()).gai(0)+new A.f9(r.gR()).gac(0)+B.c.cD(o,r.c),A.p8(B.k,r.b+r.gR().length),B.b3),B.aW)},
 a1l(a){var s=this.a.c.a,r=a.a.SS(a.c,a.b)
 this.jG(r,a.d)
 if(r.j(0,s))this.Y0()},
@@ -95593,7 +95594,7 @@ break
 case 0:break}return a.a!==b.a||!a.c.j(0,b.c)},
 $S:475}
 A.amf.prototype={
-$1(a){return A.b6()===B.az?a.PJ(B.b2):a},
+$1(a){return A.b6()===B.az?a.PJ(B.b3):a},
 $S:476}
 A.amh.prototype={
 $1(a){var s=this.a
@@ -100876,12 +100877,12 @@ l=s.a(q).aw$}q=m.q
 o=m.cN$
 l=m.a2$
 if(r+q*(o-1)>a){for(n=0;l!=null;){q=l.gcu()
-p=B.b4.e7(l.dy,a,q)
+p=B.b5.e7(l.dy,a,q)
 n+=p
 q=l.b
 q.toString
 l=s.a(q).aw$}return n+m.P*(m.cN$-1)}else{for(n=0;l!=null;){q=l.gcu()
-p=B.b4.e7(l.dy,a,q)
+p=B.b5.e7(l.dy,a,q)
 n=Math.max(n,p)
 q=l.b
 q.toString
@@ -101456,7 +101457,7 @@ A.aSS.prototype={
 $1(a){return a.ap(B.aK,this.a,a.gco())},
 $S:38}
 A.aSQ.prototype={
-$1(a){return a.ap(B.b4,this.a,a.gcu())},
+$1(a){return a.ap(B.b5,this.a,a.gcu())},
 $S:38}
 A.a_q.prototype={
 D0(){var s=this.a,r=$.b2U+1
@@ -102934,7 +102935,7 @@ A.Ai.prototype={
 mc(){return new A.lJ(this.k2,$.ae())},
 kJ(a){a.toString
 A.bZ(a)
-return new A.lJ(new A.cM(a,B.cP,B.b2),$.ae())},
+return new A.lJ(new A.cM(a,B.cP,B.b3),$.ae())},
 kV(){return this.y.a.a}}
 A.ri.prototype={
 mc(){return this.cy},
@@ -104673,7 +104674,7 @@ s.c=new A.be(r,t.h)
 p=A.ahw("DrivenScrollActivity",p,q.w)
 p.cg()
 p.d8$.D(0,s.gO4())
-p.z=B.b3
+p.z=B.b4
 p.jR(a,b,c).a.a.jd(s.gNL())
 s.d!==$&&A.aZ()
 s.d=p
@@ -105963,7 +105964,7 @@ if(s!=a.e)if(s===!0){s=r.w
 if(s!=null)s.bL()
 s=r.x
 s===$&&A.a()
-s.z=B.b3
+s.z=B.b4
 s.jR(1,B.a7,null)}else{s=r.x
 s===$&&A.a()
 s.ds()}},
@@ -107093,7 +107094,7 @@ bX(a){var s=this.E$
 s=s==null?null:s.ap(B.aK,a,s.gco())
 return s==null?0:s},
 bQ(a){var s=this.E$
-s=s==null?null:s.ap(B.b4,a,s.gcu())
+s=s==null?null:s.ap(B.b5,a,s.gcu())
 return s==null?0:s},
 cY(a){var s=this.E$
 if(s==null)return new A.r(A.v(0,a.a,a.b),A.v(0,a.c,a.d))
@@ -109948,7 +109949,7 @@ this.O=a
 this.a5()},
 sla(a){return},
 bQ(a){var s=this.E$
-s=s==null?null:s.ap(B.b4,a/this.q,s.gcu())
+s=s==null?null:s.ap(B.b5,a/this.q,s.gcu())
 if(s==null)s=0
 return s*this.q},
 bR(a){var s=this.E$
@@ -116651,7 +116652,7 @@ aEU(a){var s=a.c,r=s.gdl()
 a.gu3()
 return new A.bK(s,r,null,null,a.f,a.b,a.d,a.e,B.ML)},
 H8(a,b){var s=t.N,r=A.o(s,s),q=this.apv(a,r)
-if(J.hK(q))return new A.c2(B.b0,B.bJ,a,b,new A.e2("no routes for location: "+a.k(0)),A.ii(B.b0))
+if(J.hK(q))return new A.c2(B.b1,B.bJ,a,b,new A.e2("no routes for location: "+a.k(0)),A.ii(B.b1))
 return new A.c2(q,r,a,b,null,A.ii(q))},
 aII(a){return this.H8(a,null)},
 apv(a,b){var s,r,q,p,o
@@ -116667,7 +116668,7 @@ if(t.T.b(s)){p=m.$1(s)
 return p}p=s.ce(m,t.LQ).hD(new A.azI(b))
 return p}catch(o){r=A.a8(o)
 q=r instanceof A.e2?r:new A.e2("Exception during redirect: "+A.k(r))
-return new A.c2(B.b0,B.bJ,n,b.d,q,A.ii(B.b0))}},
+return new A.c2(B.b1,B.bJ,n,b.d,q,A.ii(B.b1))}},
 Zj(a,b,c,d){var s,r,q,p,o,n,m,l
 if(d>=c.length)return null
 s=c[d]
@@ -116692,7 +116693,7 @@ A.a_(A.apb("too many redirects "+l.YO(n)))}c.push(o)
 o.k(0)}return r}catch(m){q=A.a8(m)
 p=q instanceof A.e2?q:new A.e2("Exception during redirect: "+A.k(q))
 p.toString
-return new A.c2(B.b0,B.bJ,b,null,p,A.ii(B.b0))}},
+return new A.c2(B.b1,B.bJ,b,null,p,A.ii(B.b1))}},
 YO(a){return new A.a5(a,new A.azA(),A.a0(a).h("a5<1,f>")).cC(0," => ")},
 a1B(a,b){var s,r={}
 r.a=null
@@ -116751,7 +116752,7 @@ if(t.T.b(s)){n=l.$1(s)
 return n}n=s.ce(l,t.LQ).hD(new A.azM(a))
 return n}catch(p){r=A.a8(p)
 q=r instanceof A.e2?r:new A.e2("Exception during route redirect: "+A.k(r))
-return new A.c2(B.b0,B.bJ,o,a.d,q,A.ii(B.b0))}},
+return new A.c2(B.b1,B.bJ,o,a.d,q,A.ii(B.b1))}},
 $S:264}
 A.azN.prototype={
 $1(a){var s,r,q,p=this
@@ -116767,7 +116768,7 @@ return!0},
 $S:87}
 A.azM.prototype={
 $1(a){var s=a instanceof A.e2?a:new A.e2("Exception during route redirect: "+A.k(a)),r=this.a
-return new A.c2(B.b0,B.bJ,r.c,r.d,s,A.ii(B.b0))},
+return new A.c2(B.b1,B.bJ,r.c,r.d,s,A.ii(B.b1))},
 $S:267}
 A.azJ.prototype={
 $1(a){var s=this
@@ -116780,7 +116781,7 @@ return s.a.a.b.$2(this.b,s.aEU(this.c))},
 $S:268}
 A.azI.prototype={
 $1(a){var s=a instanceof A.e2?a:new A.e2("Exception during redirect: "+A.k(a)),r=this.a
-return new A.c2(B.b0,B.bJ,r.c,r.d,s,A.ii(B.b0))},
+return new A.c2(B.b1,B.bJ,r.c,r.d,s,A.ii(B.b1))},
 $S:267}
 A.azE.prototype={
 $1(a){var s=this
@@ -117201,7 +117202,7 @@ $S:640}
 A.apg.prototype={
 $1(a){var s=this,r=s.b
 if(r.e==null){r=s.a.d
-return r==null?new A.c2(B.b0,B.bJ,s.c.b7().gfW(),s.d.b7().a,new A.e2("Navigation aborted because the router context was disposed."),A.ii(B.b0)):r}return s.a.a02(s.c.b7(),r,s.d.b7(),s.e,a)},
+return r==null?new A.c2(B.b1,B.bJ,s.c.b7().gfW(),s.d.b7().a,new A.e2("Navigation aborted because the router context was disposed."),A.ii(B.b1)):r}return s.a.a02(s.c.b7(),r,s.d.b7(),s.e,a)},
 $S:264}
 A.api.prototype={
 $0(){var s,r,q,p=this,o=p.a,n=o.d
@@ -117209,7 +117210,7 @@ if(n!=null)return new A.bL(n,t.Q4)
 n=p.b
 s=n.b7().gfW()
 n=n.b7().gfW().k(0)
-r=new A.c2(B.b0,B.bJ,s,p.c.b7().a,new A.e2("Navigation to "+n+" was blocked by onEnter with no prior route to restore"),A.ii(B.b0))
+r=new A.c2(B.b1,B.bJ,s,p.c.b7().a,new A.e2("Navigation to "+n+" was blocked by onEnter with no prior route to restore"),A.ii(B.b1))
 o=o.b
 q=o!=null?o.$2(p.d,r):r
 return new A.bL(q,t.Q4)},
@@ -117244,7 +117245,7 @@ g=p
 q=g}catch(f){o=A.a8(f)
 c=a3.gfW()
 i=o instanceof A.e2?o:new A.e2(J.eW(o))
-n=new A.c2(B.b0,B.bJ,c,j,i,A.ii(B.b0))
+n=new A.c2(B.b1,B.bJ,c,j,i,A.ii(B.b1))
 B.b.a8(d.d)
 c=d.b
 j=c==null
@@ -117270,7 +117271,7 @@ a.gu3()
 return new A.bK(r,o,null,m,q,p,n,a.e,B.ML)},
 az2(a,b,c){var s,r,q=this,p=q.d
 p.push(b)
-if(p.length>q.a.a.a.c){s=new A.c2(B.b0,B.bJ,b,c.a,new A.e2("Too many onEnter calls detected: "+q.ap_(p)),A.ii(B.b0))
+if(p.length>q.a.a.a.c){s=new A.c2(B.b1,B.bJ,b,c.a,new A.e2("Too many onEnter calls detected: "+q.ap_(p)),A.ii(B.b1))
 B.b.a8(p)
 p=q.b
 r=p==null
@@ -117315,7 +117316,7 @@ A.aQb.prototype={
 $2(a,b){var s,r,q=this,p=q.a
 B.b.a8(p.d)
 s=q.b.gfW()
-r=new A.c2(B.b0,B.bJ,s,q.c.a,a,A.ii(B.b0))
+r=new A.c2(B.b1,B.bJ,s,q.c.a,a,A.ii(B.b1))
 p=p.b
 s=p==null
 if(!s&&q.d.e!=null){if(s)p=t.Ah.a(p)
@@ -118372,7 +118373,7 @@ if(q!==0)return q
 return B.c.c1(a.c,b.c)},
 $S:677}
 A.b_c.prototype={
-$1(a){return a.d===B.b6},
+$1(a){return a.d===B.b_},
 $S:92}
 A.aZA.prototype={
 $1(a){return a.b===this.a},
@@ -118550,7 +118551,7 @@ AI(a){return a.fy},
 Ac(a,b){var s,r=A.aP(A.b9(b),A.bz(b),A.ct(b),7,0,0,0)
 if(!r.wR(b))r=r.VX(864e8)
 s=a.as
-return A.b([new A.rc("daily-"+A.dh(r),A.P(s,"appName"),A.P(s,"remindDailySub"),r)],t.Tt)}}
+return A.b([new A.rc("daily-"+A.dh(r),A.P(s,"appName"),A.P(s,"remindDailySub"),r,"daily")],t.Tt)}}
 A.a1Y.prototype={
 AI(a){return a.go},
 Ac(a,b){var s,r,q,p,o,n,m,l=a.as,k=A.b([],t.Tt),j=A.aP(A.b9(b),A.bz(b),A.ct(b),0,0,0,0)
@@ -118563,21 +118564,22 @@ if(o){o=A.dh(j)
 n=(s?B.dt:B.ds).i(0,"silDay")
 if(n==null)n="silDay"
 m=s?A.Ds(A.dh(j),l):q.ax
-k.push(new A.rc("sil-"+o,n,m,p))}}j=A.aP(A.b9(j),A.bz(j),A.ct(j)+1,0,0,0,0)
+k.push(new A.rc("sil-"+o,n,m,p,"sil"))}}j=A.aP(A.b9(j),A.bz(j),A.ct(j)+1,0,0,0,0)
 if(k.length>=12)break}return k}}
 A.WR.prototype={
 AI(a){return a.fr},
-Ac(a0,a1){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d="kindHoliday",c=a0.as,b=A.P(c,"reminderPrefix"),a=A.b([],t.Tt)
+Ac(a0,a1){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d="holidayPublic",c=a0.as,b=A.P(c,"reminderPrefix"),a=A.b([],t.Tt)
 for(q=A.cq([A.b9(a1),A.b9(a1)+1],t.S),q=A.ce(q,q.r,q.$ti.c),p=c===B.ao,o=b+": ",n=q.$ti.c;q.A();){m=q.d
 s=m==null?n.a(m):m
 r=null
 try{r=A.aZZ(s)}catch(l){continue}for(m=r,k=m.length,j=0;j<m.length;m.length===k||(0,A.t)(m),++j){i=m[j]
+if(i.d!==B.b_)continue
 h=i.a
 g=A.ef(h)
 f=p?i.c:i.b
 e=(p?B.dt:B.ds).i(0,d)
 if(e==null)e=d
-a.push(new A.rc("hol-"+h,o+f,e,A.aP(A.b9(g),A.bz(g),A.ct(g),8,0,0,0)))}}return a}}
+a.push(new A.rc("hol-"+h,o+f,e,A.aP(A.b9(g),A.bz(g),A.ct(g),8,0,0,0),"holidays"))}}return a}}
 A.Wd.prototype={
 AI(a){return a.dy},
 Ac(a,b){var s,r,q,p,o,n,m,l,k,j,i,h,g=A.P(a.as,"reminderPrefix"),f=A.b([],t.Tt)
@@ -118600,7 +118602,7 @@ h=0}n=o.b
 m=o.c
 if((m==null?"":m).length===0)m=n
 else m.toString
-f.push(new A.rc("event-"+o.a,q+n,m,A.aP(A.b9(l),A.bz(l),A.ct(l),i,h,0,0)))}return f}}
+f.push(new A.rc("event-"+o.a,q+n,m,A.aP(A.b9(l),A.bz(l),A.ct(l),i,h,0,0),"events"))}return f}}
 A.a2J.prototype={
 AI(a){return a.fx},
 Ac(a,b){var s,r,q,p,o,n,m,l,k,j,i,h,g=A.P(a.as,"reminderPrefix"),f=A.b([],t.Tt)
@@ -118621,7 +118623,7 @@ i=0}n=o.b
 h=o.c
 if((h==null?"":h).length===0)h=n
 else h.toString
-f.push(new A.rc("task-"+o.a,q+n,h,A.aP(A.b9(m),A.bz(m),A.ct(m),j,i,0,0)))}return f}}
+f.push(new A.rc("task-"+o.a,q+n,h,A.aP(A.b9(m),A.bz(m),A.ct(m),j,i,0,0),"tasks"))}return f}}
 A.a_k.prototype={}
 A.aZ4.prototype={
 $0(){return this.a.a=!0},
@@ -118762,7 +118764,7 @@ h=A.bag(new A.aLP(d),A.b([new A.kd("holidays",A.T(A.P(a,"holidaysTab"),c,c,c,c,c
 a2=a1==="holidays"
 g=a2?A.baO(B.v5,A.T(""+a0,c,c,c,c,c,c,c),new A.aLQ(d,a3,a,a0)):A.hp(c,c,B.kh,c,c,new A.aLR(d,a3),c,c,A.P(a,"addTask"))
 m=t.p
-f=i?A.cu(A.b([A.T(A.P(a,"events"),c,c,c,A.x(a3).ok.f,c,c,c),A.cp(A.dC(h,c,c),1),g],m),B.F,B.m,B.x,0,c):A.bT(A.b([A.cu(A.b([A.cp(A.T(A.P(a,"events"),c,c,c,A.x(a3).ok.f,c,c,c),1),g],m),B.F,B.m,B.x,0,c),B.b1,A.dC(h,c,c)],m),B.ba,B.m,B.x,0,B.I)
+f=i?A.cu(A.b([A.T(A.P(a,"events"),c,c,c,A.x(a3).ok.f,c,c,c),A.cp(A.dC(h,c,c),1),g],m),B.F,B.m,B.x,0,c):A.bT(A.b([A.cu(A.b([A.cp(A.T(A.P(a,"events"),c,c,c,A.x(a3).ok.f,c,c,c),1),g],m),B.F,B.m,B.x,0,c),B.b2,A.dC(h,c,c)],m),B.ba,B.m,B.x,0,B.I)
 if(a2)if(q.a===0)b=A.dC(A.T(A.P(a,"noHolidaysYear"),c,c,c,c,c,c,c),c,c)
 else{b=A.b([],m)
 if(s.a.a>=1180)b.push(d.a_f(a3,q,3))
@@ -118934,7 +118936,7 @@ A.xD.prototype={
 F(a){return new A.eo(this.c,new A.ahG(),null)}}
 A.ahG.prototype={
 $2(a,b){var s=null,r=b.as,q=A.x(a),p=A.P(r,"mitLicense"),o=A.T(A.P(r,"creditsApp"),s,s,s,A.x(a).ok.w,s,s,s),n=A.x(a).ok.z
-return A.lw(A.eO(A.b([o,B.b1,A.b39('MIT License\n\nCopyright (c) 2026 Moun Sokdara\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the "Software"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.',n==null?s:n.a6c(q.ax.k3,1.45))],t.p),s,B.ue,B.U,!1),p)},
+return A.lw(A.eO(A.b([o,B.b2,A.b39('MIT License\n\nCopyright (c) 2026 Moun Sokdara\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the "Software"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.',n==null?s:n.a6c(q.ax.k3,1.45))],t.p),s,B.ue,B.U,!1),p)},
 $S:33}
 A.zN.prototype={
 F(a){return new A.eo(this.c,new A.awk(this),null)}}
@@ -119188,7 +119190,7 @@ s.cQ()
 A.lh(this.c).nP("/day",null)},
 $S:0}
 A.b_t.prototype={
-$1(a){var s,r=null,q=this.a,p=A.T(A.P(q,"shortcutTitle"),r,r,r,r,r,r,r),o=t.p,n=A.bT(A.b([A.T(A.P(q,"shortcutAsk"),r,r,r,r,r,r,r),B.by,A.T(A.P(q,"shortcutAndroid"),r,r,r,r,r,r,r),B.b1,A.T(A.P(q,"shortcutIos"),r,r,r,r,r,r,r),B.b1,A.T(A.P(q,"shortcutDesktop"),r,r,r,r,r,r,r)],o),B.aE,B.m,B.aO,0,B.I),m=A.iA(r,r)
+$1(a){var s,r=null,q=this.a,p=A.T(A.P(q,"shortcutTitle"),r,r,r,r,r,r,r),o=t.p,n=A.bT(A.b([A.T(A.P(q,"shortcutAsk"),r,r,r,r,r,r,r),B.by,A.T(A.P(q,"shortcutAndroid"),r,r,r,r,r,r,r),B.b2,A.T(A.P(q,"shortcutIos"),r,r,r,r,r,r,r),B.b2,A.T(A.P(q,"shortcutDesktop"),r,r,r,r,r,r,r)],o),B.aE,B.m,B.aO,0,B.I),m=A.iA(r,r)
 m=A.qP(A.fn(B.N,A.T(A.P(q,"cancel"),1,r,r,r,B.ae,r,r),B.n,B.aS),new A.b_r(a),m)
 s=A.iA(r,r)
 return A.pR(A.b([new A.kj(A.b([m,A.kk(A.fn(B.N,A.T(A.P(q,"shortcutAdd"),1,r,r,r,B.ae,r,r),B.n,B.aS),new A.b_s(this.b,a),s)],o),r)],o),B.ro,n,r,r,p)},
@@ -119321,7 +119323,7 @@ p=b.z*100
 o=B.d.au(p)
 p=B.d.d_(p,0,100)
 n=b.f||b.r?m:new A.aFh(b)
-return A.lw(A.eO(A.b([new A.aI(B.Wa,j,m),new A.f6(h,B.ub,!1,m),A.hP(A.b1p(A.bT(A.b([new A.f6(e,B.ub,!1,m),new A.a1j(b,m),new A.f6(d,B.bv,!1,m),B.b1,new A.f6(q,B.bv,!1,m),A.oq(new A.aI(B.Wo,A.bT(A.b([s,r,A.baw(100,""+o+"%",100,0,n,p)],i),B.aE,B.m,B.x,0,B.I),m),c)],i),B.ba,B.m,B.x,0,B.I),B.a7,B.jT,f),g,m)],i),m,B.ua,B.U,!1),k)},
+return A.lw(A.eO(A.b([new A.aI(B.Wa,j,m),new A.f6(h,B.ub,!1,m),A.hP(A.b1p(A.bT(A.b([new A.f6(e,B.ub,!1,m),new A.a1j(b,m),new A.f6(d,B.bv,!1,m),B.b2,new A.f6(q,B.bv,!1,m),A.oq(new A.aI(B.Wo,A.bT(A.b([s,r,A.baw(100,""+o+"%",100,0,n,p)],i),B.aE,B.m,B.x,0,B.I),m),c)],i),B.ba,B.m,B.x,0,B.I),B.a7,B.jT,f),g,m)],i),m,B.ua,B.U,!1),k)},
 $S:33}
 A.aFe.prototype={
 $2(a,b){var s=null,r=b.b,q=this.a,p=t.Zx,o=this.b,n=t.N
@@ -119653,7 +119655,7 @@ a2.push(new A.SQ(A.T("+"+a5,a6,a6,a6,a6,a6,a6,a6),new A.aK4(a9,a5),a9.f===a5,a6)
 a9=A.a2P(a6,B.cH,!1,a6,!0,B.C,a6,A.b0K(),a6,a6,a6,a6,a6,a6,2,B.Z2,B.ai,!0,a6,!0,a6,!1,a6,B.db,a6,a6,a6,a6,B.qm,a6,a6,a6,1,a6,a6,!1,"\u2022",a6,new A.aK5(a9),a6,a6,a6,!1,a6,a6,!1,a6,!0,a6,B.fw,a6,a6,a6,a6,a6,a6,a6,a6,a6,a6,a6,a6,!0,B.aG,a6,B.he,a6,a6,a6,a6)
 if(f)g=i.k2
 f=A.T(k,a6,a6,a6,a6,a6,a6,a6)
-return A.lw(A.eO(A.b([h,e,d,c,B.b1,b0,B.b1,b,B.b1,a0,a2,a9,B.b1,A.pY(A.hv(!1,a6,a6,a6,!0,a6,a6,a6,!0,a6,a6,a6,a6,a6,a6,a6,!1,a6,a6,a6,a6,A.T(a?A.Ds(k,a8):j.ax,a6,a6,a6,a6,a6,a6,a6),a6,f,a6,a6),g,0,a6)],a1),a6,B.fv,B.U,!1),l)},
+return A.lw(A.eO(A.b([h,e,d,c,B.b2,b0,B.b2,b,B.b2,a0,a2,a9,B.b2,A.pY(A.hv(!1,a6,a6,a6,!0,a6,a6,a6,!0,a6,a6,a6,a6,a6,a6,a6,!1,a6,a6,a6,a6,A.T(a?A.Ds(k,a8):j.ax,a6,a6,a6,a6,a6,a6,a6),a6,f,a6,a6),g,0,a6)],a1),a6,B.fv,B.U,!1),l)},
 $S:33}
 A.aK2.prototype={
 $0(){var s=0,r=A.D(t.H),q=this,p,o
@@ -119902,11 +119904,11 @@ o=A.Ka(B.Y,k.x?j:k.gakU(),B.Yy,n,o,m)
 n=A.T(A.P(f,"setupAllowGps"),j,j,j,j,j,j,j)
 m=A.T(A.P(f,"permLocationSub"),j,j,j,j,j,j,j)
 l=k.w
-s=A.b([s,r,B.b1,A.cp(A.eO(A.b([q,p,o,A.Ka(B.Y,k.x?j:k.gakY(),B.Yj,m,n,l)],d),j,j,B.U,!1),1)],d)
+s=A.b([s,r,B.b2,A.cp(A.eO(A.b([q,p,o,A.Ka(B.Y,k.x?j:k.gakY(),B.Yj,m,n,l)],d),j,j,B.U,!1),1)],d)
 if(k.x){r=k.y
-B.b.J(s,A.b([B.ZE,B.b1,A.T(A.P(f,r.length===0?"loading":r),j,j,j,j,B.ae,j,j),B.b1],d))}d=k.x?j:k.gamQ()
+B.b.J(s,A.b([B.ZE,B.b2,A.T(A.P(f,r.length===0?"loading":r),j,j,j,j,B.ae,j,j),B.b2],d))}d=k.x?j:k.gamQ()
 s.push(A.kk(A.T(A.P(f,"setupContinue"),j,j,j,j,j,j,j),d,j))
-s.push(B.b1)
+s.push(B.b2)
 d=k.x?j:k.gavZ()
 s.push(A.qP(A.T(A.P(f,h),j,j,j,j,j,j,j),d,j))
 B.b.J(e,s)}return A.J4(j,A.lE(!0,new A.aI(B.nE,A.bT(e,B.ba,B.m,B.x,0,B.I),j),!0,!1,B.Y,!0,!0),j)}}
@@ -120099,7 +120101,7 @@ m=A.eX(99)
 i=i.x
 i===$&&A.a()
 l=t.p
-return A.J4(k,A.f8(B.bQ,A.b([B.UL,s,q,A.dC(new A.eh(B.OA,new A.aI(B.Wu,A.bT(A.b([p,B.ahL,n,B.b1,o,B.ahN,A.EC(m,new A.uV(4,B.d.d_(i,0.04,1),B.Tg,B.l,k,k,k,k)),B.by,A.T(j.e,1,B.ag,k,B.alW,k,k,k),A.T(""+r+"%",k,k,k,B.ake,k,k,k)],l),B.F,B.m,B.aO,0,B.I),k),k),k,k),B.aex],l),B.C,B.b7),k)},
+return A.J4(k,A.f8(B.bQ,A.b([B.UL,s,q,A.dC(new A.eh(B.OA,new A.aI(B.Wu,A.bT(A.b([p,B.ahL,n,B.b2,o,B.ahN,A.EC(m,new A.uV(4,B.d.d_(i,0.04,1),B.Tg,B.l,k,k,k,k)),B.by,A.T(j.e,1,B.ag,k,B.alW,k,k,k),A.T(""+r+"%",k,k,k,B.ake,k,k,k)],l),B.F,B.m,B.aO,0,B.I),k),k),k,k),B.aex],l),B.C,B.b7),k)},
 $S:728}
 A.aUn.prototype={
 $3(a,b,c){return B.Y8},
@@ -120177,7 +120179,7 @@ a6=p.p3
 a1=a6==null
 m=a1?p.k2:a6
 l=t.p
-m=A.pY(new A.aI(B.fv,A.bT(A.b([A.T(o,b,b,b,A.x(a9).ok.w,b,b,b),B.b1,new A.e_(B.mR,b,b,A.baO(B.Yb,A.T(A.P(a0,"copy"),b,b,b,b,b,b,b),new A.aKp(c,a3)),b)],l),B.aE,B.m,B.x,0,B.I),b),m,0,b)
+m=A.pY(new A.aI(B.fv,A.bT(A.b([A.T(o,b,b,b,A.x(a9).ok.w,b,b,b),B.b2,new A.e_(B.mR,b,b,A.baO(B.Yb,A.T(A.P(a0,"copy"),b,b,b,b,b,b,b),new A.aKp(c,a3)),b)],l),B.aE,B.m,B.x,0,B.I),b),m,0,b)
 a1=a1?p.k2:a6
 a6=c.W8(a5[0],a0)
 k=p.ry
@@ -120187,7 +120189,7 @@ for(a6=s.length,n=p.e,m=p.d,k=p.b,j=p.c,i=0;i<s.length;s.length===a6||(0,A.t)(s)
 g=m==null?k:m
 f=a&&h.d.length!==0?h.d:h.c
 e=n==null?j:n
-B.b.J(a1,A.b([B.b1,A.pY(A.km(!1,b,!0,new A.aI(B.W8,A.T(f,b,b,b,new A.y(!0,e,b,b,b,b,b,B.bS,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b),b,b,b),b),b,!0,b,b,b,b,b,b,b,b,b,b,new A.aKq(c,a9,h),b,b,b,b,b,b,b),g,0,b)],l))}if(r.length!==0){a=A.b([B.b1],l)
+B.b.J(a1,A.b([B.b2,A.pY(A.km(!1,b,!0,new A.aI(B.W8,A.T(f,b,b,b,new A.y(!0,e,b,b,b,b,b,B.bS,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b,b),b,b,b),b),b,!0,b,b,b,b,b,b,b,b,b,b,new A.aKq(c,a9,h),b,b,b,b,b,b,b),g,0,b)],l))}if(r.length!==0){a=A.b([B.b2],l)
 for(a6=r.length,i=0;i<r.length;r.length===a6||(0,A.t)(r),++i){d=r[i]
 n=d.z
 n=n===!0
@@ -120422,7 +120424,7 @@ o=A.aGz(A.b([A.SP(A.T(A.P(c,"humidity")+"  "+(""+d.e+"%"),f,f,f,f,f,f,f)),A.SP(A
 n=A.T(A.P(c,"hourly"),f,f,f,A.x(s).ok.w,f,f,f)
 m=A.b([],r)
 for(l=d.x,k=l.length,j=0;j<l.length;l.length===k||(0,A.t)(l),++j){i=l[j]
-m.push(new A.aI(B.VQ,A.bT(A.b([A.T(B.c.Z(i.a,11,16),f,f,f,f,f,f,f),A.aqj(A.b5p(i.c),new A.aWG(i),f,32,32),A.T(""+i.b+"\xb0",f,f,f,B.hg,f,f,f)],r),B.F,B.m,B.x,0,B.I),f))}c=A.b([q,p,B.b1,o,B.dz,n,A.bW(A.eO(m,f,f,B.aL,!1),108,f),A.T(A.P(c,"weekly"),f,f,f,A.x(s).ok.w,f,f,f)],r)
+m.push(new A.aI(B.VQ,A.bT(A.b([A.T(B.c.Z(i.a,11,16),f,f,f,f,f,f,f),A.aqj(A.b5p(i.c),new A.aWG(i),f,32,32),A.T(""+i.b+"\xb0",f,f,f,B.hg,f,f,f)],r),B.F,B.m,B.x,0,B.I),f))}c=A.b([q,p,B.b2,o,B.dz,n,A.bW(A.eO(m,f,f,B.aL,!1),108,f),A.T(A.P(c,"weekly"),f,f,f,A.x(s).ok.w,f,f,f)],r)
 for(d=d.y,s=d.length,j=0;j<d.length;d.length===s||(0,A.t)(d),++j){h=d[j]
 r=h.d
 q=A.aqj(A.b5p(r),new A.aWH(h),f,36,36)
@@ -120469,7 +120471,7 @@ s=this.c
 r=A.T(A.P(s,"wxOfflineTitle"),o,o,o,A.x(a).ok.f,B.ae,o,o)
 q=A.P(s,"wxOfflineBody")
 p=n.rx
-return A.dC(new A.aI(B.Wx,A.bT(A.b([m,B.dz,r,B.b1,A.T(q,o,o,o,A.ds(o,o,p==null?n.k3:p,o,o,o,o,o,o,o,o,o,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),B.ae,o,o),B.ahJ,A.qP(A.T(A.P(s,"wxRetry"),o,o,o,o,o,o,o),this.d,o)],t.p),B.F,B.e1,B.x,0,B.I),o),o,o)}}
+return A.dC(new A.aI(B.Wx,A.bT(A.b([m,B.dz,r,B.b2,A.T(q,o,o,o,A.ds(o,o,p==null?n.k3:p,o,o,o,o,o,o,o,o,o,o,o,o,o,o,!0,o,o,o,o,o,o,o,o),B.ae,o,o),B.ahJ,A.qP(A.T(A.P(s,"wxRetry"),o,o,o,o,o,o,o),this.d,o)],t.p),B.F,B.e1,B.x,0,B.I),o),o,o)}}
 A.eG.prototype={
 Af(){var s=this
 return new A.eG(s.a,s.b,s.c,s.d,s.e,s.f,s.r,s.w,s.x,s.y,s.z)},
@@ -120786,7 +120788,7 @@ B.b.J(r,o)}return A.bW(A.cu(r,B.F,B.m,B.x,0,null),null,n)},
 $S:278}
 A.b0e.prototype={
 $1(a){var s,r=this,q=null,p=A.x(a).ax,o=r.a,n=r.b,m=A.T(n===B.ao&&o.d.length!==0?o.d:o.c,q,q,q,q,q,q,q),l=A.P(n,r.c),k=p.rx,j=k==null,i=t.p
-l=A.b([A.T(l+r.d,q,q,q,A.ds(q,q,j?p.k3:k,q,q,q,q,q,q,q,q,q,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),B.by,A.T(A.aZW(r.e,n),q,q,q,q,q,q,q),B.b1],i)
+l=A.b([A.T(l+r.d,q,q,q,A.ds(q,q,j?p.k3:k,q,q,q,q,q,q,q,q,q,q,q,q,q,q,!0,q,q,q,q,q,q,q,q),q,q,q),B.by,A.T(A.aZW(r.e,n),q,q,q,q,q,q,q),B.b2],i)
 s=o.b
 if(s.length!==0)l.push(A.T(A.Ds(s,n),q,q,q,q,q,q,q))
 if(o.r===B.eH){o=A.P(n,"silBlurb")
@@ -121138,7 +121140,7 @@ o=o.length===0?"":A.b4S(o)
 o=A.T(r+" "+o,m,m,m,m,m,m,m)
 r=o}o=p.d.length===0?m:A.hp(m,m,B.Yo,m,m,new A.b0s(p,b),m,m,m)
 q.push(A.hv(!1,B.Y,m,m,!0,m,m,m,!0,m,m,m,m,m,m,new A.b0t(p,a,b),!1,m,m,m,m,r,m,i,o,m))
-q.push(B.b1)
+q.push(B.b2)
 o=n.f
 q.push(A.kk(A.T(A.P(j,"save"),m,m,m,m,m,m,m),new A.b0u(p,s,l,n.e,o,a),m))
 if(!k)q.push(A.n5(A.T(A.P(j,"delete"),m,m,m,m,m,m,m),m,m,new A.b0v(a,j,o,l),m,m))
@@ -121433,7 +121435,7 @@ s=s.f
 r=s.length!==0?t.JP.a(B.b.gfg(s)).gBp():p.a.d
 s=p.w
 q=p.a.c[r]
-s.mM(s.a.Ah(B.b2,B.cP,q))
+s.mM(s.a.Ah(B.b3,B.cP,q))
 s.suR(A.cJ(B.k,0,s.a.a.length,!1))
 p.S(new A.aX1(p))
 $.a6.y1$.push(new A.aX2(p))},
@@ -130436,8 +130438,8 @@ B.r5=new A.Se(1,"assertive")
 B.cH=s([],t.s)
 B.k=new A.Ko(1,"downstream")
 B.cP=new A.iq(-1,-1,B.k,!1,-1,-1)
-B.b2=new A.c_(-1,-1)
-B.hf=new A.cM("",B.cP,B.b2)
+B.b3=new A.c_(-1,-1)
+B.hf=new A.cM("",B.cP,B.b3)
 B.r6=new A.xG(!1,"",B.cH,B.hf,null)
 B.eo=new A.jj(0,"disabled")
 B.fi=new A.jj(1,"always")
@@ -131438,7 +131440,7 @@ B.uL=new A.ev("Too many percent/permill",null,null)
 B.cn=new A.ev("Message corrupted",null,null)
 B.kb=new A.G3(0)
 B.cZ=new A.WD(0,"accepted")
-B.b5=new A.WD(1,"rejected")
+B.b6=new A.WD(1,"rejected")
 B.uM=new A.uy(0,"pointerEvents")
 B.kc=new A.uy(1,"browserGestures")
 B.eF=new A.G5(0,"ready")
@@ -131459,7 +131461,7 @@ B.fD=new A.yU(1,"pop")
 B.cE=new A.Ge(0,"deferToChild")
 B.aN=new A.Ge(1,"opaque")
 B.d_=new A.Ge(2,"translucent")
-B.b6=new A.uE(0,"public")
+B.b_=new A.uE(0,"public")
 B.fE=new A.uE(1,"religious")
 B.on=new A.uE(2,"traditional")
 B.uT=new A.Gf(0,"HH")
@@ -132064,7 +132066,7 @@ B.a1w=s(["1. hiruhilekoa","2. hiruhilekoa","3. hiruhilekoa","4. hiruhilekoa"],t.
 B.kz=s(["{1}, {0}","{1}, {0}","{1}, {0}","{1} {0}"],t.s)
 B.wP=s(["\u17a2","\u1785","\u17a2","\u1796","\u1796","\u179f","\u179f"],t.s)
 B.wQ=s(["januar","februar","mart","april","maj","jun","jul","avgust","septembar","oktobar","novembar","decembar"],t.s)
-B.b_=s(["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],t.s)
+B.b0=s(["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],t.s)
 B.wR=s(["\u053f","\u0535","\u0535","\u0549","\u0540","\u0548","\u0547"],t.s)
 B.fJ=s(["\u661f\u671f\u65e5","\u661f\u671f\u4e00","\u661f\u671f\u4e8c","\u661f\u671f\u4e09","\u661f\u671f\u56db","\u661f\u671f\u4e94","\u661f\u671f\u516d"],t.s)
 B.a1x=s(["\u0d1e\u0d3e","\u0d24\u0d3f","\u0d1a\u0d4a","\u0d2c\u0d41","\u0d35\u0d4d\u0d2f\u0d3e","\u0d35\u0d46","\u0d36"],t.s)
@@ -132611,7 +132613,7 @@ B.a5C=s([],t.Vz)
 B.a5B=s([],t.Di)
 B.oE=s([],t.AO)
 B.bj=s([],t.yo)
-B.b0=s([],t.i3)
+B.b1=s([],t.i3)
 B.oG=s([],t.K1)
 B.a5D=s([],t.D1)
 B.kU=s([],t.QF)
@@ -133916,8 +133918,8 @@ B.Oc=new A.fC(27,"color")
 B.Oe=new A.fC(28,"luminosity")
 B.abV=new A.a4(B.acy,[B.O6,B.NM,B.NO,B.NQ,B.NS,B.NU,B.NW,B.NZ,B.O0,B.O2,B.O4,B.O8,B.Oa,B.Oc,B.Oe],A.ab("a4<f,fC>"))
 B.GK={appName:0,navToday:1,navMonth:2,navEvents:3,navWeather:4,navMore:5,navAria:6,moreTitle:7,modeLight:8,modeDark:9,modeSystem:10,materialYou:11,materialYouSub:12,dynamicColor:13,dynamicColorSub:14,extraDark:15,extraDarkSub:16,language:17,languageTitle:18,langAuto:19,langAutoSub:20,continue:21,setupNext:22,setupSkip:23,setupSkipAnyway:24,setupContinue:25,welcome:26,setupInstallTitle:27,setupInstallAndroid:28,setupInstallWindows:29,setupInstallMac:30,setupInstallLinux:31,setupInstallUnsupported:32,setupInstallAction:33,setupShortcutAction:34,setupPermTitle:35,setupPermSub:36,setupAllowNotify:37,setupAllowBackground:38,setupAllowAutoLaunch:39,setupAllowGps:40,askingNotify:41,askingBackground:42,askingAutoLaunch:43,askingLocation:44,notifyGranted:45,notifyDenied:46,bgGranted:47,bgDenied:48,autoGranted:49,autoDenied:50,autoLaunchConfirm:51,autoLaunchConfirmSub:52,permNotAllowed:53,permOpenSettings:54,permOpenSettingsBody:55,permGranted:56,accent:57,accentSub:58,highlight:59,highlightSub:60,highlightAlpha:61,highlightAlphaSub:62,schemeAria:63,color:64,aboutTitle:65,aboutSub:66,createdBy:67,buildVersion:68,openSourceLicense:69,sourceCode:70,website:71,mitLicense:72,creditsApp:73,creditsLanguages:74,creditsApis:75,creditsLibraries:76,creditsOther:77,creditsPackages:78,creditsLoadFail:79,notifyPageTitle:80,notifyPageSub:81,remindEvents:82,remindEventsSub:83,remindHolidays:84,remindHolidaysSub:85,remindTasks:86,remindTasksSub:87,remindDaily:88,remindDailySub:89,remindSil:90,remindSilSub:91,reminderPrefix:92,cancel:93,save:94,close:95,delete:96,confirmDelete:97,dontDelete:98,ok:99,loading:100,splashTag:101,today:102,expand:103,collapse:104,addTask:105,events:106,tasks:107,noHolidaysMonth:108,noTasksMonth:109,copy:110,copied:111,copyFail:112,done:113,undone:114,holidaysTab:115,tasksTab:116,noHolidaysYear:117,noTasks:118,currentTasks:119,overdue:120,completed:121,pickYear:122,yearPrev:123,yearNow:124,yearNext:125,yearCustom:126,khmerCalendar:127,change:128,month:129,year:130,back:131,task:132,titlePlaceholder:133,addReminder:134,time:135,clearReminder:136,createTask:137,info:138,kindHoliday:139,kindSil:140,kindEvent:141,holidayPublic:142,holidayReligious:143,holidayTraditional:144,silBlurb:145,silDay:146,allDay:147,weather:148,findCity:149,addCity:150,noCity:151,weatherError:152,wxOfflineTitle:153,wxOfflineBody:154,wxDisconnected:155,wxDisconnectedBody:156,wxRetry:157,updated:158,noLocation:159,hourly:160,weekly:161,uv:162,humidity:163,wind:164,feels:165,kmh:166,toolsTitle:167,permTitle:168,permNotify:169,permNotifySub:170,permBackground:171,permBackgroundSub:172,permLocation:173,permLocationSub:174,permDenied:175,locAdded:176,calcTitle:177,calcSub:178,calcFrom:179,calcTo:180,calcDuration:181,calcYears:182,calcMonths:183,calcDays:184,calcTotalDays:185,calcPast:186,calcAdd:187,settingsTitle:188,settingsSub:189,themePageTitle:190,themePageSub:191,privacyTitle:192,privacySub:193,clearTitle:194,clearSub:195,clearCache:196,clearCacheSub:197,clearReminders:198,clearRemindersSub:199,clearWeather:200,clearWeatherSub:201,clearAll:202,clearAllSub:203,clearDone:204,confirmClearCache:205,confirmClearReminders:206,confirmClearWeather:207,confirmClearAll:208,downloadTitle:209,downloadSub:210,installerTitle:211,installerSub:212,homeWidget:213,homeWidgetSub:214,homeWidgetPinned:215,homeWidgetHow:216,widgetToday:217,widgetMonth:218,widgetWeather:219,toolsPageSub:220,weekStartsOn:221,webBgBlock:222,downloadProject:223,downloadProjectSub:224,exportBrowser:225,exportBrowserSub:226,exportInstalled:227,shortcutTitle:228,shortcutAsk:229,shortcutAdd:230,shortcutHow:231,shortcutAndroid:232,shortcutIos:233,shortcutDesktop:234,downloadOffline:235,autoLaunch:236,autoLaunchSub:237,weekSunday:238,weekMonday:239,weekSaturday:240,exportApk:241,exportApkSub:242,exportWindows:243,exportWindowsSub:244,exportMac:245,exportMacSub:246,exportLinux:247,exportLinuxSub:248,nativeApp:249,nativeAppSub:250}
-B.ds=new A.a4(B.GK,["\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3","\u1781\u17c2","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u179a\u1794\u17b6\u179a\u179a\u17bb\u1780\u179a\u1780","\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u1797\u17d2\u179b\u17ba","\u1784\u1784\u17b9\u178f","\u1794\u17d2\u179a\u1796\u17d0\u1793\u17d2\u1792","Material You","\u17a2\u1793\u17bb\u179c\u178f\u17d2\u178f\u179a\u1785\u1793\u17b6\u1794\u1790\u1790\u17b6\u1798\u179c\u1793\u17d2\u178f\u1794\u1784\u17d2\u1780\u17be\u178f\u1796\u17b8\u1795\u17d2\u1791\u17b6\u17c6\u1784\u179a\u17bc\u1794\u1797\u17b6\u1796\u17a7\u1794\u1780\u179a\u178e\u17cd","\u1796\u178e\u17cc\u1790\u17b6\u1798\u179c\u1793\u17d2\u178f","\u1794\u17d2\u179a\u17be\u1796\u178e\u17cc\u1795\u17d2\u1791\u17b6\u17c6\u1784\u179a\u17bc\u1794\u1797\u17b6\u1796\u1796\u17c1\u179b\u17a7\u1794\u1780\u179a\u178e\u17cd\u1782\u17b6\u17c6\u1791\u17d2\u179a Material You","\u1784\u1784\u17b9\u178f\u1781\u17d2\u179b\u17b6\u17c6\u1784","\u17a2\u1793\u17bb\u179c\u178f\u17d2\u178f\u179a\u1785\u1793\u17b6\u1794\u1790\u1784\u1784\u17b9\u178f\u1787\u17b6\u1784 \u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u178f\u17c2\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb AMOLED","\u1797\u17b6\u179f\u17b6","\u1787\u17d2\u179a\u17be\u179f\u1797\u17b6\u179f\u17b6","\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1794\u17d2\u179a\u17be\u1797\u17b6\u179f\u17b6\u179a\u1794\u179f\u17cb\u17a7\u1794\u1780\u179a\u178e\u17cd","\u1794\u1793\u17d2\u178f","\u1794\u1793\u17d2\u1791\u17b6\u1794\u17cb","\u179a\u17c6\u179b\u1784","\u179a\u17c6\u179b\u1784\u1791\u17c5\u1798\u17bb\u1781","\u1794\u1793\u17d2\u178f\u1780\u17b6\u179a\u179a\u17c0\u1794\u1785\u17c6\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u179f\u17bc\u1798\u1787\u17d2\u179a\u17be\u179f\u179a\u17be\u179f\u1797\u17b6\u179f\u17b6\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17d2\u179a\u17be\u1794\u17d2\u179a\u17b6\u179f\u17cb\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u178a\u17c6\u17a1\u17be\u1784\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Android","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Windows","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Mac","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Linux","\u17a7\u1794\u1780\u179a\u178e\u17cd\u1793\u17c1\u17c7\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u1789\u17d2\u1785\u1794\u17cb\u178a\u17c6\u17a1\u17be\u1784\u1791\u17c1\u17d4 \u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u179f\u17bc\u1798\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb \u178a\u17be\u1798\u17d2\u1794\u17b8\u17b2\u17d2\u1799\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780 \u1793\u17b7\u1784\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u17d4","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f GPS","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u179a\u178f\u17cb\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u1791\u17b8\u178f\u17b6\u17c6\u1784\u2026","\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u1794\u178a\u17b7\u179f\u17c1\u1792","\u1794\u17b6\u1793\u1794\u17be\u1780\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u179a\u178f\u17cb\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799\u1794\u17b6\u1793\u1791\u17c1","\u1794\u17b6\u1793\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u1794\u17b6\u1793\u1791\u17c1","\u178f\u17be\u17a2\u17d2\u1793\u1780\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u17ac\u1793\u17c5?","\u179f\u17bc\u1798\u1794\u17be\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7\u1780\u17d2\u1793\u17bb\u1784\u1794\u1789\u17d2\u1787\u17b8\u178a\u17c2\u179b\u1791\u17be\u1794\u1794\u1784\u17d2\u17a0\u17b6\u1789 \u179a\u17bd\u1785\u1785\u17bb\u1785\u1799\u179b\u17cb\u1796\u17d2\u179a\u1798\u17d4","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1793\u17c1\u17c7\u1798\u17b7\u1793\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1791\u17c1","\u1794\u17be\u1780\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb","\u179f\u17bc\u1798\u1794\u17be\u1780\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1793\u17c1\u17c7\u1780\u17d2\u1793\u17bb\u1784\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb\u17a7\u1794\u1780\u179a\u178e\u17cd \u179a\u17bd\u1785\u178f\u17d2\u179a\u17a1\u1794\u17cb\u1798\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179c\u17b7\u1789\u17d4","\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u179f\u17b7\u1791\u17d2\u1792\u17b7","\u1796\u178e\u17cc\u179f\u1784\u17d2\u1780\u178f\u17cb\u179f\u17c6\u17a1\u17c1\u1784","\u1794\u17d2\u179a\u17be\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17ca\u17bc\u178f\u17bb\u1784 \u1793\u17b7\u1784\u1795\u17d2\u1793\u17c2\u1780\u179f\u17c6\u1781\u17b6\u1793\u17cb\u1793\u17c3\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb","\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u179a\u17c6\u179b\u17c1\u1785\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7\u1793\u17c5\u179b\u17be\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793","\u178f\u1798\u17d2\u179b\u17b6\u1797\u17b6\u1796","\u1780\u17c6\u178e\u178f\u17cb\u178f\u1798\u17d2\u179b\u17b6\u1797\u17b6\u1796\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u1796\u178e\u17cc\u179a\u1785\u1793\u17b6\u1794\u1790","\u1796\u178e\u17cc","\u17a2\u17c6\u1796\u17b8","\u1780\u17c6\u178e\u17c2 \u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e \u1793\u17b7\u1784\u1794\u17d2\u179a\u1797\u1796","\u1794\u1784\u17d2\u1780\u17be\u178f\u178a\u17c4\u1799","\u1780\u17c6\u178e\u17c2","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1794\u17d2\u179a\u1797\u1796\u1794\u17be\u1780\u1785\u17c6\u17a0","\u1780\u17bc\u178a\u1794\u17d2\u179a\u1797\u1796","\u1782\u17c1\u17a0\u1791\u17c6\u1796\u17d0\u179a","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e MIT","\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7","\u1797\u17b6\u179f\u17b6\u179f\u179a\u179f\u17c1\u179a\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","API \u1793\u17b7\u1784\u179f\u17c1\u179c\u17b6\u1780\u1798\u17d2\u1798","\u1794\u178e\u17d2\u178e\u17b6\u179b\u17d0\u1799","\u17a5\u178e\u1791\u17b6\u1793\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1780\u1789\u17d2\u1785\u1794\u17cb","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1794\u17b6\u1793\u1791\u17c1","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u179a\u17c6\u179b\u17b9\u1780\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd \u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799 \u1793\u17b7\u1784\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u179a\u17c6\u179b\u17b9\u1780\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1793\u17c5\u1790\u17d2\u1784\u17c3\u1793\u17c3\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd\u1780\u17d2\u1793\u17bb\u1784\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793","\u179a\u17c6\u179b\u17b9\u1780\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1793\u17c5\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u179f\u17b6\u1792\u17b6\u179a\u178e\u17c8 \u1793\u17b7\u1784\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799\u179f\u17b6\u179f\u1793\u17b6","\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u178f\u17b6\u1798\u1798\u17c9\u17c4\u1784\u178a\u17c2\u179b\u17a2\u17d2\u1793\u1780\u1780\u17c6\u178e\u178f\u17cb\u179b\u17be\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u179a\u17c6\u179b\u17b9\u1780\u1794\u17d2\u179a\u1785\u17b6\u17c6\u1790\u17d2\u1784\u17c3","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1796\u17d2\u179a\u17b9\u1780\u1796\u17b8\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7 \u1794\u17b7\u1791\u178f\u17b6\u1798\u179b\u17c6\u1793\u17b6\u17c6\u178a\u17be\u1798","\u179a\u17c6\u179b\u17b9\u1780\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1793\u17c5\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b \u17e8\u1780\u17be\u178f \u17e1\u17e5\u1780\u17be\u178f \u17e8\u179a\u17c4\u1785 \u1793\u17b7\u1784\u17e1\u17e5\u179a\u17c4\u1785","\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1794\u17c4\u17c7\u1794\u1784\u17cb","\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u1794\u17b7\u1791","\u179b\u17bb\u1794","\u178f\u17be\u17a2\u17d2\u1793\u1780\u1785\u1784\u17cb\u179b\u17bb\u1794\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1793\u17c1\u17c7\u1791\u17c1?","\u1798\u17b7\u1793\u179b\u17bb\u1794\u1791\u17c1","\u1799\u179b\u17cb\u1796\u17d2\u179a\u1798","\u1780\u17c6\u1796\u17bb\u1784\u1795\u17d2\u1791\u17bb\u1780","\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7","\u1796\u1784\u17d2\u179a\u17b8\u1780","\u1794\u1784\u17d2\u179a\u17bd\u1798","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799\u1780\u17d2\u1793\u17bb\u1784\u1781\u17c2\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1780\u17d2\u1793\u17bb\u1784\u1781\u17c2\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1785\u1798\u17d2\u179b\u1784","\u1794\u17b6\u1793\u1785\u1798\u17d2\u179b\u1784","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1785\u1798\u17d2\u179b\u1784\u1794\u17b6\u1793\u1791\u17c1","\u179a\u17bd\u1785\u179a\u17b6\u179b\u17cb","\u1798\u17b7\u1793\u1791\u17b6\u1793\u17cb","\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u1780\u17d2\u1793\u17bb\u1784\u1786\u17d2\u1793\u17b6\u17c6\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1791\u17c1\u17d4","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1794\u1785\u17d2\u1785\u17bb\u1794\u17d2\u1794\u1793\u17d2\u1793","\u17a0\u17bd\u179f\u1780\u17b6\u179b\u1780\u17c6\u178e\u178f\u17cb","\u1794\u17b6\u1793\u1794\u1789\u17d2\u1785\u1794\u17cb","\u1787\u17d2\u179a\u17be\u179f\u1786\u17d2\u1793\u17b6\u17c6","\u1786\u17d2\u1793\u17b6\u17c6\u1798\u17bb\u1793","\u1786\u17d2\u1793\u17b6\u17c6\u1793\u17c1\u17c7","\u1786\u17d2\u1793\u17b6\u17c6\u1780\u17d2\u179a\u17c4\u1799","\u1795\u17d2\u1791\u17b6\u179b\u17cb\u1781\u17d2\u179b\u17bd\u1793","\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1795\u17d2\u179b\u17b6\u179f\u17cb","\u1781\u17c2","\u1786\u17d2\u1793\u17b6\u17c6","\u178f\u17d2\u179a\u17a1\u1794\u17cb","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1794\u1789\u17d2\u1785\u17bc\u179b\u1785\u17c6\u178e\u1784\u1787\u17be\u1784","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1798\u17c9\u17c4\u1784","\u179b\u17bb\u1794\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1794\u1784\u17d2\u1780\u17be\u178f\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1796\u17d0\u178f\u17cc\u1798\u17b6\u1793","\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u179f\u17b6\u1792\u17b6\u179a\u178e\u17c8","\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799\u179f\u17b6\u179f\u1793\u17b6","\u1790\u17d2\u1784\u17c3\u1794\u17d2\u179a\u1796\u17c3\u178e\u17b8\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b\u1787\u17b6\u1790\u17d2\u1784\u17c3\u1794\u17bd\u179f\u179f\u17b8\u179b\u179a\u1794\u179f\u17cb\u1796\u17bb\u1791\u17d2\u1792\u179f\u17b6\u179f\u1793\u17b7\u1780\u1787\u1793 \u178a\u17c2\u179b\u178f\u17d2\u179a\u17bc\u179c\u1793\u17b9\u1784\u17e8\u1780\u17be\u178f \u17e1\u17e5\u1780\u17be\u178f \u17e8\u179a\u17c4\u1785 \u1793\u17b7\u1784\u17e1\u17e5\u179a\u17c4\u1785\u17d4","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1796\u17c1\u1789\u1798\u17bd\u1799\u1790\u17d2\u1784\u17c3","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u179f\u17d2\u179c\u17c2\u1784\u179a\u1780\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u1791\u17c1","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1794\u17b6\u1793\u1791\u17c1\u17d4","\u1782\u17d2\u1798\u17b6\u1793\u1794\u178e\u17d2\u178a\u17b6\u1789\u178f\u1794\u1797\u17d2\u1787\u17b6\u1794\u17cb","\u1782\u17d2\u1798\u17b6\u1793\u1794\u178e\u17d2\u178a\u17b6\u1789\u178f\u1794\u1797\u17d2\u1787\u17b6\u1794\u17cb\u1791\u17c1 \u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17d2\u179a\u17be\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1794\u17b6\u1793\u17d4 \u179f\u17bc\u1798\u1794\u17be\u1780\u17a2\u17ca\u17b8\u1793\u1792\u17ba\u178e\u17b7\u178f \u179a\u17bd\u1785\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f\u17d4","\u178a\u17b6\u1785\u17cb\u1780\u17b6\u179a\u178f\u1797\u17d2\u1787\u17b6\u1794\u17cb","\u179f\u17bc\u1798\u1796\u17b7\u1793\u17b7\u178f\u17d2\u1799\u1780\u17b6\u179a\u178f\u1797\u17d2\u1787\u17b6\u1794\u17cb\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780 \u179a\u17bd\u1785\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f\u17d4","\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f","\u1794\u17b6\u1793\u1792\u17d2\u179c\u17be\u1794\u1785\u17d2\u1785\u17bb\u1794\u17d2\u1794\u1793\u17d2\u1793\u1797\u17b6\u1796\u1790\u17d2\u1798\u17b8","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1791\u17b8\u178f\u17b6\u17c6\u1784\u1794\u17b6\u1793\u1791\u17c1","\u1780\u17b6\u179a\u1796\u17d2\u1799\u17b6\u1780\u179a\u178e\u17cd\u1794\u17d2\u179a\u1785\u17b6\u17c6\u1798\u17c9\u17c4\u1784","\u1780\u17b6\u179a\u1796\u17d2\u1799\u17b6\u1780\u179a\u178e\u17cd \u17e7 \u1790\u17d2\u1784\u17c3","\u179f\u1793\u17d2\u1791\u179f\u17d2\u179f\u1793\u17cd UV","\u179f\u17c6\u178e\u17be\u1798","\u1781\u17d2\u1799\u179b\u17cb","\u1798\u17b6\u1793\u17a2\u17b6\u179a\u1798\u17d2\u1798\u178e\u17cd\u178a\u17bc\u1785","\u1782\u1798/\u1798\u17c9\u1798","\u17a7\u1794\u1780\u179a\u178e\u17cd","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u179a\u17c6\u179b\u17b9\u1780","\u1795\u17d2\u1789\u17be\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a \u1793\u17b7\u1784\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1780\u17d2\u1793\u17bb\u1784\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u1791\u17bc\u179a\u179f\u17d0\u1796\u17d2\u1791\u179a\u17c6\u179b\u17b9\u1780\u1791\u17c4\u17c7\u1794\u17b8\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1794\u17b6\u1793\u1794\u17b7\u1791\u1780\u17cf\u178a\u17c4\u1799","\u1791\u17b8\u178f\u17b6\u17c6\u1784","\u1794\u17d2\u179a\u17be\u1791\u17b8\u178f\u17b6\u17c6\u1784\u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u1784\u17d2\u17a0\u17b6\u1789\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1780\u17d2\u1794\u17c2\u179a\u17d7","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u1794\u178a\u17b7\u179f\u17c1\u1792","\u1794\u17b6\u1793\u1794\u1793\u17d2\u1790\u17c2\u1798\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u1780\u17d2\u1794\u17c2\u179a","\u1782\u178e\u1793\u17b6\u1780\u17b6\u179b\u1794\u179a\u17b7\u1785\u17d2\u1786\u17c1\u1791","\u179a\u1799\u17c8\u1796\u17c1\u179b \u1790\u17d2\u1784\u17c3\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7 \u1793\u17b7\u1784\u1794\u17bc\u1780\u1790\u17d2\u1784\u17c3","\u1796\u17b8","\u178a\u179b\u17cb","\u179a\u1799\u17c8\u1796\u17c1\u179b","\u1786\u17d2\u1793\u17b6\u17c6","\u1781\u17c2","\u1790\u17d2\u1784\u17c3","\u1790\u17d2\u1784\u17c3\u179f\u179a\u17bb\u1794","\u1790\u17d2\u1784\u17c3\u1780\u1793\u17d2\u179b\u1784","\u1794\u17bc\u1780\u1790\u17d2\u1784\u17c3","\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb","\u1796\u178e\u17cc \u1797\u17b6\u179f\u17b6 \u179f\u17b7\u1791\u17d2\u1792\u17b7 \u1793\u17b7\u1784\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799","\u1796\u178e\u17cc \u1793\u17b7\u1784\u179a\u1785\u1793\u17b6\u1794\u1790","\u1794\u17d2\u178a\u17bc\u179a\u179a\u1785\u1793\u17b6\u1794\u1790 \u1796\u178e\u17cc\u179f\u1784\u17d2\u1780\u178f\u17cb\u179f\u17c6\u17a1\u17c1\u1784 \u1793\u17b7\u1784\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u17af\u1780\u1787\u1793\u1797\u17b6\u1796 \u1793\u17b7\u1784\u179f\u17b7\u1791\u17d2\u1792\u17b7","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784 \u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799 \u1793\u17b7\u1784\u1791\u17b8\u178f\u17b6\u17c6\u1784","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799","\u179b\u17bb\u1794\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb \u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780 \u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb \u17ac\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb","\u179b\u17bb\u1794\u17af\u1780\u179f\u17b6\u179a\u178a\u17c2\u179b\u1794\u17b6\u1793\u1791\u17b6\u1789\u1799\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17d2\u179a\u17be\u17a2\u17bc\u17a0\u17d2\u179c\u17a1\u17b6\u1789","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179b\u17bb\u1794\u1798\u17c9\u17c4\u1784\u179a\u17c6\u179b\u17b9\u1780\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179b\u17bb\u1794\u1794\u1789\u17d2\u1787\u17b8\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179b\u17bb\u1794\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb \u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd \u1793\u17b7\u1784\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb","\u1794\u17b6\u1793\u179f\u1798\u17d2\u17a2\u17b6\u178f","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb?","\u179b\u17bb\u1794\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb?","\u179b\u17bb\u1794\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780?","\u179b\u17bb\u1794\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb? \u179f\u1780\u1798\u17d2\u1798\u1797\u17b6\u1796\u1793\u17c1\u17c7\u1798\u17b7\u1793\u17a2\u17b6\u1785\u178f\u17d2\u179a\u17a1\u1794\u17cb\u179c\u17b7\u1789\u1794\u17b6\u1793\u1791\u17c1\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u178a\u17c6\u17a1\u17be\u1784\u178f\u17b6\u1798\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780 \u17ac\u1791\u17b6\u1789\u1799\u1780\u1780\u1789\u17d2\u1785\u1794\u17cb","\u178a\u17c6\u17a1\u17be\u1784\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb \u17ac\u1791\u17b6\u1789\u1799\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1791\u17bc\u179a\u179f\u17d0\u1796\u17d2\u1791 \u1793\u17b7\u1784\u1780\u17bb\u17c6\u1796\u17d2\u1799\u17bc\u1791\u17d0\u179a","\u179c\u17b7\u178a\u1787\u17b7\u178f\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798","\u1794\u1784\u17d2\u17a0\u17b6\u1789\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798","\u1787\u17d2\u179a\u17be\u179f\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a\u1796\u17b8\u1794\u1789\u17d2\u1787\u17b8\u179c\u17b7\u178a\u1787\u17b7\u178f","\u1785\u17bb\u1785\u17b1\u17d2\u1799\u1787\u17b6\u1794\u17cb\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798, \u179c\u17b7\u178a\u1787\u17b7\u178f, \u1794\u1793\u17d2\u1791\u17b6\u1794\u17cb\u1798\u1780\u1794\u1793\u17d2\u1790\u17c2\u1798\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7","\u1781\u17c2","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u1782\u178e\u1793\u17b6\u1780\u17b6\u179b\u1794\u179a\u17b7\u1785\u17d2\u1786\u17c1\u1791\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7 \u1793\u17b7\u1784\u179a\u1799\u17c8\u1796\u17c1\u179b","\u1785\u17b6\u1794\u17cb\u1795\u17d2\u178a\u17be\u1798\u179f\u1794\u17d2\u178a\u17b6\u17a0\u17cd","\u17a2\u17d2\u1793\u1780\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17be\u1780\u1798\u17bb\u1781\u1784\u17b6\u179a\u1793\u17c1\u17c7\u179b\u17be\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179c\u17c1\u1794\u1794\u17b6\u1793\u1791\u17c1\u17d4 \u179f\u17bc\u1798\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u17d2\u179a\u17be\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1782\u1798\u17d2\u179a\u17c4\u1784","KhmerCalendar-project.zip","\u178a\u17c6\u17a1\u17be\u1784\u178f\u17b6\u1798\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780","\u178a\u17c6\u17a1\u17be\u1784\u1787\u17b6\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 \u17a0\u17be\u1799\u1794\u17d2\u179a\u17be\u1794\u17b6\u1793\u178a\u17c4\u1799\u1782\u17d2\u1798\u17b6\u1793\u17a2\u17ca\u17b8\u1793\u1792\u17ba\u178e\u17b7\u178f","\u1794\u17b6\u1793\u178a\u17c6\u17a1\u17be\u1784\u179a\u17bd\u1785\u17a0\u17be\u1799","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a\u1791\u17c5\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798 \u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u17be\u1780\u178a\u17bc\u1785\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8?","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u179a\u1794\u17c0\u1794\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u1785\u17bb\u1785\u1798\u17c9\u17ba\u1793\u17bb\u1799 \u22ee \u179a\u17bd\u1785 Install app \u17ac Add to Home screen\u17d4","\u1785\u17bb\u1785 Share \u179a\u17bd\u1785 Add to Home Screen\u17d4","\u1785\u17bb\u1785\u1798\u17c9\u17ba\u1793\u17bb\u1799\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780, Cast, save and share, Create shortcut, Open as window\u17d4","\u17a2\u17d2\u1793\u1780\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7\u1794\u17b6\u1793\u1791\u17c1\u1796\u17c1\u179b\u17a2\u17bc\u17a0\u17d2\u179c\u17a1\u17b6\u1789","\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1785\u17b6\u1794\u17cb\u1795\u17d2\u178a\u17be\u1798\u1798\u17c9\u17b6\u179f\u17ca\u17b8\u1793\u179a\u17c6\u179b\u17b9\u1780\u1796\u17c1\u179b\u1794\u17be\u1780\u17a7\u1794\u1780\u179a\u178e\u17cd","\u17a2\u17b6\u1791\u17b7\u178f\u17d2\u1799","\u1785\u1793\u17d2\u1791","\u179f\u17c5\u179a\u17cd","Android","KhmerCalendar.apk","Windows","KhmerCalendar-windows.zip","macOS","KhmerCalendar.dmg","Linux","KhmerCalendar-linux.tar.gz","\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798 Flutter","Android, Windows, macOS \u1793\u17b7\u1784 Linux \u1787\u17b6\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798 \u1798\u17b7\u1793\u1798\u17c2\u1793\u179c\u17c1\u1794\u1791\u17c1"],t.w)
-B.dt=new A.a4(B.GK,["Khmer Calendar","Day","Month","Events","Weather","More","Navigation","More","Light","Dark","System","Material You","Apply a dynamic theme generated from your device's wallpaper","Dynamic color","Use wallpaper colors when the device supports Material You","Extra dark","Apply a darker theme, the extra dark theme is only available for AMOLED screens","Language","Choose language","Auto","Use your device language","Continue","Next","Skip","Skip anyway","Continue your setup","Choose a language to get started","Install the app","Download the Android app.","Download the Windows app.","Download the Mac app.","Download the Linux app.","This device has no install package. Create a home-screen shortcut instead.","Download the app","Create a shortcut","App permissions","Allow every permission so reminders and weather work.","Allow notification","Allow background running","Allow auto startup","Allow GPS Access","Requesting notification permission\u2026","Requesting background running\u2026","Requesting auto startup\u2026","Requesting location\u2026","Notifications allowed","Notification permission was denied","Background running is on","Could not enable background running","Auto startup is on","Could not enable auto startup","Did you allow auto startup?","Turn this app on in the list that just opened, then tap OK.","This permission is not allowed","Open settings","Turn it on in device settings, then return to the app.","Permission allowed","Accent color","Used for buttons and key parts of the screen","Highlight color","Highlight today on the calendar","Alpha","Set highlight color transparency","Theme colors","Color","About","Version, license, and source","Created by","Version","Open source license","Source code","Website","MIT License","This app","Programming languages","APIs and services","Libraries","Other credits","Package licenses","Could not load licenses","Notifications","Reminders for events, holidays, and your calendar","Remind events","Alert on the day of your calendar events","Remind holidays","Alert on public and religious holidays","Your calendar reminder","Alert at the time you set on a task","Daily reminder","Morning alert with today's Khmer calendar. Off by default","Precept day reminder","Alert on silas days (8 waxing, 15 waxing, 8 waning, 15 waning)","Reminder","Cancel","Save","Close","Delete","Delete this task?","Keep","OK","Loading","Khmer lunar calendar","Today","Expand","Collapse","Add task","Events","Tasks","No holidays this month.","No tasks this month.","Copy","Copied","Could not copy","Done","Not done","Holidays","Tasks","No holidays this year.","No tasks.","Current tasks","Overdue","Completed","Choose year","Last year","This year","Next year","Custom","Khmer calendar","Change","Month","Year","Back","Task","Enter a title","Add reminder","Time","Clear reminder","Create task","Details","Holiday","Silas day","Event","Public holiday","Religious holiday","Khmer tradition","Silas days are Uposatha days for Buddhist observance: 8 waxing, 15 waxing, 8 waning, and 15 waning.","Silas day","All day","Weather","Find a city","Add city","No cities yet","Could not load weather.","No network connected","No network connected. Unable to use the weather app. Please turn on your internet and try again later.","Disconnected","Double check your connection and try again later.","Try again","Updated","Unable to get location","Hourly forecast","7-day forecast","UV index","Humidity","Wind","Feels like","km/h","Tools","App permissions","Reminder notifications","Send alerts for tasks and events","Run in the background","The phone fires reminders after you close the app","Location","Use your location for nearby weather","Permission was denied","Nearby city added","Date calculator","Duration, lunar date, and add days","From","To","Duration","years","months","days","total days","in the past","Add days","Settings","Color, language, permissions, and data","Themes & Colors","Change theme, accent color and highlight color","Privacy and permissions","Notifications, background, and location","Clear data","Cache, reminders, weather, or everything","Clear cache","Remove downloaded files used offline","Clear all saved reminders","Remove reminder times from tasks","Clear all saved weather","Reset saved weather cities","Clear all data","Erase settings, events, and cached files","Cleared","Clear the cache?","Clear all saved reminders?","Clear saved weather cities?","Clear all data? This cannot be undone.","Download the app","Install from the browser or download a package","Install app","Create a shortcut or download for phone and desktop","Home screen widget","Show today on your home screen","Pick Khmer Calendar from the widget list","Long press your home screen, tap Widgets, then add Khmer Calendar","Today","Month","Weather","Lunar dates and duration","Week starts on","You can't enable this on a web-based client-side app. Please download the app to use this feature.","Download project","KhmerCalendar-project.zip","Install via browser","Install as an app and use it offline","Already installed","Create shortcut","Add Khmer Calendar to your home screen so it opens like an app?","Add shortcut","How to create a shortcut","Tap the browser menu then Install app or Add to Home screen.","Tap Share, then Add to Home Screen.","Open the browser menu, Cast, save and share, Create shortcut, Open as window.","You can't download this app when you are offline","Auto launch","Start the reminder engine when the device boots","Sunday","Monday","Saturday","Android","KhmerCalendar.apk","Windows","KhmerCalendar-windows.zip","macOS","KhmerCalendar.dmg","Linux","KhmerCalendar-linux.tar.gz","Native Flutter app","Android, Windows, macOS, and Linux as real native apps, not a web wrapper"],t.w)
+B.ds=new A.a4(B.GK,["\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3","\u1781\u17c2","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u179a\u1794\u17b6\u179a\u179a\u17bb\u1780\u179a\u1780","\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u1797\u17d2\u179b\u17ba","\u1784\u1784\u17b9\u178f","\u1794\u17d2\u179a\u1796\u17d0\u1793\u17d2\u1792","Material You","\u17a2\u1793\u17bb\u179c\u178f\u17d2\u178f\u179a\u1785\u1793\u17b6\u1794\u1790\u1790\u17b6\u1798\u179c\u1793\u17d2\u178f\u1794\u1784\u17d2\u1780\u17be\u178f\u1796\u17b8\u1795\u17d2\u1791\u17b6\u17c6\u1784\u179a\u17bc\u1794\u1797\u17b6\u1796\u17a7\u1794\u1780\u179a\u178e\u17cd","\u1796\u178e\u17cc\u1790\u17b6\u1798\u179c\u1793\u17d2\u178f","\u1794\u17d2\u179a\u17be\u1796\u178e\u17cc\u1795\u17d2\u1791\u17b6\u17c6\u1784\u179a\u17bc\u1794\u1797\u17b6\u1796\u1796\u17c1\u179b\u17a7\u1794\u1780\u179a\u178e\u17cd\u1782\u17b6\u17c6\u1791\u17d2\u179a Material You","\u1784\u1784\u17b9\u178f\u1781\u17d2\u179b\u17b6\u17c6\u1784","\u17a2\u1793\u17bb\u179c\u178f\u17d2\u178f\u179a\u1785\u1793\u17b6\u1794\u1790\u1784\u1784\u17b9\u178f\u1787\u17b6\u1784 \u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u178f\u17c2\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb AMOLED","\u1797\u17b6\u179f\u17b6","\u1787\u17d2\u179a\u17be\u179f\u1797\u17b6\u179f\u17b6","\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1794\u17d2\u179a\u17be\u1797\u17b6\u179f\u17b6\u179a\u1794\u179f\u17cb\u17a7\u1794\u1780\u179a\u178e\u17cd","\u1794\u1793\u17d2\u178f","\u1794\u1793\u17d2\u1791\u17b6\u1794\u17cb","\u179a\u17c6\u179b\u1784","\u179a\u17c6\u179b\u1784\u1791\u17c5\u1798\u17bb\u1781","\u1794\u1793\u17d2\u178f\u1780\u17b6\u179a\u179a\u17c0\u1794\u1785\u17c6\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u179f\u17bc\u1798\u1787\u17d2\u179a\u17be\u179f\u179a\u17be\u179f\u1797\u17b6\u179f\u17b6\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17d2\u179a\u17be\u1794\u17d2\u179a\u17b6\u179f\u17cb\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u178a\u17c6\u17a1\u17be\u1784\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Android","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Windows","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Mac","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 Linux","\u17a7\u1794\u1780\u179a\u178e\u17cd\u1793\u17c1\u17c7\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u1789\u17d2\u1785\u1794\u17cb\u178a\u17c6\u17a1\u17be\u1784\u1791\u17c1\u17d4 \u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u179f\u17bc\u1798\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb \u178a\u17be\u1798\u17d2\u1794\u17b8\u17b2\u17d2\u1799\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780 \u1793\u17b7\u1784\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u17d4","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f GPS","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u179a\u178f\u17cb\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u2026","\u1780\u17c6\u1796\u17bb\u1784\u179f\u17d2\u1793\u17be\u1791\u17b8\u178f\u17b6\u17c6\u1784\u2026","\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u1794\u178a\u17b7\u179f\u17c1\u1792","\u1794\u17b6\u1793\u1794\u17be\u1780\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u179a\u178f\u17cb\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799\u1794\u17b6\u1793\u1791\u17c1","\u1794\u17b6\u1793\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u1794\u17b6\u1793\u1791\u17c1","\u178f\u17be\u17a2\u17d2\u1793\u1780\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7\u17ac\u1793\u17c5?","\u179f\u17bc\u1798\u1794\u17be\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7\u1780\u17d2\u1793\u17bb\u1784\u1794\u1789\u17d2\u1787\u17b8\u178a\u17c2\u179b\u1791\u17be\u1794\u1794\u1784\u17d2\u17a0\u17b6\u1789 \u179a\u17bd\u1785\u1785\u17bb\u1785\u1799\u179b\u17cb\u1796\u17d2\u179a\u1798\u17d4","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1793\u17c1\u17c7\u1798\u17b7\u1793\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u1791\u17c1","\u1794\u17be\u1780\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb","\u179f\u17bc\u1798\u1794\u17be\u1780\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1793\u17c1\u17c7\u1780\u17d2\u1793\u17bb\u1784\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb\u17a7\u1794\u1780\u179a\u178e\u17cd \u179a\u17bd\u1785\u178f\u17d2\u179a\u17a1\u1794\u17cb\u1798\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179c\u17b7\u1789\u17d4","\u1794\u17b6\u1793\u17a2\u1793\u17bb\u1789\u17d2\u1789\u17b6\u178f\u179f\u17b7\u1791\u17d2\u1792\u17b7","\u1796\u178e\u17cc\u179f\u1784\u17d2\u1780\u178f\u17cb\u179f\u17c6\u17a1\u17c1\u1784","\u1794\u17d2\u179a\u17be\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17ca\u17bc\u178f\u17bb\u1784 \u1793\u17b7\u1784\u1795\u17d2\u1793\u17c2\u1780\u179f\u17c6\u1781\u17b6\u1793\u17cb\u1793\u17c3\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb","\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u179a\u17c6\u179b\u17c1\u1785\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7\u1793\u17c5\u179b\u17be\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793","\u178f\u1798\u17d2\u179b\u17b6\u1797\u17b6\u1796","\u1780\u17c6\u178e\u178f\u17cb\u178f\u1798\u17d2\u179b\u17b6\u1797\u17b6\u1796\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u1796\u178e\u17cc\u179a\u1785\u1793\u17b6\u1794\u1790","\u1796\u178e\u17cc","\u17a2\u17c6\u1796\u17b8","\u1780\u17c6\u178e\u17c2 \u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e \u1793\u17b7\u1784\u1794\u17d2\u179a\u1797\u1796","\u1794\u1784\u17d2\u1780\u17be\u178f\u178a\u17c4\u1799","\u1780\u17c6\u178e\u17c2","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1794\u17d2\u179a\u1797\u1796\u1794\u17be\u1780\u1785\u17c6\u17a0","\u1780\u17bc\u178a\u1794\u17d2\u179a\u1797\u1796","\u1782\u17c1\u17a0\u1791\u17c6\u1796\u17d0\u179a","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e MIT","\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7","\u1797\u17b6\u179f\u17b6\u179f\u179a\u179f\u17c1\u179a\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","API \u1793\u17b7\u1784\u179f\u17c1\u179c\u17b6\u1780\u1798\u17d2\u1798","\u1794\u178e\u17d2\u178e\u17b6\u179b\u17d0\u1799","\u17a5\u178e\u1791\u17b6\u1793\u1795\u17d2\u179f\u17c1\u1784\u1791\u17c0\u178f","\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1780\u1789\u17d2\u1785\u1794\u17cb","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u17a2\u17b6\u1787\u17d2\u1789\u17b6\u1794\u178e\u17d2\u178e\u1794\u17b6\u1793\u1791\u17c1","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784","\u179a\u17c6\u179b\u17b9\u1780\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd \u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799 \u1793\u17b7\u1784\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u179a\u17c6\u179b\u17b9\u1780\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1793\u17c5\u1790\u17d2\u1784\u17c3\u1793\u17c3\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd\u1780\u17d2\u1793\u17bb\u1784\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793","\u179a\u17c6\u179b\u17b9\u1780\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u178f\u17c2\u1793\u17c5\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u179f\u17b6\u1792\u17b6\u179a\u178e\u17c8 (\u1780\u17d2\u179a\u17a0\u1798)","\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u178f\u17b6\u1798\u1798\u17c9\u17c4\u1784\u178a\u17c2\u179b\u17a2\u17d2\u1793\u1780\u1780\u17c6\u178e\u178f\u17cb\u179b\u17be\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u179a\u17c6\u179b\u17b9\u1780\u1794\u17d2\u179a\u1785\u17b6\u17c6\u1790\u17d2\u1784\u17c3","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1796\u17d2\u179a\u17b9\u1780\u1796\u17b8\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7","\u179a\u17c6\u179b\u17b9\u1780\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u1793\u17c5\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b \u17e8\u1780\u17be\u178f \u17e1\u17e5\u1780\u17be\u178f \u17e8\u179a\u17c4\u1785 \u1793\u17b7\u1784\u17e1\u17e5\u179a\u17c4\u1785","\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1794\u17c4\u17c7\u1794\u1784\u17cb","\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u1794\u17b7\u1791","\u179b\u17bb\u1794","\u178f\u17be\u17a2\u17d2\u1793\u1780\u1785\u1784\u17cb\u179b\u17bb\u1794\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1793\u17c1\u17c7\u1791\u17c1?","\u1798\u17b7\u1793\u179b\u17bb\u1794\u1791\u17c1","\u1799\u179b\u17cb\u1796\u17d2\u179a\u1798","\u1780\u17c6\u1796\u17bb\u1784\u1795\u17d2\u1791\u17bb\u1780","\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7","\u1796\u1784\u17d2\u179a\u17b8\u1780","\u1794\u1784\u17d2\u179a\u17bd\u1798","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799\u1780\u17d2\u1793\u17bb\u1784\u1781\u17c2\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1780\u17d2\u1793\u17bb\u1784\u1781\u17c2\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1785\u1798\u17d2\u179b\u1784","\u1794\u17b6\u1793\u1785\u1798\u17d2\u179b\u1784","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1785\u1798\u17d2\u179b\u1784\u1794\u17b6\u1793\u1791\u17c1","\u179a\u17bd\u1785\u179a\u17b6\u179b\u17cb","\u1798\u17b7\u1793\u1791\u17b6\u1793\u17cb","\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u1780\u17d2\u1793\u17bb\u1784\u1786\u17d2\u1793\u17b6\u17c6\u1793\u17c1\u17c7\u1791\u17c1\u17d4","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1791\u17c1\u17d4","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a\u1794\u1785\u17d2\u1785\u17bb\u1794\u17d2\u1794\u1793\u17d2\u1793","\u17a0\u17bd\u179f\u1780\u17b6\u179b\u1780\u17c6\u178e\u178f\u17cb","\u1794\u17b6\u1793\u1794\u1789\u17d2\u1785\u1794\u17cb","\u1787\u17d2\u179a\u17be\u179f\u1786\u17d2\u1793\u17b6\u17c6","\u1786\u17d2\u1793\u17b6\u17c6\u1798\u17bb\u1793","\u1786\u17d2\u1793\u17b6\u17c6\u1793\u17c1\u17c7","\u1786\u17d2\u1793\u17b6\u17c6\u1780\u17d2\u179a\u17c4\u1799","\u1795\u17d2\u1791\u17b6\u179b\u17cb\u1781\u17d2\u179b\u17bd\u1793","\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1795\u17d2\u179b\u17b6\u179f\u17cb","\u1781\u17c2","\u1786\u17d2\u1793\u17b6\u17c6","\u178f\u17d2\u179a\u17a1\u1794\u17cb","\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1794\u1789\u17d2\u1785\u17bc\u179b\u1785\u17c6\u178e\u1784\u1787\u17be\u1784","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1798\u17c9\u17c4\u1784","\u179b\u17bb\u1794\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780","\u1794\u1784\u17d2\u1780\u17be\u178f\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a","\u1796\u17d0\u178f\u17cc\u1798\u17b6\u1793","\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u1790\u17d2\u1784\u17c3\u1788\u1794\u17cb\u179f\u1798\u17d2\u179a\u17b6\u1780\u179f\u17b6\u1792\u17b6\u179a\u178e\u17c8","\u1790\u17d2\u1784\u17c3\u1794\u17bb\u178e\u17d2\u1799\u179f\u17b6\u179f\u1793\u17b6","\u1790\u17d2\u1784\u17c3\u1794\u17d2\u179a\u1796\u17c3\u178e\u17b8\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b\u1787\u17b6\u1790\u17d2\u1784\u17c3\u1794\u17bd\u179f\u179f\u17b8\u179b\u179a\u1794\u179f\u17cb\u1796\u17bb\u1791\u17d2\u1792\u179f\u17b6\u179f\u1793\u17b7\u1780\u1787\u1793 \u178a\u17c2\u179b\u178f\u17d2\u179a\u17bc\u179c\u1793\u17b9\u1784\u17e8\u1780\u17be\u178f \u17e1\u17e5\u1780\u17be\u178f \u17e8\u179a\u17c4\u1785 \u1793\u17b7\u1784\u17e1\u17e5\u179a\u17c4\u1785\u17d4","\u1790\u17d2\u1784\u17c3\u179f\u17b8\u179b","\u1796\u17c1\u1789\u1798\u17bd\u1799\u1790\u17d2\u1784\u17c3","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u179f\u17d2\u179c\u17c2\u1784\u179a\u1780\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784","\u1798\u17b7\u1793\u1798\u17b6\u1793\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u1791\u17c1","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1794\u17b6\u1793\u1791\u17c1\u17d4","\u1782\u17d2\u1798\u17b6\u1793\u1794\u178e\u17d2\u178a\u17b6\u1789\u178f\u1794\u1797\u17d2\u1787\u17b6\u1794\u17cb","\u1782\u17d2\u1798\u17b6\u1793\u1794\u178e\u17d2\u178a\u17b6\u1789\u178f\u1794\u1797\u17d2\u1787\u17b6\u1794\u17cb\u1791\u17c1 \u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17d2\u179a\u17be\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1794\u17b6\u1793\u17d4 \u179f\u17bc\u1798\u1794\u17be\u1780\u17a2\u17ca\u17b8\u1793\u1792\u17ba\u178e\u17b7\u178f \u179a\u17bd\u1785\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f\u17d4","\u178a\u17b6\u1785\u17cb\u1780\u17b6\u179a\u178f\u1797\u17d2\u1787\u17b6\u1794\u17cb","\u179f\u17bc\u1798\u1796\u17b7\u1793\u17b7\u178f\u17d2\u1799\u1780\u17b6\u179a\u178f\u1797\u17d2\u1787\u17b6\u1794\u17cb\u179a\u1794\u179f\u17cb\u17a2\u17d2\u1793\u1780 \u179a\u17bd\u1785\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f\u17d4","\u1796\u17d2\u1799\u17b6\u1799\u17b6\u1798\u1798\u17d2\u178f\u1784\u1791\u17c0\u178f","\u1794\u17b6\u1793\u1792\u17d2\u179c\u17be\u1794\u1785\u17d2\u1785\u17bb\u1794\u17d2\u1794\u1793\u17d2\u1793\u1797\u17b6\u1796\u1790\u17d2\u1798\u17b8","\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1791\u17b8\u178f\u17b6\u17c6\u1784\u1794\u17b6\u1793\u1791\u17c1","\u1780\u17b6\u179a\u1796\u17d2\u1799\u17b6\u1780\u179a\u178e\u17cd\u1794\u17d2\u179a\u1785\u17b6\u17c6\u1798\u17c9\u17c4\u1784","\u1780\u17b6\u179a\u1796\u17d2\u1799\u17b6\u1780\u179a\u178e\u17cd \u17e7 \u1790\u17d2\u1784\u17c3","\u179f\u1793\u17d2\u1791\u179f\u17d2\u179f\u1793\u17cd UV","\u179f\u17c6\u178e\u17be\u1798","\u1781\u17d2\u1799\u179b\u17cb","\u1798\u17b6\u1793\u17a2\u17b6\u179a\u1798\u17d2\u1798\u178e\u17cd\u178a\u17bc\u1785","\u1782\u1798/\u1798\u17c9\u1798","\u17a7\u1794\u1780\u179a\u178e\u17cd","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784\u179a\u17c6\u179b\u17b9\u1780","\u1795\u17d2\u1789\u17be\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1780\u17b7\u1785\u17d2\u1785\u1780\u17b6\u179a \u1793\u17b7\u1784\u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd","\u178a\u17c6\u178e\u17be\u179a\u1780\u17b6\u179a\u1780\u17d2\u1793\u17bb\u1784\u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799","\u1791\u17bc\u179a\u179f\u17d0\u1796\u17d2\u1791\u179a\u17c6\u179b\u17b9\u1780\u1791\u17c4\u17c7\u1794\u17b8\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1794\u17b6\u1793\u1794\u17b7\u1791\u1780\u17cf\u178a\u17c4\u1799","\u1791\u17b8\u178f\u17b6\u17c6\u1784","\u1794\u17d2\u179a\u17be\u1791\u17b8\u178f\u17b6\u17c6\u1784\u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u1784\u17d2\u17a0\u17b6\u1789\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u1780\u17d2\u1794\u17c2\u179a\u17d7","\u179f\u17b7\u1791\u17d2\u1792\u17b7\u178f\u17d2\u179a\u17bc\u179c\u1794\u17b6\u1793\u1794\u178a\u17b7\u179f\u17c1\u1792","\u1794\u17b6\u1793\u1794\u1793\u17d2\u1790\u17c2\u1798\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u1780\u17d2\u1794\u17c2\u179a","\u1782\u178e\u1793\u17b6\u1780\u17b6\u179b\u1794\u179a\u17b7\u1785\u17d2\u1786\u17c1\u1791","\u179a\u1799\u17c8\u1796\u17c1\u179b \u1790\u17d2\u1784\u17c3\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7 \u1793\u17b7\u1784\u1794\u17bc\u1780\u1790\u17d2\u1784\u17c3","\u1796\u17b8","\u178a\u179b\u17cb","\u179a\u1799\u17c8\u1796\u17c1\u179b","\u1786\u17d2\u1793\u17b6\u17c6","\u1781\u17c2","\u1790\u17d2\u1784\u17c3","\u1790\u17d2\u1784\u17c3\u179f\u179a\u17bb\u1794","\u1790\u17d2\u1784\u17c3\u1780\u1793\u17d2\u179b\u1784","\u1794\u17bc\u1780\u1790\u17d2\u1784\u17c3","\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb","\u1796\u178e\u17cc \u1797\u17b6\u179f\u17b6 \u179f\u17b7\u1791\u17d2\u1792\u17b7 \u1793\u17b7\u1784\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799","\u1796\u178e\u17cc \u1793\u17b7\u1784\u179a\u1785\u1793\u17b6\u1794\u1790","\u1794\u17d2\u178a\u17bc\u179a\u179a\u1785\u1793\u17b6\u1794\u1790 \u1796\u178e\u17cc\u179f\u1784\u17d2\u1780\u178f\u17cb\u179f\u17c6\u17a1\u17c1\u1784 \u1793\u17b7\u1784\u1796\u178e\u17cc\u179a\u17c6\u179b\u17c1\u1785","\u17af\u1780\u1787\u1793\u1797\u17b6\u1796 \u1793\u17b7\u1784\u179f\u17b7\u1791\u17d2\u1792\u17b7","\u1780\u17b6\u179a\u1787\u17bc\u1793\u178a\u17c6\u178e\u17b9\u1784 \u1795\u17d2\u1791\u17c3\u1781\u17b6\u1784\u1780\u17d2\u179a\u17c4\u1799 \u1793\u17b7\u1784\u1791\u17b8\u178f\u17b6\u17c6\u1784","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799","\u179b\u17bb\u1794\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb \u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780 \u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb \u17ac\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb","\u179b\u17bb\u1794\u17af\u1780\u179f\u17b6\u179a\u178a\u17c2\u179b\u1794\u17b6\u1793\u1791\u17b6\u1789\u1799\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1794\u17d2\u179a\u17be\u17a2\u17bc\u17a0\u17d2\u179c\u17a1\u17b6\u1789","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179b\u17bb\u1794\u1798\u17c9\u17c4\u1784\u179a\u17c6\u179b\u17b9\u1780\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179b\u17bb\u1794\u1794\u1789\u17d2\u1787\u17b8\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb","\u179b\u17bb\u1794\u1780\u17b6\u179a\u1780\u17c6\u178e\u178f\u17cb \u1796\u17d2\u179a\u17b9\u178f\u17d2\u178f\u17b7\u1780\u17b6\u179a\u178e\u17cd \u1793\u17b7\u1784\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb","\u1794\u17b6\u1793\u179f\u1798\u17d2\u17a2\u17b6\u178f","\u179f\u1798\u17d2\u17a2\u17b6\u178f\u1783\u17d2\u179b\u17b6\u17c6\u1784\u179f\u1798\u17d2\u1784\u17b6\u178f\u17cb?","\u179b\u17bb\u1794\u1780\u17b6\u179a\u179a\u17c6\u179b\u17b9\u1780\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb?","\u179b\u17bb\u1794\u1791\u17b8\u1780\u17d2\u179a\u17bb\u1784\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb\u178a\u17c2\u179b\u1794\u17b6\u1793\u179a\u1780\u17d2\u179f\u17b6\u1791\u17bb\u1780?","\u179b\u17bb\u1794\u1791\u17b7\u1793\u17d2\u1793\u1793\u17d0\u1799\u1791\u17b6\u17c6\u1784\u17a2\u179f\u17cb? \u179f\u1780\u1798\u17d2\u1798\u1797\u17b6\u1796\u1793\u17c1\u17c7\u1798\u17b7\u1793\u17a2\u17b6\u1785\u178f\u17d2\u179a\u17a1\u1794\u17cb\u179c\u17b7\u1789\u1794\u17b6\u1793\u1791\u17c1\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u178a\u17c6\u17a1\u17be\u1784\u178f\u17b6\u1798\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780 \u17ac\u1791\u17b6\u1789\u1799\u1780\u1780\u1789\u17d2\u1785\u1794\u17cb","\u178a\u17c6\u17a1\u17be\u1784\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb \u17ac\u1791\u17b6\u1789\u1799\u1780\u179f\u1798\u17d2\u179a\u17b6\u1794\u17cb\u1791\u17bc\u179a\u179f\u17d0\u1796\u17d2\u1791 \u1793\u17b7\u1784\u1780\u17bb\u17c6\u1796\u17d2\u1799\u17bc\u1791\u17d0\u179a","\u179c\u17b7\u178a\u1787\u17b7\u178f\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798","\u1794\u1784\u17d2\u17a0\u17b6\u1789\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798","\u1787\u17d2\u179a\u17be\u179f\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a\u1796\u17b8\u1794\u1789\u17d2\u1787\u17b8\u179c\u17b7\u178a\u1787\u17b7\u178f","\u1785\u17bb\u1785\u17b1\u17d2\u1799\u1787\u17b6\u1794\u17cb\u179b\u17be\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798, \u179c\u17b7\u178a\u1787\u17b7\u178f, \u1794\u1793\u17d2\u1791\u17b6\u1794\u17cb\u1798\u1780\u1794\u1793\u17d2\u1790\u17c2\u1798\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a","\u1790\u17d2\u1784\u17c3\u1793\u17c1\u17c7","\u1781\u17c2","\u17a2\u17b6\u1780\u17b6\u179f\u1792\u17b6\u178f\u17bb","\u1782\u178e\u1793\u17b6\u1780\u17b6\u179b\u1794\u179a\u17b7\u1785\u17d2\u1786\u17c1\u1791\u1785\u1793\u17d2\u1791\u1782\u178f\u17b7 \u1793\u17b7\u1784\u179a\u1799\u17c8\u1796\u17c1\u179b","\u1785\u17b6\u1794\u17cb\u1795\u17d2\u178a\u17be\u1798\u179f\u1794\u17d2\u178a\u17b6\u17a0\u17cd","\u17a2\u17d2\u1793\u1780\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1794\u17be\u1780\u1798\u17bb\u1781\u1784\u17b6\u179a\u1793\u17c1\u17c7\u179b\u17be\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179c\u17c1\u1794\u1794\u17b6\u1793\u1791\u17c1\u17d4 \u179f\u17bc\u1798\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u17d2\u179a\u17be\u17d4","\u1791\u17b6\u1789\u1799\u1780\u1782\u1798\u17d2\u179a\u17c4\u1784","KhmerCalendar-project.zip","\u178a\u17c6\u17a1\u17be\u1784\u178f\u17b6\u1798\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780","\u178a\u17c6\u17a1\u17be\u1784\u1787\u17b6\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8 \u17a0\u17be\u1799\u1794\u17d2\u179a\u17be\u1794\u17b6\u1793\u178a\u17c4\u1799\u1782\u17d2\u1798\u17b6\u1793\u17a2\u17ca\u17b8\u1793\u1792\u17ba\u178e\u17b7\u178f","\u1794\u17b6\u1793\u178a\u17c6\u17a1\u17be\u1784\u179a\u17bd\u1785\u17a0\u17be\u1799","\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1794\u17d2\u179a\u178f\u17b7\u1791\u17b7\u1793\u1781\u17d2\u1798\u17c2\u179a\u1791\u17c5\u17a2\u17c1\u1780\u17d2\u179a\u1784\u17cb\u178a\u17be\u1798 \u178a\u17be\u1798\u17d2\u1794\u17b8\u1794\u17be\u1780\u178a\u17bc\u1785\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8?","\u1794\u1793\u17d2\u1790\u17c2\u1798\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u179a\u1794\u17c0\u1794\u1794\u1784\u17d2\u1780\u17be\u178f\u1795\u17d2\u179b\u17bc\u179c\u1780\u17b6\u178f\u17cb","\u1785\u17bb\u1785\u1798\u17c9\u17ba\u1793\u17bb\u1799 \u22ee \u179a\u17bd\u1785 Install app \u17ac Add to Home screen\u17d4","\u1785\u17bb\u1785 Share \u179a\u17bd\u1785 Add to Home Screen\u17d4","\u1785\u17bb\u1785\u1798\u17c9\u17ba\u1793\u17bb\u1799\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u179a\u17bb\u1780\u179a\u1780, Cast, save and share, Create shortcut, Open as window\u17d4","\u17a2\u17d2\u1793\u1780\u1798\u17b7\u1793\u17a2\u17b6\u1785\u1791\u17b6\u1789\u1799\u1780\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u1793\u17c1\u17c7\u1794\u17b6\u1793\u1791\u17c1\u1796\u17c1\u179b\u17a2\u17bc\u17a0\u17d2\u179c\u17a1\u17b6\u1789","\u1794\u17be\u1780\u179f\u17d2\u179c\u17d0\u1799\u1794\u17d2\u179a\u179c\u178f\u17d2\u178f\u17b7","\u1785\u17b6\u1794\u17cb\u1795\u17d2\u178a\u17be\u1798\u1798\u17c9\u17b6\u179f\u17ca\u17b8\u1793\u179a\u17c6\u179b\u17b9\u1780\u1796\u17c1\u179b\u1794\u17be\u1780\u17a7\u1794\u1780\u179a\u178e\u17cd","\u17a2\u17b6\u1791\u17b7\u178f\u17d2\u1799","\u1785\u1793\u17d2\u1791","\u179f\u17c5\u179a\u17cd","Android","KhmerCalendar.apk","Windows","KhmerCalendar-windows.zip","macOS","KhmerCalendar.dmg","Linux","KhmerCalendar-linux.tar.gz","\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798 Flutter","Android, Windows, macOS \u1793\u17b7\u1784 Linux \u1787\u17b6\u1780\u1798\u17d2\u1798\u179c\u17b7\u1792\u17b8\u178a\u17be\u1798 \u1798\u17b7\u1793\u1798\u17c2\u1793\u179c\u17c1\u1794\u1791\u17c1"],t.w)
+B.dt=new A.a4(B.GK,["Khmer Calendar","Day","Month","Events","Weather","More","Navigation","More","Light","Dark","System","Material You","Apply a dynamic theme generated from your device's wallpaper","Dynamic color","Use wallpaper colors when the device supports Material You","Extra dark","Apply a darker theme, the extra dark theme is only available for AMOLED screens","Language","Choose language","Auto","Use your device language","Continue","Next","Skip","Skip anyway","Continue your setup","Choose a language to get started","Install the app","Download the Android app.","Download the Windows app.","Download the Mac app.","Download the Linux app.","This device has no install package. Create a home-screen shortcut instead.","Download the app","Create a shortcut","App permissions","Allow every permission so reminders and weather work.","Allow notification","Allow background running","Allow auto startup","Allow GPS Access","Requesting notification permission\u2026","Requesting background running\u2026","Requesting auto startup\u2026","Requesting location\u2026","Notifications allowed","Notification permission was denied","Background running is on","Could not enable background running","Auto startup is on","Could not enable auto startup","Did you allow auto startup?","Turn this app on in the list that just opened, then tap OK.","This permission is not allowed","Open settings","Turn it on in device settings, then return to the app.","Permission allowed","Accent color","Used for buttons and key parts of the screen","Highlight color","Highlight today on the calendar","Alpha","Set highlight color transparency","Theme colors","Color","About","Version, license, and source","Created by","Version","Open source license","Source code","Website","MIT License","This app","Programming languages","APIs and services","Libraries","Other credits","Package licenses","Could not load licenses","Notifications","Reminders for events, holidays, and your calendar","Remind events","Alert on the day of your calendar events","Remind holidays","Alert only on public holidays (red)","Your calendar reminder","Alert at the time you set on a task","Daily reminder","Morning alert with today's Khmer calendar","Precept day reminder","Alert on silas days (8 waxing, 15 waxing, 8 waning, 15 waning)","Reminder","Cancel","Save","Close","Delete","Delete this task?","Keep","OK","Loading","Khmer lunar calendar","Today","Expand","Collapse","Add task","Events","Tasks","No holidays this month.","No tasks this month.","Copy","Copied","Could not copy","Done","Not done","Holidays","Tasks","No holidays this year.","No tasks.","Current tasks","Overdue","Completed","Choose year","Last year","This year","Next year","Custom","Khmer calendar","Change","Month","Year","Back","Task","Enter a title","Add reminder","Time","Clear reminder","Create task","Details","Holiday","Silas day","Event","Public holiday","Religious holiday","Khmer tradition","Silas days are Uposatha days for Buddhist observance: 8 waxing, 15 waxing, 8 waning, and 15 waning.","Silas day","All day","Weather","Find a city","Add city","No cities yet","Could not load weather.","No network connected","No network connected. Unable to use the weather app. Please turn on your internet and try again later.","Disconnected","Double check your connection and try again later.","Try again","Updated","Unable to get location","Hourly forecast","7-day forecast","UV index","Humidity","Wind","Feels like","km/h","Tools","App permissions","Reminder notifications","Send alerts for tasks and events","Run in the background","The phone fires reminders after you close the app","Location","Use your location for nearby weather","Permission was denied","Nearby city added","Date calculator","Duration, lunar date, and add days","From","To","Duration","years","months","days","total days","in the past","Add days","Settings","Color, language, permissions, and data","Themes & Colors","Change theme, accent color and highlight color","Privacy and permissions","Notifications, background, and location","Clear data","Cache, reminders, weather, or everything","Clear cache","Remove downloaded files used offline","Clear all saved reminders","Remove reminder times from tasks","Clear all saved weather","Reset saved weather cities","Clear all data","Erase settings, events, and cached files","Cleared","Clear the cache?","Clear all saved reminders?","Clear saved weather cities?","Clear all data? This cannot be undone.","Download the app","Install from the browser or download a package","Install app","Create a shortcut or download for phone and desktop","Home screen widget","Show today on your home screen","Pick Khmer Calendar from the widget list","Long press your home screen, tap Widgets, then add Khmer Calendar","Today","Month","Weather","Lunar dates and duration","Week starts on","You can't enable this on a web-based client-side app. Please download the app to use this feature.","Download project","KhmerCalendar-project.zip","Install via browser","Install as an app and use it offline","Already installed","Create shortcut","Add Khmer Calendar to your home screen so it opens like an app?","Add shortcut","How to create a shortcut","Tap the browser menu then Install app or Add to Home screen.","Tap Share, then Add to Home Screen.","Open the browser menu, Cast, save and share, Create shortcut, Open as window.","You can't download this app when you are offline","Auto launch","Start the reminder engine when the device boots","Sunday","Monday","Saturday","Android","KhmerCalendar.apk","Windows","KhmerCalendar-windows.zip","macOS","KhmerCalendar.dmg","Linux","KhmerCalendar-linux.tar.gz","Native Flutter app","Android, Windows, macOS, and Linux as real native apps, not a web wrapper"],t.w)
 B.GJ={"\u1787\u17bc\u178f":0,"\u1786\u17d2\u179b\u17bc\u179c":1,"\u1781\u17b6\u179b":2,"\u1790\u17c4\u17c7":3,"\u179a\u17c4\u1784":4,"\u1798\u17d2\u179f\u17b6\u1789\u17cb":5,"\u1798\u1798\u17b8":6,"\u1798\u1798\u17c2":7,"\u179c\u1780":8,"\u179a\u1780\u17b6":9,"\u1785":10,"\u1780\u17bb\u179a":11}
 B.abW=new A.a4(B.GJ,["rat","ox","tiger","rabbit","dragon","snake","horse","goat","monkey","rooster","dog","pig"],t.w)
 B.abX=new A.a4(B.GJ,["Rat","Ox","Tiger","Rabbit","Dragon","Snake","Horse","Goat","Monkey","Rooster","Dog","Pig"],t.w)
@@ -134727,7 +134729,7 @@ B.ahM=new A.d2(null,2,null,null)
 B.ahN=new A.d2(null,36,null,null)
 B.pZ=new A.d2(null,6,null,null)
 B.ahP=new A.d2(null,7,null,null)
-B.b1=new A.d2(null,8,null,null)
+B.b2=new A.d2(null,8,null,null)
 B.ahQ=new A.d2(null,null,null,null)
 B.ahR=new A.aDh(0,"tapAndSlide")
 B.ahS=new A.AH(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
@@ -135477,7 +135479,7 @@ B.arT=new A.pj(2,"COMMENT")
 B.arU=new A.pj(3,"DECLARATION")
 B.arV=new A.pj(4,"DOCUMENT_TYPE")
 B.MR=new A.pj(7,"ELEMENT")
-B.b3=new A.BF(0,"forward")
+B.b4=new A.BF(0,"forward")
 B.mp=new A.BF(1,"reverse")
 B.auN=new A.aIL(0,"elevated")
 B.arY=new A.LM(0,"checkbox")
@@ -135551,7 +135553,7 @@ B.auR=new A.aNI(0,"material")
 B.aB=new A.wT(0,"minWidth")
 B.ah=new A.wT(1,"maxWidth")
 B.aK=new A.wT(2,"minHeight")
-B.b4=new A.wT(3,"maxHeight")
+B.b5=new A.wT(3,"maxHeight")
 B.hr=new A.a9j(0,"beforeParagraph")
 B.Nd=new A.a9j(1,"inParagraph")
 B.a6=new A.hG(1)
@@ -136268,7 +136270,7 @@ s($,"bCI","bhu",()=>A.arR(A.cq([B.oV],t.bd)))
 s($,"bDy","bi4",()=>A.arR(A.cq([B.oW],t.bd)))
 s($,"bEy","b6h",()=>A.b2f(B.a1u,t.N))
 s($,"bEq","biA",()=>{var q=null
-return A.aL(["af",A.aO(B.a33,B.a5g,B.a8,B.a0v,B.a3u,6,5,B.AG,"af",B.O,B.xK,B.a3r,B.w7,B.eI,B.Ao,B.AG,B.O,B.xK,B.w7,B.Ao,B.yv,B.a4,B.yv,B.q,q),"am",A.aO(B.a3x,B.kQ,B.a8,B.a_3,B.a5X,6,5,B.zB,"am",B.zP,B.vO,B.a0A,B.x6,B.a2B,B.zT,B.zB,B.zP,B.vO,B.x6,B.zT,B.vK,B.cs,B.vK,B.q,q),"ar",A.aO(B.a3f,B.a5d,B.a2R,B.a2H,B.a4x,5,4,B.l7,"ar",B.zu,B.wf,B.vA,B.l7,B.vA,B.kK,B.l7,B.zu,B.wf,B.l7,B.kK,B.kK,B.cs,B.kK,B.vW,"\u0660"),"as",A.aO(B.cc,B.a6a,B.a8,B.a56,B.a6g,6,5,B.wx,"as",B.vx,B.yG,B.a8y,B.zd,B.a7Q,B.yc,B.wx,B.vx,B.yG,B.zd,B.yc,B.z_,B.a_K,B.z_,B.cF,"\u09e6"),"az",A.aO(B.d2,B.a6N,B.a8,B.a7M,B.a8d,0,6,B.xu,"az",B.bi,B.zL,B.a4J,B.A2,B.a35,B.a15,B.xu,B.bi,B.zL,B.A2,B.a8i,B.zQ,B.a4,B.zQ,B.q,q),"be",A.aO(B.cc,B.a6X,B.a1,B.a29,B.a2t,0,6,B.a8c,"be",B.AL,B.w6,B.a3c,B.a4a,B.a6P,B.wF,B.a4C,B.AL,B.w6,B.a0l,B.wF,B.yM,B.a2I,B.yM,B.q,q),"bg",A.aO(B.cc,B.a0k,B.a1,B.a7I,B.a50,0,3,B.wX,"bg",B.zI,B.kZ,B.a6T,B.z3,B.a2x,B.l3,B.wX,B.zI,B.kZ,B.z3,B.l3,B.yZ,B.a4P,B.yZ,B.q,q),"bn",A.aO(B.bb,B.ij,B.a8,B.ZO,B.a_h,6,5,B.As,"bn",B.zK,B.wV,B.AY,B.a7x,B.AY,B.wN,B.As,B.zK,B.wV,B.a5a,B.wN,B.zJ,B.cs,B.zJ,B.q,"\u09e6"),"bs",A.aO(B.kx,B.a5e,B.A6,B.a0I,B.wu,0,6,B.B8,"bs",B.dU,B.vv,B.a8o,B.zX,B.a2r,B.kr,B.B8,B.dU,B.kF,B.zX,B.kr,B.kG,B.a4,B.kG,B.q,q),"ca",A.aO(B.kx,B.a1i,B.kz,B.a6O,B.a4V,0,3,B.a0j,"ca",B.yW,B.kC,B.a6l,B.ZL,B.a5U,B.kC,B.a6B,B.yW,B.kC,B.a1p,B.kC,B.zr,B.zz,B.zr,B.q,q),"cs",A.aO(B.a5Y,B.a3o,B.a8,B.a25,B.a6L,0,3,B.a7t,"cs",B.bi,B.Ak,B.a1S,B.AH,B.aH,B.vD,B.a0L,B.bi,B.Ak,B.AH,B.vD,B.zl,B.a0d,B.zl,B.q,q),"cy",A.aO(B.a53,B.ys,B.A6,B.a6A,B.a1k,0,3,B.xE,"cy",B.zH,B.A9,B.a6_,B.a03,B.a1o,B.a4F,B.xE,B.zH,B.A9,B.a1Q,B.a5k,B.vY,B.a4,B.vY,B.q,q),"da",A.aO(B.d2,B.a1r,B.a8,B.a0O,B.ie,0,3,B.w5,"da",B.O,B.dV,B.ig,B.yt,B.a4Q,B.xi,B.w5,B.O,B.dV,B.yt,B.xi,B.fH,B.oH,B.fH,B.q,q),"de",A.aO(B.bb,B.oD,B.a1,B.fM,B.fM,0,3,B.ku,"de",B.O,B.fL,B.oJ,B.A_,B.aH,B.vH,B.ku,B.O,B.fL,B.ky,B.zA,B.l2,B.a4,B.l2,B.q,q),"de_CH",A.aO(B.bb,B.oD,B.a1,B.fM,B.fM,0,3,B.ku,"de_CH",B.O,B.fL,B.oJ,B.A_,B.aH,B.vH,B.ku,B.O,B.fL,B.ky,B.zA,B.l2,B.a4,B.l2,B.q,q),"el",A.aO(B.a4U,B.xO,B.a5Q,B.a7p,B.a46,0,3,B.a4R,"el",B.Bg,B.zi,B.a62,B.a_b,B.a81,B.wj,B.a79,B.Bg,B.zi,B.a4i,B.wj,B.vR,B.bT,B.vR,B.q,q),"en",A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en",B.O,B.ax,B.cI,B.dr,B.aH,B.b_,B.at,B.O,B.ax,B.dr,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_AU",A.aO(B.cc,B.lb,B.a1,B.cd,B.bw,0,6,B.at,"en_AU",B.O,B.a4B,B.cI,B.xx,B.aH,B.b_,B.at,B.O,B.ax,B.xx,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_CA",A.aO(B.cG,B.a3t,B.a1,B.cd,B.bw,6,5,B.at,"en_CA",B.O,B.ax,B.cI,B.dr,B.aH,B.b_,B.at,B.O,B.ax,B.dr,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_GB",A.aO(B.cc,B.oB,B.a1,B.cd,B.bw,0,3,B.at,"en_GB",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.a4,B.aF,B.q,q),"en_IE",A.aO(B.cG,B.kQ,B.a1,B.cd,B.bw,0,3,B.at,"en_IE",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.a4,B.aF,B.q,q),"en_IN",A.aO(B.cc,B.ys,B.a1,B.cd,B.bw,6,5,B.at,"en_IN",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.bT,B.aF,B.cF,q),"en_NZ",A.aO(B.cc,B.oB,B.a1,B.cd,B.bw,0,6,B.at,"en_NZ",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_SG",A.aO(B.cc,B.lb,B.a1,B.cd,B.bw,6,5,B.at,"en_SG",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_US",A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en_US",B.O,B.ax,B.cI,B.dr,B.aH,B.b_,B.at,B.O,B.ax,B.dr,B.b_,B.aF,B.bT,B.aF,B.q,q),"en_ZA",A.aO(B.cc,B.a1T,B.a1,B.cd,B.bw,6,5,B.at,"en_ZA",B.O,B.ax,B.cI,B.ct,B.aH,B.b_,B.at,B.O,B.ax,B.ct,B.b_,B.aF,B.a4,B.aF,B.q,q),"es",A.aO(B.kx,B.yD,B.a1,B.l4,B.a4H,0,3,B.e_,"es",B.dW,B.Aa,B.a1X,B.fO,B.d1,B.dY,B.e_,B.dW,B.Aa,B.fO,B.dY,B.dZ,B.zz,B.dZ,B.q,q),"es_419",A.aO(B.cG,B.yD,B.a1,B.l4,B.eJ,0,3,B.e_,"es_419",B.dW,B.cq,B.kB,B.fO,B.d1,B.dY,B.e_,B.dW,B.cq,B.fO,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"es_MX",A.aO(B.kx,B.a1C,B.a1,B.l4,B.eJ,6,5,B.e_,"es_MX",B.dW,B.cq,B.kB,B.xz,B.d1,B.dY,B.e_,B.dW,B.cq,B.xz,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"es_US",A.aO(B.cG,B.a5o,B.a1,B.l4,B.eJ,6,5,B.e_,"es_US",B.dW,B.cq,B.a4D,B.fO,B.d1,B.dY,B.e_,B.dW,B.cq,B.fO,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"et",A.aO(B.bb,B.a5q,B.a8,B.a59,B.a5n,0,3,B.wI,"et",B.yf,B.l9,B.ig,B.Bk,B.eI,B.l9,B.wI,B.yf,B.l9,B.Bk,B.l9,B.vz,B.a4,B.vz,B.q,q),"eu",A.aO(B.a5V,B.ZZ,B.a0x,B.a7T,B.a2f,0,3,B.wE,"eu",B.y4,B.Bb,B.a1w,B.wZ,B.a2s,B.xg,B.wE,B.y4,B.Bb,B.wZ,B.xg,B.yy,B.yn,B.yy,B.q,q),"fa",A.aO(B.a5S,B.a7h,B.a23,B.a0C,B.a47,5,4,B.a3e,"fa",B.yV,B.vu,B.a6e,B.oy,B.a84,B.kS,B.oy,B.yV,B.vu,B.oy,B.kS,B.kS,B.At,B.kS,B.a_N,"\u06f0"),"fi",A.aO(B.a1s,B.a7P,B.a8,B.a8j,B.a5b,0,3,B.a2a,"fi",B.vJ,B.An,B.a3s,B.vT,B.a49,B.vQ,B.a1e,B.vJ,B.An,B.vT,B.vQ,B.a5p,B.a1U,B.a_k,B.q,q),"fil",A.aO(B.cc,B.eK,B.a1,B.cd,B.bw,6,5,B.la,"fil",B.fI,B.dX,B.x4,B.fI,B.aH,B.dX,B.la,B.AN,B.dX,B.fI,B.dX,B.kJ,B.bT,B.kJ,B.q,q),"fr",A.aO(B.bb,B.kQ,B.kz,B.zx,B.xF,0,3,B.kv,"fr",B.O,B.cq,B.Av,B.x3,B.d1,B.kX,B.kv,B.O,B.cq,B.x3,B.kX,B.kA,B.a4,B.kA,B.q,q),"fr_CA",A.aO(B.cG,B.zD,B.kz,B.zx,B.xF,6,5,B.kv,"fr_CA",B.O,B.cq,B.Av,B.wH,B.d1,B.kX,B.kv,B.O,B.cq,B.wH,B.kX,B.kA,B.a_M,B.kA,B.q,q),"ga",A.aO(B.a3d,B.kQ,B.a8,B.a7d,B.a3E,0,3,B.x9,"ga",B.Bi,B.B7,B.a_J,B.wr,B.a3C,B.Bl,B.x9,B.Bi,B.B7,B.wr,B.Bl,B.Ai,B.a4,B.Ai,B.q,q),"gl",A.aO(B.cG,B.a0i,B.a1,B.a37,B.eJ,0,3,B.vU,"gl",B.a4y,B.a7U,B.kB,B.xH,B.d1,B.yK,B.vU,B.a26,B.a3j,B.xH,B.yK,B.AD,B.a4,B.AD,B.q,q),"gsw",A.aO(B.a0p,B.oD,B.a8,B.fM,B.fM,0,3,B.zy,"gsw",B.O,B.fL,B.oJ,B.ky,B.aH,B.w8,B.zy,B.O,B.fL,B.ky,B.w8,B.A0,B.a4,B.A0,B.q,q),"gu",A.aO(B.bb,B.ij,B.a8,B.a3Q,B.a4N,6,5,B.x5,"gu",B.xk,B.Aq,B.a2g,B.Ad,B.aH,B.zN,B.x5,B.xk,B.Aq,B.Ad,B.zN,B.wD,B.z0,B.wD,B.cF,q),"he",A.aO(B.bb,B.a6D,B.a1,B.a1N,B.a3p,6,5,B.zg,"he",B.bi,B.wA,B.a0h,B.xw,B.aH,B.zZ,B.zg,B.bi,B.wA,B.xw,B.zZ,B.z5,B.oM,B.z5,B.vW,q),"hi",A.aO(B.cc,B.lb,B.a1,B.a7i,B.a09,6,5,B.wh,"hi",B.y9,B.kR,B.a6C,B.AU,B.a6s,B.wL,B.wh,B.y9,B.kR,B.AU,B.wL,B.xh,B.cs,B.xh,B.cF,q),"hr",A.aO(B.bb,B.a17,B.a8,B.a_P,B.a4E,0,6,B.a71,"hr",B.wb,B.vv,B.ig,B.AC,B.a7W,B.kr,B.a6t,B.wb,B.kF,B.AC,B.kr,B.kG,B.a54,B.kG,B.q,q),"hu",A.aO(B.a2j,B.a3J,B.a8,B.a7c,B.a2k,0,3,B.vF,"hu",B.yY,B.vI,B.a_o,B.xt,B.a00,B.yh,B.vF,B.yY,B.vI,B.xt,B.yh,B.B1,B.oM,B.B1,B.q,q),"hy",A.aO(B.a0F,B.a6y,B.a1,B.a3a,B.a30,0,6,B.a1m,"hy",B.xZ,B.wR,B.a0m,B.yr,B.a3l,B.yF,B.a6b,B.xZ,B.wR,B.yr,B.yF,B.wU,B.a4,B.wU,B.q,q),"id",A.aO(B.bb,B.a7e,B.a8,B.a8b,B.a3N,6,5,B.A4,"id",B.O,B.xc,B.a4p,B.wi,B.eI,B.AW,B.A4,B.O,B.xc,B.wi,B.AW,B.yI,B.oH,B.yI,B.q,q),"is",A.aO(B.a22,B.a6E,B.a1,B.a3v,B.ie,0,3,B.A7,"is",B.ym,B.zm,B.a8k,B.Bp,B.a1E,B.zC,B.A7,B.ym,B.zm,B.Bp,B.zC,B.xm,B.a4,B.xm,B.q,q),"it",A.aO(B.a2q,B.a3_,B.fP,B.a1q,B.eJ,0,3,B.B2,"it",B.xo,B.Aj,B.B_,B.wv,B.d1,B.wa,B.B2,B.xo,B.Aj,B.wv,B.wa,B.yO,B.a4,B.yO,B.q,q),"ja",A.aO(B.ZV,B.a69,B.a8,B.xj,B.xj,6,5,B.c3,"ja",B.bi,B.kT,B.a4j,B.c3,B.aH,B.kT,B.c3,B.bi,B.kT,B.c3,B.kT,B.xa,B.a55,B.xa,B.q,q),"ka",A.aO(B.d2,B.a3G,B.a1,B.a70,B.a67,0,6,B.ws,"ka",B.z8,B.vS,B.a0H,B.y7,B.a1O,B.Ac,B.ws,B.z8,B.vS,B.y7,B.Ac,B.Ba,B.a4,B.Ba,B.q,q),"kk",A.aO(B.bb,B.a_f,B.a1,B.a11,B.a_m,0,6,B.a2E,"kk",B.Ar,B.vs,B.a6S,B.vG,B.a5N,B.wT,B.a_2,B.Ar,B.vs,B.vG,B.wT,B.xe,B.a4,B.xe,B.q,q),"km",A.aO(B.d2,B.xO,B.a1,B.a0S,B.a4c,6,5,B.cr,"km",B.Bj,B.wP,B.vM,B.cr,B.vM,B.xp,B.cr,B.Bj,B.wP,B.cr,B.xp,B.fK,B.cs,B.a6j,B.q,q),"kn",A.aO(B.d2,B.a73,B.a8,B.a7R,B.a2c,6,5,B.yQ,"kn",B.we,B.wp,B.a1P,B.zt,B.a24,B.zM,B.yQ,B.we,B.wp,B.zt,B.zM,B.xJ,B.z0,B.xJ,B.cF,q),"ko",A.aO(B.a0J,B.a7O,B.a8,B.a6x,B.bw,6,5,B.fN,"ko",B.fN,B.l5,B.a0a,B.fN,B.a85,B.l5,B.fN,B.fN,B.l5,B.fN,B.l5,B.xX,B.a4w,B.xX,B.q,q),"ky",A.aO(B.a3z,B.a5Z,B.a8,B.a6p,B.a2L,0,6,B.xb,"ky",B.kN,B.wg,B.a6z,B.a1B,B.a40,B.B4,B.a7b,B.kN,B.wg,B.a2w,B.B4,B.yk,B.a4,B.yk,B.q,q),"lo",A.aO(B.a2C,B.a4T,B.a1,B.a66,B.a1A,6,5,B.vZ,"lo",B.bi,B.wB,B.a86,B.vy,B.a3H,B.xf,B.vZ,B.bi,B.wB,B.vy,B.xf,B.w1,B.a6k,B.w1,B.q,q),"lt",A.aO(B.a2e,B.a_9,B.a8,B.a1a,B.wn,0,3,B.a7r,"lt",B.AF,B.w2,B.a1G,B.A5,B.a63,B.Bn,B.a3i,B.AF,B.w2,B.A5,B.Bn,B.zE,B.a4,B.zE,B.q,q),"lv",A.aO(B.a3F,B.a2J,B.a8,B.a5O,B.a72,0,6,B.vV,"lv",B.O,B.yd,B.a1g,B.Ah,B.a88,B.a2K,B.vV,B.O,B.yd,B.Ah,B.a1J,B.a6u,B.a4,B.a13,B.q,q),"mk",A.aO(B.a6q,B.a_0,B.a1,B.a0Z,B.a8v,0,6,B.yA,"mk",B.kO,B.kZ,B.a_l,B.vr,B.a_4,B.xd,B.yA,B.kO,B.kZ,B.vr,B.xd,B.yl,B.a4,B.yl,B.q,q),"ml",A.aO(B.bb,B.a6V,B.a8,B.a58,B.a7q,6,5,B.AE,"ml",B.zc,B.a2z,B.A8,B.y1,B.A8,B.xB,B.AE,B.zc,B.a1x,B.y1,B.xB,B.a4Y,B.cs,B.a8t,B.cF,q),"mn",A.aO(B.a75,B.a3R,B.a8,B.a4W,B.a0n,0,6,B.a1V,"mn",B.wm,B.kI,B.a1W,B.x0,B.a19,B.kI,B.a6Y,B.wm,B.kI,B.x0,B.kI,B.a8p,B.yn,B.a7o,B.q,q),"mr",A.aO(B.d2,B.ij,B.a1,B.a80,B.a1L,6,5,B.AX,"mr",B.yi,B.kR,B.a64,B.zY,B.a_8,B.zw,B.AX,B.yi,B.kR,B.zY,B.zw,B.yu,B.cs,B.yu,B.cF,"\u0966"),"ms",A.aO(B.a3h,B.a4L,B.fP,B.B5,B.B5,0,6,B.yP,"ms",B.wy,B.B0,B.a1R,B.wO,B.a3L,B.zk,B.yP,B.wy,B.B0,B.wO,B.zk,B.xl,B.bT,B.xl,B.q,q),"my",A.aO(B.a3W,B.a6d,B.a8,B.a0o,B.a7_,6,5,B.xn,"my",B.yC,B.y8,B.a3B,B.wk,B.aH,B.l_,B.xn,B.yC,B.y8,B.wk,B.l_,B.l_,B.a_T,B.l_,B.q,"\u1040"),"nb",A.aO(B.cG,B.vC,B.a1,B.xY,B.ie,0,3,B.kL,"nb",B.O,B.dV,B.ig,B.zv,B.eI,B.kE,B.kL,B.O,B.dV,B.w0,B.kE,B.fH,B.a4,B.fH,B.q,q),"ne",A.aO(B.a8z,B.a_L,B.fP,B.z7,B.z7,6,5,B.l8,"ne",B.a4l,B.B6,B.yT,B.l8,B.yT,B.vw,B.l8,B.a0b,B.B6,B.l8,B.vw,B.vP,B.a4,B.vP,B.q,"\u0966"),"nl",A.aO(B.cG,B.a3q,B.a1,B.a74,B.a0Q,0,3,B.AQ,"nl",B.O,B.yX,B.a2h,B.yq,B.eI,B.wS,B.AQ,B.O,B.yX,B.yq,B.wS,B.yL,B.a4,B.yL,B.q,q),"no",A.aO(B.cG,B.vC,B.a1,B.xY,B.ie,0,3,B.kL,"no",B.O,B.dV,B.ig,B.zv,B.eI,B.kE,B.kL,B.O,B.dV,B.w0,B.kE,B.fH,B.a4,B.fH,B.q,q),"or",A.aO(B.a2l,B.eK,B.a1,B.a5l,B.bw,6,5,B.kW,"or",B.x8,B.wc,B.a2G,B.kW,B.a4s,B.ze,B.kW,B.x8,B.wc,B.kW,B.ze,B.Au,B.cs,B.Au,B.cF,q),"pa",A.aO(B.a7a,B.lb,B.fP,B.a0z,B.a5_,6,5,B.yH,"pa",B.zV,B.xM,B.a32,B.yJ,B.a7Z,B.xC,B.yH,B.zV,B.xM,B.yJ,B.xC,B.vE,B.cs,B.vE,B.cF,q),"pl",A.aO(B.d2,B.a5f,B.fP,B.a5M,B.a65,0,3,B.a0M,"pl",B.a6w,B.a83,B.a6n,B.yb,B.a4h,B.Ag,B.a4t,B.a1l,B.a3k,B.yb,B.Ag,B.wG,B.a4,B.wG,B.q,q),"ps",A.aO(B.a7l,B.a3b,B.a8,B.a4K,B.a4g,5,4,B.w3,"ps",B.a0K,B.ax,B.z4,B.w3,B.z4,B.kp,B.a3K,B.bi,B.ax,B.a0D,B.kp,B.kp,B.At,B.kp,B.a_g,"\u06f0"),"pt",A.aO(B.bb,B.a02,B.a8,B.AI,B.eJ,6,5,B.kM,"pt",B.O,B.kP,B.B_,B.l1,B.d1,B.Al,B.kM,B.O,B.kP,B.l1,B.Al,B.l6,B.a4,B.l6,B.q,q),"pt_PT",A.aO(B.cG,B.a8f,B.a1,B.AI,B.eJ,6,2,B.kM,"pt_PT",B.O,B.kP,B.kB,B.l1,B.d1,B.yU,B.kM,B.O,B.kP,B.l1,B.yU,B.l6,B.a4,B.l6,B.q,q),"ro",A.aO(B.cG,B.a4_,B.a1,B.a2u,B.a0W,0,6,B.A1,"ro",B.xT,B.cq,B.a6Q,B.wq,B.a7B,B.y6,B.A1,B.xT,B.cq,B.wq,B.y6,B.z1,B.a4,B.z1,B.q,q),"ru",A.aO(B.bb,B.a3T,B.a1,B.a8a,B.ZP,0,3,B.a8l,"ru",B.kN,B.zb,B.xG,B.a7Y,B.AS,B.yN,B.xb,B.kN,B.zb,B.a8h,B.yN,B.Ap,B.a4,B.Ap,B.q,q),"si",A.aO(B.a7L,B.a7z,B.a8,B.ZQ,B.a7g,0,6,B.B9,"si",B.xL,B.AO,B.a6W,B.a8q,B.a41,B.wW,B.B9,B.xL,B.AO,B.a6I,B.wW,B.yx,B.oH,B.yx,B.q,q),"sk",A.aO(B.bb,B.a4S,B.kz,B.a1y,B.a1c,0,3,B.a7m,"sk",B.dU,B.wt,B.a7V,B.Bd,B.aH,B.Aw,B.a14,B.dU,B.wt,B.Bd,B.Aw,B.zj,B.oM,B.zj,B.q,q),"sl",A.aO(B.a48,B.a4M,B.fP,B.a6i,B.wn,0,6,B.Bo,"sl",B.dU,B.Am,B.a1F,B.x7,B.a2P,B.Ae,B.Bo,B.dU,B.Am,B.x7,B.Ae,B.yS,B.a4,B.yS,B.q,q),"sq",A.aO(B.a27,B.a6h,B.a1,B.a3g,B.a2T,0,6,B.AV,"sq",B.zS,B.vL,B.a31,B.AP,B.a4z,B.zs,B.AV,B.zS,B.vL,B.AP,B.zs,B.wY,B.a5T,B.wY,B.q,q),"sr",A.aO(B.bb,B.xR,B.a8,B.a8u,B.a5P,0,6,B.zF,"sr",B.kO,B.AB,B.a1v,B.Ax,B.a0y,B.AT,B.zF,B.kO,B.AB,B.Ax,B.AT,B.zG,B.a4,B.zG,B.q,q),"sr_Latn",A.aO(B.bb,B.xR,B.a8,B.a2N,B.wu,0,6,B.wQ,"sr_Latn",B.dU,B.kF,B.a6m,B.wo,B.a3Z,B.w9,B.wQ,B.dU,B.kF,B.wo,B.w9,B.yz,B.a4,B.yz,B.q,q),"sv",A.aO(B.a5R,B.zD,B.a8,B.a7n,B.ie,0,3,B.z9,"sv",B.O,B.dV,B.a1H,B.Af,B.eI,B.xs,B.z9,B.O,B.dV,B.Af,B.xs,B.Be,B.a4,B.Be,B.q,q),"sw",A.aO(B.cc,B.oB,B.a8,B.a7J,B.a2p,0,6,B.xD,"sw",B.O,B.ax,B.xV,B.xQ,B.xV,B.ks,B.xD,B.O,B.ax,B.xQ,B.ks,B.ks,B.a4,B.ks,B.q,q),"ta",A.aO(B.bb,B.ij,B.a1,B.a_1,B.a0R,6,5,B.xq,"ta",B.yw,B.wd,B.a8r,B.wM,B.a_i,B.A3,B.xq,B.yw,B.wd,B.wM,B.A3,B.xU,B.cs,B.xU,B.cF,q),"te",A.aO(B.a76,B.ZY,B.a8,B.a0Y,B.a__,6,5,B.zR,"te",B.yo,B.AA,B.a2F,B.AK,B.a34,B.y_,B.zR,B.yo,B.AA,B.AK,B.y_,B.yg,B.cs,B.yg,B.cF,q),"th",A.aO(B.d2,B.a2d,B.a8,B.a1Z,B.a7N,6,5,B.x2,"th",B.l0,B.y2,B.wC,B.l0,B.wC,B.y0,B.x2,B.l0,B.y2,B.l0,B.y0,B.wK,B.a5L,B.wK,B.q,q),"tl",A.aO(B.cc,B.eK,B.a1,B.cd,B.bw,6,5,B.la,"tl",B.fI,B.dX,B.x4,B.fI,B.aH,B.dX,B.la,B.AN,B.dX,B.fI,B.dX,B.kJ,B.bT,B.kJ,B.q,q),"tr",A.aO(B.a2b,B.a3n,B.a8,B.a_a,B.a4e,0,6,B.AJ,"tr",B.z2,B.ya,B.a08,B.x1,B.a1n,B.w_,B.AJ,B.z2,B.ya,B.x1,B.w_,B.za,B.a4,B.za,B.q,q),"uk",A.aO(B.a51,B.a82,B.a1,B.a6Z,B.a1h,0,6,B.a1I,"uk",B.a4G,B.Ab,B.xG,B.xr,B.AS,B.l3,B.a07,B.a2S,B.Ab,B.xr,B.l3,B.zU,B.a4,B.zU,B.q,q),"ur",A.aO(B.d2,B.a0P,B.a8,B.ye,B.ye,6,5,B.kt,"ur",B.O,B.ax,B.yR,B.kt,B.yR,B.kH,B.kt,B.O,B.ax,B.kt,B.kH,B.kH,B.cs,B.kH,B.q,q),"uz",A.aO(B.a3S,B.a4m,B.a1,B.a7s,B.a2v,0,6,B.a6c,"uz",B.xW,B.zf,B.a1Y,B.a8e,B.a8g,B.xI,B.a7C,B.xW,B.zf,B.a4r,B.xI,B.AZ,B.a5m,B.AZ,B.q,q),"vi",A.aO(B.a3M,B.ij,B.ZN,B.a61,B.a3P,0,6,B.a38,"vi",B.bi,B.y5,B.a8n,B.a2M,B.aH,B.wz,B.Bh,B.bi,B.y5,B.Bh,B.wz,B.wl,B.a4,B.wl,B.q,q),"zh",A.aO(B.oL,B.ZU,B.a8,B.kY,B.kY,0,6,B.Az,"zh",B.bi,B.fQ,B.a5j,B.c3,B.a_d,B.yp,B.Az,B.bi,B.fQ,B.c3,B.yp,B.fJ,B.a2Q,B.fJ,B.q,q),"zh_HK",A.aO(B.oL,B.a36,B.a8,B.kY,B.kY,6,5,B.c3,"zh_HK",B.bi,B.fQ,B.oz,B.c3,B.aH,B.kD,B.c3,B.bi,B.fQ,B.c3,B.kD,B.fJ,B.a8m,B.fJ,B.q,q),"zh_TW",A.aO(B.oL,B.a7j,B.a8,B.yj,B.yj,6,5,B.c3,"zh_TW",B.bi,B.fQ,B.oz,B.c3,B.oz,B.kD,B.c3,B.bi,B.fQ,B.c3,B.kD,B.fJ,B.a4v,B.fJ,B.q,q),"zu",A.aO(B.d2,B.eK,B.a8,B.bw,B.bw,6,5,B.vX,"zu",B.a39,B.AR,B.a28,B.vN,B.aH,B.zW,B.vX,B.O,B.AR,B.vN,B.zW,B.yB,B.a4,B.yB,B.q,q)],t.N,t.fs)})
+return A.aL(["af",A.aO(B.a33,B.a5g,B.a8,B.a0v,B.a3u,6,5,B.AG,"af",B.O,B.xK,B.a3r,B.w7,B.eI,B.Ao,B.AG,B.O,B.xK,B.w7,B.Ao,B.yv,B.a4,B.yv,B.q,q),"am",A.aO(B.a3x,B.kQ,B.a8,B.a_3,B.a5X,6,5,B.zB,"am",B.zP,B.vO,B.a0A,B.x6,B.a2B,B.zT,B.zB,B.zP,B.vO,B.x6,B.zT,B.vK,B.cs,B.vK,B.q,q),"ar",A.aO(B.a3f,B.a5d,B.a2R,B.a2H,B.a4x,5,4,B.l7,"ar",B.zu,B.wf,B.vA,B.l7,B.vA,B.kK,B.l7,B.zu,B.wf,B.l7,B.kK,B.kK,B.cs,B.kK,B.vW,"\u0660"),"as",A.aO(B.cc,B.a6a,B.a8,B.a56,B.a6g,6,5,B.wx,"as",B.vx,B.yG,B.a8y,B.zd,B.a7Q,B.yc,B.wx,B.vx,B.yG,B.zd,B.yc,B.z_,B.a_K,B.z_,B.cF,"\u09e6"),"az",A.aO(B.d2,B.a6N,B.a8,B.a7M,B.a8d,0,6,B.xu,"az",B.bi,B.zL,B.a4J,B.A2,B.a35,B.a15,B.xu,B.bi,B.zL,B.A2,B.a8i,B.zQ,B.a4,B.zQ,B.q,q),"be",A.aO(B.cc,B.a6X,B.a1,B.a29,B.a2t,0,6,B.a8c,"be",B.AL,B.w6,B.a3c,B.a4a,B.a6P,B.wF,B.a4C,B.AL,B.w6,B.a0l,B.wF,B.yM,B.a2I,B.yM,B.q,q),"bg",A.aO(B.cc,B.a0k,B.a1,B.a7I,B.a50,0,3,B.wX,"bg",B.zI,B.kZ,B.a6T,B.z3,B.a2x,B.l3,B.wX,B.zI,B.kZ,B.z3,B.l3,B.yZ,B.a4P,B.yZ,B.q,q),"bn",A.aO(B.bb,B.ij,B.a8,B.ZO,B.a_h,6,5,B.As,"bn",B.zK,B.wV,B.AY,B.a7x,B.AY,B.wN,B.As,B.zK,B.wV,B.a5a,B.wN,B.zJ,B.cs,B.zJ,B.q,"\u09e6"),"bs",A.aO(B.kx,B.a5e,B.A6,B.a0I,B.wu,0,6,B.B8,"bs",B.dU,B.vv,B.a8o,B.zX,B.a2r,B.kr,B.B8,B.dU,B.kF,B.zX,B.kr,B.kG,B.a4,B.kG,B.q,q),"ca",A.aO(B.kx,B.a1i,B.kz,B.a6O,B.a4V,0,3,B.a0j,"ca",B.yW,B.kC,B.a6l,B.ZL,B.a5U,B.kC,B.a6B,B.yW,B.kC,B.a1p,B.kC,B.zr,B.zz,B.zr,B.q,q),"cs",A.aO(B.a5Y,B.a3o,B.a8,B.a25,B.a6L,0,3,B.a7t,"cs",B.bi,B.Ak,B.a1S,B.AH,B.aH,B.vD,B.a0L,B.bi,B.Ak,B.AH,B.vD,B.zl,B.a0d,B.zl,B.q,q),"cy",A.aO(B.a53,B.ys,B.A6,B.a6A,B.a1k,0,3,B.xE,"cy",B.zH,B.A9,B.a6_,B.a03,B.a1o,B.a4F,B.xE,B.zH,B.A9,B.a1Q,B.a5k,B.vY,B.a4,B.vY,B.q,q),"da",A.aO(B.d2,B.a1r,B.a8,B.a0O,B.ie,0,3,B.w5,"da",B.O,B.dV,B.ig,B.yt,B.a4Q,B.xi,B.w5,B.O,B.dV,B.yt,B.xi,B.fH,B.oH,B.fH,B.q,q),"de",A.aO(B.bb,B.oD,B.a1,B.fM,B.fM,0,3,B.ku,"de",B.O,B.fL,B.oJ,B.A_,B.aH,B.vH,B.ku,B.O,B.fL,B.ky,B.zA,B.l2,B.a4,B.l2,B.q,q),"de_CH",A.aO(B.bb,B.oD,B.a1,B.fM,B.fM,0,3,B.ku,"de_CH",B.O,B.fL,B.oJ,B.A_,B.aH,B.vH,B.ku,B.O,B.fL,B.ky,B.zA,B.l2,B.a4,B.l2,B.q,q),"el",A.aO(B.a4U,B.xO,B.a5Q,B.a7p,B.a46,0,3,B.a4R,"el",B.Bg,B.zi,B.a62,B.a_b,B.a81,B.wj,B.a79,B.Bg,B.zi,B.a4i,B.wj,B.vR,B.bT,B.vR,B.q,q),"en",A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en",B.O,B.ax,B.cI,B.dr,B.aH,B.b0,B.at,B.O,B.ax,B.dr,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_AU",A.aO(B.cc,B.lb,B.a1,B.cd,B.bw,0,6,B.at,"en_AU",B.O,B.a4B,B.cI,B.xx,B.aH,B.b0,B.at,B.O,B.ax,B.xx,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_CA",A.aO(B.cG,B.a3t,B.a1,B.cd,B.bw,6,5,B.at,"en_CA",B.O,B.ax,B.cI,B.dr,B.aH,B.b0,B.at,B.O,B.ax,B.dr,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_GB",A.aO(B.cc,B.oB,B.a1,B.cd,B.bw,0,3,B.at,"en_GB",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.a4,B.aF,B.q,q),"en_IE",A.aO(B.cG,B.kQ,B.a1,B.cd,B.bw,0,3,B.at,"en_IE",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.a4,B.aF,B.q,q),"en_IN",A.aO(B.cc,B.ys,B.a1,B.cd,B.bw,6,5,B.at,"en_IN",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.bT,B.aF,B.cF,q),"en_NZ",A.aO(B.cc,B.oB,B.a1,B.cd,B.bw,0,6,B.at,"en_NZ",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_SG",A.aO(B.cc,B.lb,B.a1,B.cd,B.bw,6,5,B.at,"en_SG",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_US",A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en_US",B.O,B.ax,B.cI,B.dr,B.aH,B.b0,B.at,B.O,B.ax,B.dr,B.b0,B.aF,B.bT,B.aF,B.q,q),"en_ZA",A.aO(B.cc,B.a1T,B.a1,B.cd,B.bw,6,5,B.at,"en_ZA",B.O,B.ax,B.cI,B.ct,B.aH,B.b0,B.at,B.O,B.ax,B.ct,B.b0,B.aF,B.a4,B.aF,B.q,q),"es",A.aO(B.kx,B.yD,B.a1,B.l4,B.a4H,0,3,B.e_,"es",B.dW,B.Aa,B.a1X,B.fO,B.d1,B.dY,B.e_,B.dW,B.Aa,B.fO,B.dY,B.dZ,B.zz,B.dZ,B.q,q),"es_419",A.aO(B.cG,B.yD,B.a1,B.l4,B.eJ,0,3,B.e_,"es_419",B.dW,B.cq,B.kB,B.fO,B.d1,B.dY,B.e_,B.dW,B.cq,B.fO,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"es_MX",A.aO(B.kx,B.a1C,B.a1,B.l4,B.eJ,6,5,B.e_,"es_MX",B.dW,B.cq,B.kB,B.xz,B.d1,B.dY,B.e_,B.dW,B.cq,B.xz,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"es_US",A.aO(B.cG,B.a5o,B.a1,B.l4,B.eJ,6,5,B.e_,"es_US",B.dW,B.cq,B.a4D,B.fO,B.d1,B.dY,B.e_,B.dW,B.cq,B.fO,B.dY,B.dZ,B.bT,B.dZ,B.q,q),"et",A.aO(B.bb,B.a5q,B.a8,B.a59,B.a5n,0,3,B.wI,"et",B.yf,B.l9,B.ig,B.Bk,B.eI,B.l9,B.wI,B.yf,B.l9,B.Bk,B.l9,B.vz,B.a4,B.vz,B.q,q),"eu",A.aO(B.a5V,B.ZZ,B.a0x,B.a7T,B.a2f,0,3,B.wE,"eu",B.y4,B.Bb,B.a1w,B.wZ,B.a2s,B.xg,B.wE,B.y4,B.Bb,B.wZ,B.xg,B.yy,B.yn,B.yy,B.q,q),"fa",A.aO(B.a5S,B.a7h,B.a23,B.a0C,B.a47,5,4,B.a3e,"fa",B.yV,B.vu,B.a6e,B.oy,B.a84,B.kS,B.oy,B.yV,B.vu,B.oy,B.kS,B.kS,B.At,B.kS,B.a_N,"\u06f0"),"fi",A.aO(B.a1s,B.a7P,B.a8,B.a8j,B.a5b,0,3,B.a2a,"fi",B.vJ,B.An,B.a3s,B.vT,B.a49,B.vQ,B.a1e,B.vJ,B.An,B.vT,B.vQ,B.a5p,B.a1U,B.a_k,B.q,q),"fil",A.aO(B.cc,B.eK,B.a1,B.cd,B.bw,6,5,B.la,"fil",B.fI,B.dX,B.x4,B.fI,B.aH,B.dX,B.la,B.AN,B.dX,B.fI,B.dX,B.kJ,B.bT,B.kJ,B.q,q),"fr",A.aO(B.bb,B.kQ,B.kz,B.zx,B.xF,0,3,B.kv,"fr",B.O,B.cq,B.Av,B.x3,B.d1,B.kX,B.kv,B.O,B.cq,B.x3,B.kX,B.kA,B.a4,B.kA,B.q,q),"fr_CA",A.aO(B.cG,B.zD,B.kz,B.zx,B.xF,6,5,B.kv,"fr_CA",B.O,B.cq,B.Av,B.wH,B.d1,B.kX,B.kv,B.O,B.cq,B.wH,B.kX,B.kA,B.a_M,B.kA,B.q,q),"ga",A.aO(B.a3d,B.kQ,B.a8,B.a7d,B.a3E,0,3,B.x9,"ga",B.Bi,B.B7,B.a_J,B.wr,B.a3C,B.Bl,B.x9,B.Bi,B.B7,B.wr,B.Bl,B.Ai,B.a4,B.Ai,B.q,q),"gl",A.aO(B.cG,B.a0i,B.a1,B.a37,B.eJ,0,3,B.vU,"gl",B.a4y,B.a7U,B.kB,B.xH,B.d1,B.yK,B.vU,B.a26,B.a3j,B.xH,B.yK,B.AD,B.a4,B.AD,B.q,q),"gsw",A.aO(B.a0p,B.oD,B.a8,B.fM,B.fM,0,3,B.zy,"gsw",B.O,B.fL,B.oJ,B.ky,B.aH,B.w8,B.zy,B.O,B.fL,B.ky,B.w8,B.A0,B.a4,B.A0,B.q,q),"gu",A.aO(B.bb,B.ij,B.a8,B.a3Q,B.a4N,6,5,B.x5,"gu",B.xk,B.Aq,B.a2g,B.Ad,B.aH,B.zN,B.x5,B.xk,B.Aq,B.Ad,B.zN,B.wD,B.z0,B.wD,B.cF,q),"he",A.aO(B.bb,B.a6D,B.a1,B.a1N,B.a3p,6,5,B.zg,"he",B.bi,B.wA,B.a0h,B.xw,B.aH,B.zZ,B.zg,B.bi,B.wA,B.xw,B.zZ,B.z5,B.oM,B.z5,B.vW,q),"hi",A.aO(B.cc,B.lb,B.a1,B.a7i,B.a09,6,5,B.wh,"hi",B.y9,B.kR,B.a6C,B.AU,B.a6s,B.wL,B.wh,B.y9,B.kR,B.AU,B.wL,B.xh,B.cs,B.xh,B.cF,q),"hr",A.aO(B.bb,B.a17,B.a8,B.a_P,B.a4E,0,6,B.a71,"hr",B.wb,B.vv,B.ig,B.AC,B.a7W,B.kr,B.a6t,B.wb,B.kF,B.AC,B.kr,B.kG,B.a54,B.kG,B.q,q),"hu",A.aO(B.a2j,B.a3J,B.a8,B.a7c,B.a2k,0,3,B.vF,"hu",B.yY,B.vI,B.a_o,B.xt,B.a00,B.yh,B.vF,B.yY,B.vI,B.xt,B.yh,B.B1,B.oM,B.B1,B.q,q),"hy",A.aO(B.a0F,B.a6y,B.a1,B.a3a,B.a30,0,6,B.a1m,"hy",B.xZ,B.wR,B.a0m,B.yr,B.a3l,B.yF,B.a6b,B.xZ,B.wR,B.yr,B.yF,B.wU,B.a4,B.wU,B.q,q),"id",A.aO(B.bb,B.a7e,B.a8,B.a8b,B.a3N,6,5,B.A4,"id",B.O,B.xc,B.a4p,B.wi,B.eI,B.AW,B.A4,B.O,B.xc,B.wi,B.AW,B.yI,B.oH,B.yI,B.q,q),"is",A.aO(B.a22,B.a6E,B.a1,B.a3v,B.ie,0,3,B.A7,"is",B.ym,B.zm,B.a8k,B.Bp,B.a1E,B.zC,B.A7,B.ym,B.zm,B.Bp,B.zC,B.xm,B.a4,B.xm,B.q,q),"it",A.aO(B.a2q,B.a3_,B.fP,B.a1q,B.eJ,0,3,B.B2,"it",B.xo,B.Aj,B.B_,B.wv,B.d1,B.wa,B.B2,B.xo,B.Aj,B.wv,B.wa,B.yO,B.a4,B.yO,B.q,q),"ja",A.aO(B.ZV,B.a69,B.a8,B.xj,B.xj,6,5,B.c3,"ja",B.bi,B.kT,B.a4j,B.c3,B.aH,B.kT,B.c3,B.bi,B.kT,B.c3,B.kT,B.xa,B.a55,B.xa,B.q,q),"ka",A.aO(B.d2,B.a3G,B.a1,B.a70,B.a67,0,6,B.ws,"ka",B.z8,B.vS,B.a0H,B.y7,B.a1O,B.Ac,B.ws,B.z8,B.vS,B.y7,B.Ac,B.Ba,B.a4,B.Ba,B.q,q),"kk",A.aO(B.bb,B.a_f,B.a1,B.a11,B.a_m,0,6,B.a2E,"kk",B.Ar,B.vs,B.a6S,B.vG,B.a5N,B.wT,B.a_2,B.Ar,B.vs,B.vG,B.wT,B.xe,B.a4,B.xe,B.q,q),"km",A.aO(B.d2,B.xO,B.a1,B.a0S,B.a4c,6,5,B.cr,"km",B.Bj,B.wP,B.vM,B.cr,B.vM,B.xp,B.cr,B.Bj,B.wP,B.cr,B.xp,B.fK,B.cs,B.a6j,B.q,q),"kn",A.aO(B.d2,B.a73,B.a8,B.a7R,B.a2c,6,5,B.yQ,"kn",B.we,B.wp,B.a1P,B.zt,B.a24,B.zM,B.yQ,B.we,B.wp,B.zt,B.zM,B.xJ,B.z0,B.xJ,B.cF,q),"ko",A.aO(B.a0J,B.a7O,B.a8,B.a6x,B.bw,6,5,B.fN,"ko",B.fN,B.l5,B.a0a,B.fN,B.a85,B.l5,B.fN,B.fN,B.l5,B.fN,B.l5,B.xX,B.a4w,B.xX,B.q,q),"ky",A.aO(B.a3z,B.a5Z,B.a8,B.a6p,B.a2L,0,6,B.xb,"ky",B.kN,B.wg,B.a6z,B.a1B,B.a40,B.B4,B.a7b,B.kN,B.wg,B.a2w,B.B4,B.yk,B.a4,B.yk,B.q,q),"lo",A.aO(B.a2C,B.a4T,B.a1,B.a66,B.a1A,6,5,B.vZ,"lo",B.bi,B.wB,B.a86,B.vy,B.a3H,B.xf,B.vZ,B.bi,B.wB,B.vy,B.xf,B.w1,B.a6k,B.w1,B.q,q),"lt",A.aO(B.a2e,B.a_9,B.a8,B.a1a,B.wn,0,3,B.a7r,"lt",B.AF,B.w2,B.a1G,B.A5,B.a63,B.Bn,B.a3i,B.AF,B.w2,B.A5,B.Bn,B.zE,B.a4,B.zE,B.q,q),"lv",A.aO(B.a3F,B.a2J,B.a8,B.a5O,B.a72,0,6,B.vV,"lv",B.O,B.yd,B.a1g,B.Ah,B.a88,B.a2K,B.vV,B.O,B.yd,B.Ah,B.a1J,B.a6u,B.a4,B.a13,B.q,q),"mk",A.aO(B.a6q,B.a_0,B.a1,B.a0Z,B.a8v,0,6,B.yA,"mk",B.kO,B.kZ,B.a_l,B.vr,B.a_4,B.xd,B.yA,B.kO,B.kZ,B.vr,B.xd,B.yl,B.a4,B.yl,B.q,q),"ml",A.aO(B.bb,B.a6V,B.a8,B.a58,B.a7q,6,5,B.AE,"ml",B.zc,B.a2z,B.A8,B.y1,B.A8,B.xB,B.AE,B.zc,B.a1x,B.y1,B.xB,B.a4Y,B.cs,B.a8t,B.cF,q),"mn",A.aO(B.a75,B.a3R,B.a8,B.a4W,B.a0n,0,6,B.a1V,"mn",B.wm,B.kI,B.a1W,B.x0,B.a19,B.kI,B.a6Y,B.wm,B.kI,B.x0,B.kI,B.a8p,B.yn,B.a7o,B.q,q),"mr",A.aO(B.d2,B.ij,B.a1,B.a80,B.a1L,6,5,B.AX,"mr",B.yi,B.kR,B.a64,B.zY,B.a_8,B.zw,B.AX,B.yi,B.kR,B.zY,B.zw,B.yu,B.cs,B.yu,B.cF,"\u0966"),"ms",A.aO(B.a3h,B.a4L,B.fP,B.B5,B.B5,0,6,B.yP,"ms",B.wy,B.B0,B.a1R,B.wO,B.a3L,B.zk,B.yP,B.wy,B.B0,B.wO,B.zk,B.xl,B.bT,B.xl,B.q,q),"my",A.aO(B.a3W,B.a6d,B.a8,B.a0o,B.a7_,6,5,B.xn,"my",B.yC,B.y8,B.a3B,B.wk,B.aH,B.l_,B.xn,B.yC,B.y8,B.wk,B.l_,B.l_,B.a_T,B.l_,B.q,"\u1040"),"nb",A.aO(B.cG,B.vC,B.a1,B.xY,B.ie,0,3,B.kL,"nb",B.O,B.dV,B.ig,B.zv,B.eI,B.kE,B.kL,B.O,B.dV,B.w0,B.kE,B.fH,B.a4,B.fH,B.q,q),"ne",A.aO(B.a8z,B.a_L,B.fP,B.z7,B.z7,6,5,B.l8,"ne",B.a4l,B.B6,B.yT,B.l8,B.yT,B.vw,B.l8,B.a0b,B.B6,B.l8,B.vw,B.vP,B.a4,B.vP,B.q,"\u0966"),"nl",A.aO(B.cG,B.a3q,B.a1,B.a74,B.a0Q,0,3,B.AQ,"nl",B.O,B.yX,B.a2h,B.yq,B.eI,B.wS,B.AQ,B.O,B.yX,B.yq,B.wS,B.yL,B.a4,B.yL,B.q,q),"no",A.aO(B.cG,B.vC,B.a1,B.xY,B.ie,0,3,B.kL,"no",B.O,B.dV,B.ig,B.zv,B.eI,B.kE,B.kL,B.O,B.dV,B.w0,B.kE,B.fH,B.a4,B.fH,B.q,q),"or",A.aO(B.a2l,B.eK,B.a1,B.a5l,B.bw,6,5,B.kW,"or",B.x8,B.wc,B.a2G,B.kW,B.a4s,B.ze,B.kW,B.x8,B.wc,B.kW,B.ze,B.Au,B.cs,B.Au,B.cF,q),"pa",A.aO(B.a7a,B.lb,B.fP,B.a0z,B.a5_,6,5,B.yH,"pa",B.zV,B.xM,B.a32,B.yJ,B.a7Z,B.xC,B.yH,B.zV,B.xM,B.yJ,B.xC,B.vE,B.cs,B.vE,B.cF,q),"pl",A.aO(B.d2,B.a5f,B.fP,B.a5M,B.a65,0,3,B.a0M,"pl",B.a6w,B.a83,B.a6n,B.yb,B.a4h,B.Ag,B.a4t,B.a1l,B.a3k,B.yb,B.Ag,B.wG,B.a4,B.wG,B.q,q),"ps",A.aO(B.a7l,B.a3b,B.a8,B.a4K,B.a4g,5,4,B.w3,"ps",B.a0K,B.ax,B.z4,B.w3,B.z4,B.kp,B.a3K,B.bi,B.ax,B.a0D,B.kp,B.kp,B.At,B.kp,B.a_g,"\u06f0"),"pt",A.aO(B.bb,B.a02,B.a8,B.AI,B.eJ,6,5,B.kM,"pt",B.O,B.kP,B.B_,B.l1,B.d1,B.Al,B.kM,B.O,B.kP,B.l1,B.Al,B.l6,B.a4,B.l6,B.q,q),"pt_PT",A.aO(B.cG,B.a8f,B.a1,B.AI,B.eJ,6,2,B.kM,"pt_PT",B.O,B.kP,B.kB,B.l1,B.d1,B.yU,B.kM,B.O,B.kP,B.l1,B.yU,B.l6,B.a4,B.l6,B.q,q),"ro",A.aO(B.cG,B.a4_,B.a1,B.a2u,B.a0W,0,6,B.A1,"ro",B.xT,B.cq,B.a6Q,B.wq,B.a7B,B.y6,B.A1,B.xT,B.cq,B.wq,B.y6,B.z1,B.a4,B.z1,B.q,q),"ru",A.aO(B.bb,B.a3T,B.a1,B.a8a,B.ZP,0,3,B.a8l,"ru",B.kN,B.zb,B.xG,B.a7Y,B.AS,B.yN,B.xb,B.kN,B.zb,B.a8h,B.yN,B.Ap,B.a4,B.Ap,B.q,q),"si",A.aO(B.a7L,B.a7z,B.a8,B.ZQ,B.a7g,0,6,B.B9,"si",B.xL,B.AO,B.a6W,B.a8q,B.a41,B.wW,B.B9,B.xL,B.AO,B.a6I,B.wW,B.yx,B.oH,B.yx,B.q,q),"sk",A.aO(B.bb,B.a4S,B.kz,B.a1y,B.a1c,0,3,B.a7m,"sk",B.dU,B.wt,B.a7V,B.Bd,B.aH,B.Aw,B.a14,B.dU,B.wt,B.Bd,B.Aw,B.zj,B.oM,B.zj,B.q,q),"sl",A.aO(B.a48,B.a4M,B.fP,B.a6i,B.wn,0,6,B.Bo,"sl",B.dU,B.Am,B.a1F,B.x7,B.a2P,B.Ae,B.Bo,B.dU,B.Am,B.x7,B.Ae,B.yS,B.a4,B.yS,B.q,q),"sq",A.aO(B.a27,B.a6h,B.a1,B.a3g,B.a2T,0,6,B.AV,"sq",B.zS,B.vL,B.a31,B.AP,B.a4z,B.zs,B.AV,B.zS,B.vL,B.AP,B.zs,B.wY,B.a5T,B.wY,B.q,q),"sr",A.aO(B.bb,B.xR,B.a8,B.a8u,B.a5P,0,6,B.zF,"sr",B.kO,B.AB,B.a1v,B.Ax,B.a0y,B.AT,B.zF,B.kO,B.AB,B.Ax,B.AT,B.zG,B.a4,B.zG,B.q,q),"sr_Latn",A.aO(B.bb,B.xR,B.a8,B.a2N,B.wu,0,6,B.wQ,"sr_Latn",B.dU,B.kF,B.a6m,B.wo,B.a3Z,B.w9,B.wQ,B.dU,B.kF,B.wo,B.w9,B.yz,B.a4,B.yz,B.q,q),"sv",A.aO(B.a5R,B.zD,B.a8,B.a7n,B.ie,0,3,B.z9,"sv",B.O,B.dV,B.a1H,B.Af,B.eI,B.xs,B.z9,B.O,B.dV,B.Af,B.xs,B.Be,B.a4,B.Be,B.q,q),"sw",A.aO(B.cc,B.oB,B.a8,B.a7J,B.a2p,0,6,B.xD,"sw",B.O,B.ax,B.xV,B.xQ,B.xV,B.ks,B.xD,B.O,B.ax,B.xQ,B.ks,B.ks,B.a4,B.ks,B.q,q),"ta",A.aO(B.bb,B.ij,B.a1,B.a_1,B.a0R,6,5,B.xq,"ta",B.yw,B.wd,B.a8r,B.wM,B.a_i,B.A3,B.xq,B.yw,B.wd,B.wM,B.A3,B.xU,B.cs,B.xU,B.cF,q),"te",A.aO(B.a76,B.ZY,B.a8,B.a0Y,B.a__,6,5,B.zR,"te",B.yo,B.AA,B.a2F,B.AK,B.a34,B.y_,B.zR,B.yo,B.AA,B.AK,B.y_,B.yg,B.cs,B.yg,B.cF,q),"th",A.aO(B.d2,B.a2d,B.a8,B.a1Z,B.a7N,6,5,B.x2,"th",B.l0,B.y2,B.wC,B.l0,B.wC,B.y0,B.x2,B.l0,B.y2,B.l0,B.y0,B.wK,B.a5L,B.wK,B.q,q),"tl",A.aO(B.cc,B.eK,B.a1,B.cd,B.bw,6,5,B.la,"tl",B.fI,B.dX,B.x4,B.fI,B.aH,B.dX,B.la,B.AN,B.dX,B.fI,B.dX,B.kJ,B.bT,B.kJ,B.q,q),"tr",A.aO(B.a2b,B.a3n,B.a8,B.a_a,B.a4e,0,6,B.AJ,"tr",B.z2,B.ya,B.a08,B.x1,B.a1n,B.w_,B.AJ,B.z2,B.ya,B.x1,B.w_,B.za,B.a4,B.za,B.q,q),"uk",A.aO(B.a51,B.a82,B.a1,B.a6Z,B.a1h,0,6,B.a1I,"uk",B.a4G,B.Ab,B.xG,B.xr,B.AS,B.l3,B.a07,B.a2S,B.Ab,B.xr,B.l3,B.zU,B.a4,B.zU,B.q,q),"ur",A.aO(B.d2,B.a0P,B.a8,B.ye,B.ye,6,5,B.kt,"ur",B.O,B.ax,B.yR,B.kt,B.yR,B.kH,B.kt,B.O,B.ax,B.kt,B.kH,B.kH,B.cs,B.kH,B.q,q),"uz",A.aO(B.a3S,B.a4m,B.a1,B.a7s,B.a2v,0,6,B.a6c,"uz",B.xW,B.zf,B.a1Y,B.a8e,B.a8g,B.xI,B.a7C,B.xW,B.zf,B.a4r,B.xI,B.AZ,B.a5m,B.AZ,B.q,q),"vi",A.aO(B.a3M,B.ij,B.ZN,B.a61,B.a3P,0,6,B.a38,"vi",B.bi,B.y5,B.a8n,B.a2M,B.aH,B.wz,B.Bh,B.bi,B.y5,B.Bh,B.wz,B.wl,B.a4,B.wl,B.q,q),"zh",A.aO(B.oL,B.ZU,B.a8,B.kY,B.kY,0,6,B.Az,"zh",B.bi,B.fQ,B.a5j,B.c3,B.a_d,B.yp,B.Az,B.bi,B.fQ,B.c3,B.yp,B.fJ,B.a2Q,B.fJ,B.q,q),"zh_HK",A.aO(B.oL,B.a36,B.a8,B.kY,B.kY,6,5,B.c3,"zh_HK",B.bi,B.fQ,B.oz,B.c3,B.aH,B.kD,B.c3,B.bi,B.fQ,B.c3,B.kD,B.fJ,B.a8m,B.fJ,B.q,q),"zh_TW",A.aO(B.oL,B.a7j,B.a8,B.yj,B.yj,6,5,B.c3,"zh_TW",B.bi,B.fQ,B.oz,B.c3,B.oz,B.kD,B.c3,B.bi,B.fQ,B.c3,B.kD,B.fJ,B.a4v,B.fJ,B.q,q),"zu",A.aO(B.d2,B.eK,B.a8,B.bw,B.bw,6,5,B.vX,"zu",B.a39,B.AR,B.a28,B.vN,B.aH,B.zW,B.vX,B.O,B.AR,B.vN,B.zW,B.yB,B.a4,B.yB,B.q,q)],t.N,t.fs)})
 s($,"bEB","b6k",()=>A.b2f(B.zh,t.N))
 s($,"bEE","b6n",()=>A.b2f(B.zh,t.N))
 s($,"bEU","biI",()=>{var q=t.K
@@ -136290,7 +136292,7 @@ s($,"bDH","bia",()=>A.c9('"(?:[^"\\x00-\\x1F\\x7F\\\\]|\\\\.)*"',!0,!1))
 s($,"bDG","bi9",()=>A.c9("\\\\(.)",!0,!1))
 s($,"bEJ","biE",()=>A.c9('[()<>@,;:"\\\\/\\[\\]?={} \\t\\x00-\\x1F\\x7F]',!0,!1))
 s($,"bEY","biL",()=>A.c9("(?:"+$.bi3().a+")*",!0,!1))
-s($,"bEu","biC",()=>A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en_US",B.O,B.ax,B.cI,B.dr,B.aH,B.b_,B.at,B.O,B.ax,B.dr,B.b_,B.aF,B.bT,B.aF,B.q,null))
+s($,"bEu","biC",()=>A.aO(B.bb,B.eK,B.a1,B.cd,B.bw,6,5,B.at,"en_US",B.O,B.ax,B.cI,B.dr,B.aH,B.b0,B.at,B.O,B.ax,B.dr,B.b0,B.aF,B.bT,B.aF,B.q,null))
 r($,"bEL","b6r",()=>{var q=",",p="\xa0",o="%",n="0",m="+",l="-",k="E",j="\u2030",i="\u221e",h="NaN",g="#,##0.###",f="#E0",e="#,##0%",d="\xa4#,##0.00",c=".",b="\u200e+",a="\u200e-",a0="\u0644\u064a\u0633\xa0\u0631\u0642\u0645\u064b\u0627",a1="\u200f#,##0.00\xa0\xa4;\u200f-#,##0.00\xa0\xa4",a2="#,##,##0.###",a3="#,##,##0%",a4="\xa4\xa0#,##,##0.00",a5="INR",a6="#,##0.00\xa0\xa4",a7="#,##0\xa0%",a8="EUR",a9="USD",b0="\xa4\xa0#,##0.00",b1="\xa4\xa0#,##0.00;\xa4-#,##0.00",b2="CHF",b3="\xa4#,##,##0.00",b4="\u2212",b5="\xd710^",b6="[#E0]",b7="\u200f#,##0.00\xa0\u200f\xa4;\u200f-#,##0.00\xa0\u200f\xa4",b8="#,##0.00\xa0\xa4;-#,##0.00\xa0\xa4"
 return A.aL(["af",A.ax(d,g,q,"ZAR",k,p,i,l,"af",h,o,e,j,m,f,n),"am",A.ax(d,g,c,"ETB",k,q,i,l,"am","\u1260\u1241\u1325\u122d\xa0\u120a\u1308\u1208\u133d\xa0\u12e8\u121b\u12ed\u127d\u120d",o,e,j,m,f,n),"ar",A.ax(a1,g,c,"EGP",k,q,i,a,"ar",a0,"\u200e%\u200e",e,j,b,f,n),"ar_DZ",A.ax(a1,g,q,"DZD",k,c,i,a,"ar_DZ",a0,"\u200e%\u200e",e,j,b,f,n),"ar_EG",A.ax("\u200f#,##0.00\xa0\xa4",g,"\u066b","EGP","\u0623\u0633","\u066c",i,"\u061c-","ar_EG",a0,"\u066a\u061c",e,"\u0609","\u061c+",f,"\u0660"),"as",A.ax(a4,a2,c,a5,k,q,i,l,"as",h,o,a3,j,m,f,"\u09e6"),"az",A.ax(a6,g,q,"AZN",k,c,i,l,"az",h,o,e,j,m,f,n),"be",A.ax(a6,g,q,"BYN",k,p,i,l,"be",h,o,a7,j,m,f,n),"bg",A.ax(a6,g,q,a8,k,p,i,l,"bg",h,o,e,j,m,f,n),"bm",A.ax(d,g,c,"XOF",k,q,i,l,"bm",h,o,e,j,m,f,n),"bn",A.ax("#,##,##0.00\xa4",a2,c,"BDT",k,q,i,l,"bn",h,o,e,j,m,f,"\u09e6"),"br",A.ax(a6,g,q,a8,k,p,i,l,"br",h,o,a7,j,m,f,n),"bs",A.ax(a6,g,q,"BAM",k,c,i,l,"bs",h,o,e,j,m,f,n),"ca",A.ax(a6,g,q,a8,k,c,i,l,"ca",h,o,a7,j,m,f,n),"chr",A.ax(d,g,c,a9,k,q,i,l,"chr",h,o,e,j,m,f,n),"cs",A.ax(a6,g,q,"CZK",k,p,i,l,"cs",h,o,a7,j,m,f,n),"cy",A.ax(d,g,c,"GBP",k,q,i,l,"cy",h,o,e,j,m,f,n),"da",A.ax(a6,g,q,"DKK",k,c,i,l,"da",h,o,a7,j,m,f,n),"de",A.ax(a6,g,q,a8,k,c,i,l,"de",h,o,a7,j,m,f,n),"de_AT",A.ax(b0,g,q,a8,k,p,i,l,"de_AT",h,o,a7,j,m,f,n),"de_CH",A.ax(b1,g,c,b2,k,"'",i,l,"de_CH",h,o,e,j,m,f,n),"el",A.ax(a6,g,q,a8,"e",c,i,l,"el",h,o,e,j,m,f,n),"en",A.ax(d,g,c,a9,k,q,i,l,"en",h,o,e,j,m,f,n),"en_AU",A.ax(d,g,c,"AUD","e",q,i,l,"en_AU",h,o,e,j,m,f,n),"en_CA",A.ax(d,g,c,"CAD",k,q,i,l,"en_CA",h,o,e,j,m,f,n),"en_GB",A.ax(d,g,c,"GBP",k,q,i,l,"en_GB",h,o,e,j,m,f,n),"en_IE",A.ax(d,g,c,a8,k,q,i,l,"en_IE",h,o,e,j,m,f,n),"en_IN",A.ax(b3,a2,c,a5,k,q,i,l,"en_IN",h,o,a3,j,m,f,n),"en_MY",A.ax(d,g,c,"MYR",k,q,i,l,"en_MY",h,o,e,j,m,f,n),"en_NZ",A.ax(d,g,c,"NZD",k,q,i,l,"en_NZ",h,o,e,j,m,f,n),"en_SG",A.ax(d,g,c,"SGD",k,q,i,l,"en_SG",h,o,e,j,m,f,n),"en_US",A.ax(d,g,c,a9,k,q,i,l,"en_US",h,o,e,j,m,f,n),"en_ZA",A.ax(d,g,q,"ZAR",k,p,i,l,"en_ZA",h,o,e,j,m,f,n),"es",A.ax(a6,g,q,a8,k,c,i,l,"es",h,o,a7,j,m,f,n),"es_419",A.ax(d,g,c,"MXN",k,q,i,l,"es_419",h,o,e,j,m,f,n),"es_ES",A.ax(a6,g,q,a8,k,c,i,l,"es_ES",h,o,a7,j,m,f,n),"es_MX",A.ax(d,g,c,"MXN",k,q,i,l,"es_MX",h,o,e,j,m,f,n),"es_US",A.ax(d,g,c,a9,k,q,i,l,"es_US",h,o,e,j,m,f,n),"et",A.ax(a6,g,q,a8,b5,p,i,b4,"et",h,o,e,j,m,f,n),"eu",A.ax(a6,g,q,a8,k,c,i,b4,"eu",h,o,"%\xa0#,##0",j,m,f,n),"fa",A.ax("\u200e\xa4#,##0.00",g,"\u066b","IRR","\xd7\u06f1\u06f0^","\u066c",i,"\u200e\u2212","fa","\u0646\u0627\u0639\u062f\u062f","\u066a",e,"\u0609",b,f,"\u06f0"),"fi",A.ax(a6,g,q,a8,k,p,i,b4,"fi","ep\xe4luku",o,a7,j,m,f,n),"fil",A.ax(d,g,c,"PHP",k,q,i,l,"fil",h,o,e,j,m,f,n),"fr",A.ax(a6,g,q,a8,k,"\u202f",i,l,"fr",h,o,a7,j,m,f,n),"fr_CA",A.ax(a6,g,q,"CAD",k,p,i,l,"fr_CA",h,o,a7,j,m,f,n),"fr_CH",A.ax(a6,g,q,b2,k,"\u202f",i,l,"fr_CH",h,o,e,j,m,f,n),"fur",A.ax(b0,g,q,a8,k,c,i,l,"fur",h,o,e,j,m,f,n),"ga",A.ax(d,g,c,a8,k,q,i,l,"ga","Nuimh",o,e,j,m,f,n),"gl",A.ax(a6,g,q,a8,k,c,i,l,"gl",h,o,a7,j,m,f,n),"gsw",A.ax(a6,g,c,b2,k,"'",i,b4,"gsw",h,o,a7,j,m,f,n),"gu",A.ax(b3,a2,c,a5,k,q,i,l,"gu",h,o,a3,j,m,b6,n),"haw",A.ax(d,g,c,a9,k,q,i,l,"haw",h,o,e,j,m,f,n),"he",A.ax(b7,g,c,"ILS",k,q,i,a,"he",h,o,e,j,b,f,n),"hi",A.ax(b3,a2,c,a5,k,q,i,l,"hi",h,o,a3,j,m,b6,n),"hr",A.ax(a6,g,q,a8,k,c,i,b4,"hr",h,o,a7,j,m,f,n),"hu",A.ax(a6,g,q,"HUF",k,p,i,l,"hu",h,o,e,j,m,f,n),"hy",A.ax(a6,g,q,"AMD",k,p,i,l,"hy","\u0548\u0579\u0539",o,e,j,m,f,n),"id",A.ax(d,g,q,"IDR",k,c,i,l,"id",h,o,e,j,m,f,n),"in",A.ax(d,g,q,"IDR",k,c,i,l,"in",h,o,e,j,m,f,n),"is",A.ax(a6,g,q,"ISK",k,c,i,l,"is",h,o,e,j,m,f,n),"it",A.ax(a6,g,q,a8,k,c,i,l,"it",h,o,e,j,m,f,n),"it_CH",A.ax(b1,g,c,b2,k,"'",i,l,"it_CH",h,o,e,j,m,f,n),"iw",A.ax(b7,g,c,"ILS",k,q,i,a,"iw",h,o,e,j,b,f,n),"ja",A.ax(d,g,c,"JPY",k,q,i,l,"ja",h,o,e,j,m,f,n),"ka",A.ax(a6,g,q,"GEL",k,p,i,l,"ka","\u10d0\u10e0\xa0\u10d0\u10e0\u10d8\u10e1\xa0\u10e0\u10d8\u10ea\u10ee\u10d5\u10d8",o,e,j,m,f,n),"kk",A.ax(a6,g,q,"KZT",k,p,i,l,"kk","\u0441\u0430\u043d\xa0\u0435\u043c\u0435\u0441",o,e,j,m,f,n),"km",A.ax("#,##0.00\xa4",g,c,"KHR",k,q,i,l,"km",h,o,e,j,m,f,n),"kn",A.ax(d,g,c,a5,k,q,i,l,"kn",h,o,e,j,m,f,n),"ko",A.ax(d,g,c,"KRW",k,q,i,l,"ko",h,o,e,j,m,f,n),"ky",A.ax(a6,g,q,"KGS",k,p,i,l,"ky","\u0441\u0430\u043d\xa0\u044d\u043c\u0435\u0441",o,e,j,m,f,n),"ln",A.ax(a6,g,q,"CDF",k,c,i,l,"ln",h,o,e,j,m,f,n),"lo",A.ax("\xa4#,##0.00;\xa4-#,##0.00",g,q,"LAK",k,c,i,l,"lo","\u0e9a\u0ecd\u0ec8\u200b\u0ec1\u0ea1\u0ec8\u0e99\u200b\u0ec2\u0e95\u200b\u0ec0\u0ea5\u0e81",o,e,j,m,"#",n),"lt",A.ax(a6,g,q,a8,b5,p,i,b4,"lt",h,o,a7,j,m,f,n),"lv",A.ax(a6,g,q,a8,k,p,i,l,"lv","NS",o,e,j,m,f,n),"mg",A.ax(d,g,c,"MGA",k,q,i,l,"mg",h,o,e,j,m,f,n),"mk",A.ax(a6,g,q,"MKD",k,c,i,l,"mk",h,o,a7,j,m,f,n),"ml",A.ax(d,a2,c,a5,k,q,i,l,"ml",h,o,e,j,m,f,n),"mn",A.ax(b0,g,c,"MNT",k,q,i,l,"mn",h,o,e,j,m,f,n),"mr",A.ax(d,a2,c,a5,k,q,i,l,"mr",h,o,e,j,m,b6,"\u0966"),"ms",A.ax(d,g,c,"MYR",k,q,i,l,"ms",h,o,e,j,m,f,n),"mt",A.ax(d,g,c,a8,k,q,i,l,"mt",h,o,e,j,m,f,n),"my",A.ax(a6,g,c,"MMK",k,q,i,l,"my","\u1002\u100f\u1014\u103a\u1038\u1019\u101f\u102f\u1010\u103a\u101e\u1031\u102c",o,e,j,m,f,"\u1040"),"nb",A.ax(b8,g,q,"NOK",k,p,i,b4,"nb",h,o,a7,j,m,f,n),"ne",A.ax(a4,a2,c,"NPR",k,q,i,l,"ne",h,o,a3,j,m,f,"\u0966"),"nl",A.ax("\xa4\xa0#,##0.00;\xa4\xa0-#,##0.00",g,q,a8,k,c,i,l,"nl",h,o,e,j,m,f,n),"no",A.ax(b8,g,q,"NOK",k,p,i,b4,"no",h,o,a7,j,m,f,n),"no_NO",A.ax(b8,g,q,"NOK",k,p,i,b4,"no_NO",h,o,a7,j,m,f,n),"nyn",A.ax(d,g,c,"UGX",k,q,i,l,"nyn",h,o,e,j,m,f,n),"or",A.ax(d,a2,c,a5,k,q,i,l,"or",h,o,e,j,m,f,n),"pa",A.ax(b3,a2,c,a5,k,q,i,l,"pa",h,o,a3,j,m,b6,n),"pl",A.ax(a6,g,q,"PLN",k,p,i,l,"pl",h,o,e,j,m,f,n),"ps",A.ax("\xa4#,##0.00;(\xa4#,##0.00)",g,"\u066b","AFN","\xd7\u06f1\u06f0^","\u066c",i,"\u200e-\u200e","ps",h,"\u066a",e,"\u0609","\u200e+\u200e",f,"\u06f0"),"pt",A.ax(b0,g,q,"BRL",k,c,i,l,"pt",h,o,e,j,m,f,n),"pt_BR",A.ax(b0,g,q,"BRL",k,c,i,l,"pt_BR",h,o,e,j,m,f,n),"pt_PT",A.ax(a6,g,q,a8,k,p,i,l,"pt_PT",h,o,e,j,m,f,n),"ro",A.ax(a6,g,q,"RON",k,c,i,l,"ro",h,o,a7,j,m,f,n),"ru",A.ax(a6,g,q,"RUB",k,p,i,l,"ru","\u043d\u0435\xa0\u0447\u0438\u0441\u043b\u043e",o,a7,j,m,f,n),"si",A.ax(d,g,c,"LKR",k,q,i,l,"si",h,o,e,j,m,"#",n),"sk",A.ax(a6,g,q,a8,"e",p,i,l,"sk",h,o,a7,j,m,f,n),"sl",A.ax(a6,g,q,a8,"e",c,i,b4,"sl",h,o,a7,j,m,f,n),"sq",A.ax(a6,g,q,"ALL",k,p,i,l,"sq",h,o,e,j,m,f,n),"sr",A.ax(a6,g,q,"RSD",k,c,i,l,"sr",h,o,e,j,m,f,n),"sr_Latn",A.ax(a6,g,q,"RSD",k,c,i,l,"sr_Latn",h,o,e,j,m,f,n),"sv",A.ax(a6,g,q,"SEK",b5,p,i,b4,"sv",h,o,a7,j,m,f,n),"sw",A.ax(b0,g,c,"TZS",k,q,i,l,"sw",h,o,e,j,m,f,n),"ta",A.ax(b3,a2,c,a5,k,q,i,l,"ta",h,o,a3,j,m,f,n),"te",A.ax(b3,a2,c,a5,k,q,i,l,"te",h,o,e,j,m,f,n),"th",A.ax(d,g,c,"THB",k,q,i,l,"th",h,o,e,j,m,f,n),"tl",A.ax(d,g,c,"PHP",k,q,i,l,"tl",h,o,e,j,m,f,n),"tr",A.ax(d,g,q,"TRY",k,c,i,l,"tr",h,o,"%#,##0",j,m,f,n),"uk",A.ax(a6,g,q,"UAH","\u0415",p,i,l,"uk",h,o,e,j,m,f,n),"ur",A.ax(d,g,c,"PKR",k,q,i,a,"ur",h,o,e,j,b,f,n),"uz",A.ax(a6,g,q,"UZS",k,p,i,l,"uz","son\xa0emas",o,e,j,m,f,n),"vi",A.ax(a6,g,q,"VND",k,c,i,l,"vi",h,o,e,j,m,f,n),"zh",A.ax(d,g,c,"CNY",k,q,i,l,"zh",h,o,e,j,m,f,n),"zh_CN",A.ax(d,g,c,"CNY",k,q,i,l,"zh_CN",h,o,e,j,m,f,n),"zh_HK",A.ax(d,g,c,"HKD",k,q,i,l,"zh_HK","\u975e\u6578\u503c",o,e,j,m,f,n),"zh_TW",A.ax(d,g,c,"TWD",k,q,i,l,"zh_TW","\u975e\u6578\u503c",o,e,j,m,f,n),"zu",A.ax(d,g,c,"ZAR",k,q,i,l,"zu",h,o,e,j,m,f,n)],t.N,A.ab("qO"))})
 r($,"bt3","agZ",()=>A.bbd("initializeDateFormatting(<locale>)",$.biC()))

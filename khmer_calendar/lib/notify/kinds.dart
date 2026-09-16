@@ -7,11 +7,12 @@ import '../i18n.dart';
 import '../store.dart';
 
 class ReminderShot {
-  const ReminderShot(this.key, this.title, this.body, this.when);
+  const ReminderShot(this.key, this.title, this.body, this.when, {this.channel = 'events'});
   final String key;
   final String title;
   final String body;
   final DateTime when;
+  final String channel;
 }
 
 abstract class ReminderKind {
@@ -44,7 +45,7 @@ class DailyReminder extends ReminderKind {
     if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
     final lang = store.lang;
     return [
-      ReminderShot('daily-${isoOf(when)}', t(lang, 'appName'), t(lang, 'remindDailySub'), when),
+      ReminderShot('daily-${isoOf(when)}', t(lang, 'appName'), t(lang, 'remindDailySub'), when, channel: 'daily'),
     ];
   }
 }
@@ -74,6 +75,7 @@ class SilReminder extends ReminderKind {
               t(lang, 'silDay'),
               lang == Lang.en ? lunarLabel(isoOf(d), lang) : info.lunarDateText,
               when,
+              channel: 'sil',
             ),
           );
         }
@@ -104,9 +106,10 @@ class HolidayReminder extends ReminderKind {
         continue;
       }
       for (final h in list) {
+        if (h.type != HolidayType.public) continue;
         final day = fromIso(h.date);
         final title = lang == Lang.en ? h.nameEn : h.nameKm;
-        out.add(ReminderShot('hol-${h.date}', '$prefix: $title', t(lang, 'kindHoliday'), DateTime(day.year, day.month, day.day, 8)));
+        out.add(ReminderShot('hol-${h.date}', '$prefix: $title', t(lang, 'holidayPublic'), DateTime(day.year, day.month, day.day, 8), channel: 'holidays'));
       }
     }
     return out;
@@ -136,7 +139,7 @@ class EventReminder extends ReminderKind {
         hour = int.tryParse(p[0]) ?? 9;
         minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
       }
-      out.add(ReminderShot('event-${e.id}', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, DateTime(day.year, day.month, day.day, hour, minute)));
+      out.add(ReminderShot('event-${e.id}', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, DateTime(day.year, day.month, day.day, hour, minute), channel: 'events'));
     }
     return out;
   }
@@ -164,7 +167,7 @@ class TaskReminder extends ReminderKind {
         hour = int.tryParse(p[0]) ?? 9;
         minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
       }
-      out.add(ReminderShot('task-${e.id}', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, DateTime(day.year, day.month, day.day, hour, minute)));
+      out.add(ReminderShot('task-${e.id}', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, DateTime(day.year, day.month, day.day, hour, minute), channel: 'tasks'));
     }
     return out;
   }

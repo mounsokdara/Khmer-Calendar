@@ -26,6 +26,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        NotifyKit.ensureChannels(this)
         channel?.setMethodCallHandler { call, result ->
             when (call.method) {
                 "setFlags" -> {

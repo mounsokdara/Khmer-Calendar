@@ -21,19 +21,56 @@ String _reminderSig = '';
 
 
 
-const _details = NotificationDetails(
-  android: AndroidNotificationDetails(
-    'khmer_reminders',
-    'Reminders',
-    channelDescription: 'Task and holiday reminders',
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: 'ic_stat_notify',
-  ),
-  iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-  macOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-  linux: LinuxNotificationDetails(),
-);
+NotificationDetails _detailsFor(String channel) {
+  final android = switch (channel) {
+    'holidays' => const AndroidNotificationDetails(
+        'khmer_holidays',
+        'Holidays',
+        channelDescription: 'Public holidays',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'tasks' => const AndroidNotificationDetails(
+        'khmer_tasks',
+        'Tasks',
+        channelDescription: 'Task reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'sil' => const AndroidNotificationDetails(
+        'khmer_sil',
+        'Silas day',
+        channelDescription: 'Precept day reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'daily' => const AndroidNotificationDetails(
+        'khmer_daily',
+        'Daily reminder',
+        channelDescription: 'Morning calendar recap',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        icon: 'ic_stat_notify',
+      ),
+    _ => const AndroidNotificationDetails(
+        'khmer_events',
+        'Events',
+        channelDescription: 'Calendar events',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+  };
+  return NotificationDetails(
+    android: android,
+    iOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+    macOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+    linux: const LinuxNotificationDetails(),
+  );
+}
 
 void bindReminderSync(AppStore store) {
   if (_bound) return;
@@ -179,7 +216,7 @@ Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
   if (shot.when.isBefore(DateTime.now())) return;
   final when = tz.TZDateTime.from(shot.when, tz.local);
   Future<void> run(AndroidScheduleMode mode) {
-    return _plugin.zonedSchedule(id, shot.title, shot.body, when, _details, androidScheduleMode: mode);
+    return _plugin.zonedSchedule(id, shot.title, shot.body, when, _detailsFor(shot.channel), androidScheduleMode: mode);
   }
 
   try {
