@@ -17,11 +17,9 @@ object NotifyKit {
     const val DAILY_REQ = 41
     const val SIL_REQ = 42
 
-    fun dailyOn(context: Context): Boolean =
-        WidgetStore.notificationsOn(context) && WidgetStore.prefs(context).getBoolean("notifyDaily", false)
+    fun dailyOn(context: Context): Boolean = WidgetStore.dailyOn(context)
 
-    fun silOn(context: Context): Boolean =
-        WidgetStore.notificationsOn(context) && WidgetStore.prefs(context).getBoolean("notifySil", false)
+    fun silOn(context: Context): Boolean = WidgetStore.silOn(context)
 
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < 26) return

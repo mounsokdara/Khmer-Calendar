@@ -11,8 +11,12 @@ object WidgetStore {
     const val PREFS = "khmer_home_widget"
     const val CHANNEL = "khmer_daily"
     const val CHANNEL_NAME = "Daily calendar"
+    const val SIL_CHANNEL = "khmer_sil"
+    const val SIL_CHANNEL_NAME = "Silas day"
     const val NOTIFY_ID = 1001
+    const val SIL_NOTIFY_ID = 1002
     const val ALARM_REQ = 41
+    const val SIL_ALARM_REQ = 42
 
     val WEEKDAYS_KM = arrayOf("អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍")
     val WEEKDAYS_EN = arrayOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -71,8 +75,9 @@ object WidgetStore {
         return PendingIntent.getActivity(context, req, intent, flags)
     }
 
-    fun notificationsOn(context: Context): Boolean {
-        if (!prefs(context).getBoolean("notifyOn", false)) return false
+    fun notificationsOn(context: Context) = masterNotifyOn(context)
+
+    fun osNotificationsOn(context: Context): Boolean {
         if (Build.VERSION.SDK_INT >= 33) {
             val granted =
                 context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
@@ -81,5 +86,39 @@ object WidgetStore {
         }
         val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return false
         return if (Build.VERSION.SDK_INT >= 24) nm.areNotificationsEnabled() else true
+    }
+
+    fun masterNotifyOn(context: Context): Boolean {
+        return prefs(context).getBoolean("notifyOn", false) && osNotificationsOn(context)
+    }
+
+    fun kindOn(context: Context, key: String, default: Boolean = false): Boolean {
+        return masterNotifyOn(context) && prefs(context).getBoolean(key, default)
+    }
+
+    fun dailyOn(context: Context) = kindOn(context, "notifyDaily", false)
+
+    fun silOn(context: Context) = kindOn(context, "notifySil", true)
+
+    fun isSilDay(context: Context, iso: String = todayIso()): Boolean {
+        val raw = prefs(context).getString("sil_days", "") ?: return false
+        return raw.split(",").any { it.trim() == iso }
+    }
+
+    fun nextSilAt(context: Context, hour: Int = 7): Long? {
+        val raw = prefs(context).getString("sil_days", "") ?: return null
+        val today = todayIso()
+        val now = System.currentTimeMillis()
+        for (part in raw.split(",")) {
+            val iso = part.trim()
+            if (iso.length < 10 || iso < today) continue
+            val bits = iso.split("-")
+            if (bits.size < 3) continue
+            val cal = Calendar.getInstance()
+            cal.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+            if (cal.timeInMillis > now + 30_000) return cal.timeInMillis
+        }
+        return null
     }
 }

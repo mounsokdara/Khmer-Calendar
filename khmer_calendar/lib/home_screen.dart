@@ -9,6 +9,7 @@ import 'calendar/observances.dart';
 import 'dates.dart';
 import 'i18n.dart';
 import 'net.dart';
+import 'notify/kinds.dart';
 import 'store.dart';
 import 'weather.dart';
 import 'wx_cache.dart';
@@ -28,10 +29,14 @@ void bindHomeWidget(AppStore store) {
   _bound = true;
   store.addListener(() {
     _widgetDebounce?.cancel();
-    _widgetDebounce = Timer(const Duration(milliseconds: 450), () => syncHomeWidget(store));
+    _widgetDebounce = Timer(const Duration(milliseconds: 450), () async {
+      await syncHomeWidget(store);
+      await syncNativeAlarms(store);
+    });
   });
   syncHomeWidget(store);
   syncWeatherWidget(store);
+  syncNativeAlarms(store);
   _ch.setMethodCallHandler((call) async {
     if (call.method == 'open') applyWidgetLaunch(store, call.arguments);
   });
@@ -48,7 +53,8 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
 
 Future<void> syncHomeWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
-  final sig = '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.events.length}|${todayIso()}';
+  final sig =
+      '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.events.length}|${todayIso()}';
   if (sig == _widgetSig) return;
   _widgetSig = sig;
   final now = DateTime.now();
@@ -104,6 +110,9 @@ Future<void> syncHomeWidget(AppStore store) async {
       'lang': lang == Lang.en ? 'en' : 'km',
       'weekStartsOn': store.weekStartsOn,
       'notifyOn': store.notifyOn,
+      'notifyDaily': store.notifyDaily,
+      'notifySil': store.notifySil,
+      'sil_days': upcomingSilDates().join(','),
     });
   } catch (_) {}
 }
@@ -236,4 +245,32 @@ Future<void> cancelDailyNotify() async {
   try {
     await _ch.invokeMethod<void>('cancelDaily');
   } catch (_) {}
+}
+
+Future<void> armSilNotify({bool showNow = false}) async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('armSil', {'showNow': showNow});
+  } catch (_) {}
+}
+
+Future<void> cancelSilNotify() async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('cancelSil');
+  } catch (_) {}
+}
+
+Future<void> syncNativeAlarms(AppStore store) async {
+  if (!canPinHomeWidget) return;
+  if (store.notifyOn && store.notifyDaily) {
+    await armDailyNotify();
+  } else {
+    await cancelDailyNotify();
+  }
+  if (store.notifyOn && store.notifySil) {
+    await armSilNotify(showNow: true);
+  } else {
+    await cancelSilNotify();
+  }
 }

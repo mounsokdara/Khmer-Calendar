@@ -420,8 +420,8 @@ const wideBreak = 840.0;
 const mediumBreak = 720.0;
 const xlBreak = 1180.0;
 
-const appVersion = '1.0.0';
-const appBuildNumber = 1;
+const appVersion = '1.0.1';
+const appBuildNumber = 2;
 const appAuthor = 'Moun Sokdara';
 const appLicense = 'MIT License';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';

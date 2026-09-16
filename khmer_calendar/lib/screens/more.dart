@@ -498,7 +498,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (!v) {
                         store.setNotifyOn(false);
                         await cancelAllReminders();
-                        await cancelDailyNotify();
+                        await syncNativeAlarms(store);
                         return;
                       }
                       final ok = await requestNotifications(store);
@@ -620,6 +620,26 @@ class NotificationsPage extends StatelessWidget {
             children: [
               SegmentedGroup(
                 children: [
+                  SegmentedSwitch(
+                    icon: Icons.wb_sunny_outlined,
+                    title: t(lang, 'remindDaily'),
+                    subtitle: t(lang, 'remindDailySub'),
+                    value: store.notifyDaily,
+                    onChanged: (v) async {
+                      await toggle(v, store.setNotifyDaily);
+                      await syncNativeAlarms(store);
+                    },
+                  ),
+                  SegmentedSwitch(
+                    icon: Icons.brightness_2_outlined,
+                    title: t(lang, 'remindSil'),
+                    subtitle: t(lang, 'remindSilSub'),
+                    value: store.notifySil,
+                    onChanged: (v) async {
+                      await toggle(v, store.setNotifySil);
+                      await syncNativeAlarms(store);
+                    },
+                  ),
                   SegmentedSwitch(
                     icon: Icons.event,
                     title: t(lang, 'remindEvents'),
@@ -1072,7 +1092,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       setState(() => notify = false);
       store.setNotifyOn(false);
       await cancelAllReminders();
-      await cancelDailyNotify();
+      await syncNativeAlarms(store);
       return;
     }
     await requestNotifications(store);

@@ -109,6 +109,8 @@ class AppStore extends ChangeNotifier {
   bool notifyEvents = true;
   bool notifyHolidays = true;
   bool notifyTasks = true;
+  bool notifyDaily = false;
+  bool notifySil = true;
   int weekStartsOn = 1;
   bool hydrated = false;
   String? pendingRoute;
@@ -162,6 +164,8 @@ class AppStore extends ChangeNotifier {
         notifyEvents = p['notifyEvents'] as bool? ?? true;
         notifyHolidays = p['notifyHolidays'] as bool? ?? true;
         notifyTasks = p['notifyTasks'] as bool? ?? true;
+        notifyDaily = p['notifyDaily'] as bool? ?? false;
+        notifySil = p['notifySil'] as bool? ?? true;
         weekStartsOn = p['weekStartsOn'] as int? ?? 1;
       }
     } catch (_) {
@@ -202,6 +206,8 @@ class AppStore extends ChangeNotifier {
         'notifyEvents': notifyEvents,
         'notifyHolidays': notifyHolidays,
         'notifyTasks': notifyTasks,
+        'notifyDaily': notifyDaily,
+        'notifySil': notifySil,
         'weekStartsOn': weekStartsOn,
       }),
     );
@@ -404,6 +410,16 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
+  void setNotifyDaily(bool v) {
+    notifyDaily = v;
+    _touch();
+  }
+
+  void setNotifySil(bool v) {
+    notifySil = v;
+    _touch();
+  }
+
   void setWeekStartsOn(int v) {
     weekStartsOn = v;
     _touch();
@@ -449,6 +465,8 @@ class AppStore extends ChangeNotifier {
     notifyEvents = true;
     notifyHolidays = true;
     notifyTasks = true;
+    notifyDaily = false;
+    notifySil = true;
     weekStartsOn = 1;
     _touch();
   }
