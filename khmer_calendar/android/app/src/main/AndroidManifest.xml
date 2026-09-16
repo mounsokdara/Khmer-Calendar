@@ -108,6 +108,9 @@
         <receiver
             android:name=".DailyNotifyReceiver"
             android:exported="false"/>
+        <receiver
+            android:name=".SilNotifyReceiver"
+            android:exported="false"/>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>
