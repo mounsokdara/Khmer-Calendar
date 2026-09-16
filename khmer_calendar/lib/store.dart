@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -111,6 +112,7 @@ class AppStore extends ChangeNotifier {
   int weekStartsOn = 1;
   bool hydrated = false;
   String? pendingRoute;
+  Timer? _persistDebounce;
 
   Brightness get brightness {
     if (theme == 'light') return Brightness.light;
@@ -205,9 +207,11 @@ class AppStore extends ChangeNotifier {
     );
   }
 
-  void _touch() {
+  void _touch({bool save = true}) {
     notifyListeners();
-    persist();
+    if (!save) return;
+    _persistDebounce?.cancel();
+    _persistDebounce = Timer(const Duration(milliseconds: 180), persist);
   }
 
   void addEvent(CalendarEvent e) {
@@ -237,18 +241,18 @@ class AppStore extends ChangeNotifier {
 
   void setCursor(String iso) {
     cursor = iso;
-    _touch();
+    _touch(save: false);
   }
 
   void setSelected(String iso) {
     selected = iso;
-    _touch();
+    _touch(save: false);
   }
 
   void goToDate(String iso) {
     cursor = iso;
     selected = iso;
-    _touch();
+    _touch(save: false);
   }
 
   String? takePendingRoute() {
@@ -366,7 +370,8 @@ class AppStore extends ChangeNotifier {
 
   void setNotifyOn(bool v) {
     notifyOn = v;
-    _touch();
+    notifyListeners();
+    persist();
   }
 
   void setBackgroundOn(bool v) {

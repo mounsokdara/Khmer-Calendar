@@ -19,6 +19,7 @@ Timer? _syncDebounce;
 Timer? _webTick;
 final _fired = <String>{};
 var _webShots = <_Shot>[];
+String _reminderSig = '';
 
 class _Shot {
   const _Shot(this.key, this.title, this.body, this.when);
@@ -46,6 +47,7 @@ void bindReminderSync(AppStore store) {
   if (_bound) return;
   _bound = true;
   store.addListener(() {
+    if (!store.notifyOn) return;
     _syncDebounce?.cancel();
     _syncDebounce = Timer(const Duration(milliseconds: 400), () => syncReminders(store));
   });
@@ -139,6 +141,7 @@ Future<bool> requestOsNotificationPermission() async {
 }
 
 Future<void> cancelAllReminders() async {
+  _reminderSig = '';
   _webTick?.cancel();
   _webTick = null;
   _webShots = [];
@@ -257,9 +260,14 @@ Future<void> syncReminders(AppStore store) async {
     if (!_ready) return;
   }
   if (!store.notifyOn) {
+    _reminderSig = '';
     await cancelAllReminders();
     return;
   }
+  final sig =
+      '${store.notifyEvents}|${store.notifyHolidays}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+  if (sig == _reminderSig) return;
+  _reminderSig = sig;
   final shots = _collect(store);
   if (kIsWeb) {
     _armWeb(shots);

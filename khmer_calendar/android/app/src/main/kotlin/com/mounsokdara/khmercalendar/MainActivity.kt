@@ -70,10 +70,18 @@ class MainActivity : FlutterActivity() {
                 }
                 "pinWidget" -> result.success(pinWidget(call.argument<String>("kind")))
                 "armDaily" -> {
+                    getSharedPreferences(WidgetStore.PREFS, Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("notifyOn", true)
+                        .apply()
                     DailyNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
                     result.success(true)
                 }
                 "cancelDaily" -> {
+                    getSharedPreferences(WidgetStore.PREFS, Context.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("notifyOn", false)
+                        .apply()
                     DailyNotify.cancel(this)
                     result.success(true)
                 }

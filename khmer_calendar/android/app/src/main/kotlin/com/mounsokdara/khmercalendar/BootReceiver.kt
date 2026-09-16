@@ -26,7 +26,7 @@ class BootReceiver : BroadcastReceiver() {
         }
         val replaced = action == Intent.ACTION_MY_PACKAGE_REPLACED
         val prefs = WidgetStore.prefs(context)
-        val want = if (prefs.contains("notifyOn")) prefs.getBoolean("notifyOn", true) else true
+        val want = prefs.getBoolean("notifyOn", false)
         if (want) DailyNotify.arm(context, showNow = replaced) else DailyNotify.cancel(context)
         TodayWidgetProvider.refreshAll(context)
         MonthWidgetProvider.refreshAll(context)

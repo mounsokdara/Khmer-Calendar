@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,8 @@ import 'wx_cache.dart';
 
 const _ch = MethodChannel('khmer.permissions');
 var _bound = false;
+Timer? _widgetDebounce;
+String _widgetSig = '';
 
 bool get canPinHomeWidget {
   if (kIsWeb) return false;
@@ -23,7 +26,10 @@ bool get canPinHomeWidget {
 void bindHomeWidget(AppStore store) {
   if (_bound) return;
   _bound = true;
-  store.addListener(() => syncHomeWidget(store));
+  store.addListener(() {
+    _widgetDebounce?.cancel();
+    _widgetDebounce = Timer(const Duration(milliseconds: 450), () => syncHomeWidget(store));
+  });
   syncHomeWidget(store);
   syncWeatherWidget(store);
   _ch.setMethodCallHandler((call) async {
@@ -42,6 +48,9 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
 
 Future<void> syncHomeWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
+  final sig = '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.events.length}|${todayIso()}';
+  if (sig == _widgetSig) return;
+  _widgetSig = sig;
   final now = DateTime.now();
   final iso = todayIso();
   final lunar = lunarOf(now);

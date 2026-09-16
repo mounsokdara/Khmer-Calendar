@@ -72,6 +72,7 @@ object WidgetStore {
     }
 
     fun notificationsOn(context: Context): Boolean {
+        if (!prefs(context).getBoolean("notifyOn", false)) return false
         if (Build.VERSION.SDK_INT >= 33) {
             val granted =
                 context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==

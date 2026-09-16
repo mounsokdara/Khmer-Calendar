@@ -13,7 +13,10 @@ import java.util.Calendar
 
 object DailyNotify {
     fun arm(context: Context, showNow: Boolean) {
-        if (!WidgetStore.notificationsOn(context)) return
+        if (!WidgetStore.notificationsOn(context)) {
+            cancel(context)
+            return
+        }
         ensureChannel(context)
         schedule(context)
         val prefs = WidgetStore.prefs(context)
@@ -64,6 +67,7 @@ object DailyNotify {
     }
 
     fun schedule(context: Context) {
+        if (!WidgetStore.notificationsOn(context)) return
         val am = context.getSystemService(AlarmManager::class.java) ?: return
         val whenAt = nextMorning()
         val pi = alarmPi(context)
@@ -110,8 +114,12 @@ object DailyNotify {
 
 class DailyNotifyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        DailyNotify.show(context)
-        DailyNotify.schedule(context)
+        if (!WidgetStore.notificationsOn(context)) {
+            DailyNotify.cancel(context)
+        } else {
+            DailyNotify.show(context)
+            DailyNotify.schedule(context)
+        }
         TodayWidgetProvider.refreshAll(context)
         MonthWidgetProvider.refreshAll(context)
         WeatherWidgetProvider.refreshAll(context)
