@@ -1,7 +1,6 @@
 package com.mounsokdara.khmercalendar
 
 import android.app.AlarmManager
-import android.app.AppOpsManager
 import android.app.NotificationManager
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
@@ -11,7 +10,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
-import android.os.Process
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -183,20 +181,17 @@ class MainActivity : FlutterActivity() {
         when (requestCode) {
             REQ_BATTERY -> r.success(isIgnoringBattery())
             REQ_EXACT -> r.success(canExactAlarms())
-            REQ_AUTOSTART -> r.success(isAutoStartEnabled() || !autoStartQueryable())
+            REQ_AUTOSTART -> r.success(true)
             else -> r.success(true)
         }
     }
 
     private fun statusMap(): HashMap<String, Boolean> {
-        val auto = autoStartOp()
         return hashMapOf(
             "notify" to notificationsEnabled(),
             "battery" to isIgnoringBattery(),
             "exactAlarm" to canExactAlarms(),
-            "autoStart" to auto.second,
-            "autoStartQueryable" to auto.first,
-            "stock" to isStockAndroid(),
+            "oemAutoStart" to hasOemAutoStartScreen(),
             "keepAlive" to KeepAliveService.running,
         )
     }
@@ -227,48 +222,15 @@ class MainActivity : FlutterActivity() {
         return am.canScheduleExactAlarms()
     }
 
-    private fun isStockAndroid(): Boolean {
+    private fun hasOemAutoStartScreen(): Boolean {
         val maker = Build.MANUFACTURER.lowercase()
         val brand = Build.BRAND.lowercase()
-        return listOf("google", "pixel", "aosp").any { maker.contains(it) || brand.contains(it) }
+        return listOf(
+            "xiaomi", "redmi", "poco", "blackshark", "huawei", "honor", "oppo", "realme",
+            "vivo", "iqoo", "oneplus", "letv", "asus", "transsion", "tecno", "infinix",
+            "itel", "meizu", "lenovo", "zte", "nubia", "samsung",
+        ).any { maker.contains(it) || brand.contains(it) }
     }
-
-    /** First = OEM exposes an auto-start op we can read. Second = that op is allowed. */
-    private fun autoStartOp(): Pair<Boolean, Boolean> {
-        val maker = Build.MANUFACTURER.lowercase()
-        val brand = Build.BRAND.lowercase()
-        val known =
-            listOf("xiaomi", "redmi", "poco", "blackshark", "vivo", "iqoo", "oppo", "realme", "oneplus")
-                .any { maker.contains(it) || brand.contains(it) }
-        if (!known) return false to false
-        return try {
-            val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-            val checkOp =
-                appOps.javaClass.getMethod(
-                    "checkOpNoThrow",
-                    Integer.TYPE,
-                    Integer.TYPE,
-                    String::class.java,
-                )
-            val uid = Process.myUid()
-            var queryable = false
-            for (op in intArrayOf(10008, 10020, 10021, 10025)) {
-                try {
-                    val mode = checkOp.invoke(appOps, op, uid, packageName) as Int
-                    queryable = true
-                    if (mode == AppOpsManager.MODE_ALLOWED) return true to true
-                } catch (_: Exception) {
-                }
-            }
-            queryable to false
-        } catch (_: Exception) {
-            false to false
-        }
-    }
-
-    private fun autoStartQueryable(): Boolean = autoStartOp().first
-
-    private fun isAutoStartEnabled(): Boolean = autoStartOp().second
 
     private fun requestBatteryExemption(result: MethodChannel.Result) {
         if (isIgnoringBattery()) {
@@ -321,7 +283,9 @@ class MainActivity : FlutterActivity() {
                 ComponentName("com.evenwell.powersaving.g3", "com.evenwell.powersaving.g3.exception.PowerSaverExceptionActivity"),
             )
         for (c in tries) {
-            if (tryStart(result, REQ_AUTOSTART, Intent().setComponent(c))) return
+            val intent = Intent().setComponent(c)
+            if (intent.resolveActivity(packageManager) == null) continue
+            if (tryStart(result, REQ_AUTOSTART, intent)) return
         }
         startOrFail(
             result,

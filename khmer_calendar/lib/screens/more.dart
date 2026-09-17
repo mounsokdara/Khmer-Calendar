@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -551,7 +551,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final ok = await requestAutoLaunch(store, context: context);
-                      if (!ok && context.mounted) {
+                      if (!ok && context.mounted && defaultTargetPlatform != TargetPlatform.android) {
                         await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed);
                         store.setAutoLaunchOn(await autoLaunchAllowed());
                       }
@@ -1159,7 +1159,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
     }
     await requestAutoLaunch(store, context: context);
     if (!mounted) return;
-    if (!store.autoLaunchOn) {
+    if (!store.autoLaunchOn && defaultTargetPlatform != TargetPlatform.android) {
       if (await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed)) {
         if (!mounted) return;
         await requestAutoLaunch(store, context: context);

@@ -268,12 +268,9 @@ Future<bool> autoLaunchAllowed() async {
       return false;
     }
   }
-  if (_android) {
-    final s = await _androidStatus();
-    if (s['stock'] == true) return true;
-    if (s['autoStartQueryable'] == true) return s['autoStart'] == true;
-    return false;
-  }
+  // Android: RECEIVE_BOOT_COMPLETED is always registered. OEM auto-start
+  // (Xiaomi, Oppo, Vivo, Huawei) is not part of AOSP and cannot be read.
+  if (_android) return true;
   return false;
 }
 
@@ -293,9 +290,7 @@ Future<OsPerms> readOsPermissions() async {
   final autoLaunch = await autoLaunchAllowed();
   final location = await locationAllowed();
   var queryable = false;
-  if (_android) {
-    queryable = (await _androidStatus())['autoStartQueryable'] == true;
-  } else if (_desktop) {
+  if (_desktop) {
     queryable = true;
   }
   return OsPerms(
@@ -312,7 +307,7 @@ Future<void> keepOnlyGranted(AppStore store) async {
   final os = await readOsPermissions();
   if (store.notifyOn && !os.notify) store.setNotifyOn(false);
   if (store.backgroundOn && !os.background) store.setBackgroundOn(false);
-  if (store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
+  if (!_android && store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
   if (store.locationOn && !os.location) store.setLocationOn(false);
   await _syncNativeFlags(store);
   await _native('stopKeepAlive');
@@ -325,7 +320,7 @@ Future<void> writeGrantedFlags(AppStore store) async {
   final os = await readOsPermissions();
   store.setNotifyOn(os.notify);
   store.setBackgroundOn(os.background);
-  store.setAutoLaunchOn(os.autoLaunch);
+  if (!_android) store.setAutoLaunchOn(os.autoLaunch);
   store.setLocationOn(os.location);
   await _syncNativeFlags(store);
   await _native('stopKeepAlive');
@@ -415,7 +410,8 @@ Future<void> stopBackground(AppStore store) async {
   await _native('stopKeepAlive');
 }
 
-/// Open OEM auto-start / desktop login items, then re-read whether it is allowed.
+/// Open OEM auto-start / desktop login items. Android cannot report whether
+/// the manufacturer whitelist is on, so the user flag is the source of truth.
 Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
     store.setAutoLaunchOn(false);
@@ -424,24 +420,24 @@ Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   try {
     if (_android) {
       final s = await _androidStatus();
-      if (s['stock'] != true) {
-        await _pause();
-        await _native('openAutoStart');
-      }
-      var os = await readOsPermissions();
-      if (s['stock'] != true && !os.autoStartQueryable) {
+      if (s['oemAutoStart'] == true) {
         final ctx = context;
         if (ctx != null && ctx.mounted) {
-          final confirmed = await _confirm(ctx, store.lang, 'autoLaunchConfirm', 'autoLaunchConfirmSub');
-          store.setAutoLaunchOn(confirmed);
-          await _syncNativeFlags(store);
-          return confirmed;
+          final go = await _confirm(ctx, store.lang, 'autoLaunchConfirm', 'autoLaunchConfirmSub');
+          if (!go) {
+            store.setAutoLaunchOn(false);
+            await _syncNativeFlags(store);
+            return false;
+          }
         }
-        store.setAutoLaunchOn(false);
-        await _syncNativeFlags(store);
-        return false;
+        await _native('openAutoStart');
+        await _waitForResume();
       }
-    } else if (_desktop) {
+      store.setAutoLaunchOn(true);
+      await _syncNativeFlags(store);
+      return true;
+    }
+    if (_desktop) {
       try {
         await autostart.enableDesktopAutostart();
       } catch (e) {
@@ -525,7 +521,15 @@ Future<bool> requestAllPermissions(
     return false;
   }
   await _pause();
-  if (!await step(
+  if (_android) {
+    onStep?.call('askingAutoLaunch');
+    try {
+      final autoCtx = context;
+      await requestAutoLaunch(store, context: autoCtx != null && autoCtx.mounted ? autoCtx : null);
+    } catch (e) {
+      debugPrint('all/auto: $e');
+    }
+  } else if (!await step(
     'askingAutoLaunch',
     'auto',
     () async {
