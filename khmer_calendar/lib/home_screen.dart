@@ -54,7 +54,7 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
 Future<void> syncHomeWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
   final sig =
-      '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.events.length}|${todayIso()}';
+      '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyReligious}|${store.events.length}|${todayIso()}';
   if (sig == _widgetSig) return;
   _widgetSig = sig;
   final now = DateTime.now();
@@ -74,6 +74,17 @@ Future<void> syncHomeWidget(AppStore store) async {
       'lunar': lang == Lang.en ? lunarLabel(di, lang) : lu.lunarDateText,
       'holiday': hs.isEmpty ? '' : obsTitle(hs.first, lang),
       'weekday': weekdaysFull(lang)[d.weekday % 7],
+      'gregorian': lang == Lang.en ? gregorianLabel(d, lang) : lu.gregorianDateText,
+      'be': lang == Lang.en ? 'B.E. ${lu.buddhistEraYear}' : 'ព.ស. ${lu.buddhistEraYearKhmer}',
+      'moon': silPhaseLabel(lu, lang),
+      'sil': lu.isSilDay ? '1' : '',
+      'hkind': hs.isEmpty
+          ? ''
+          : (hs.first.holidayType == HolidayType.public
+              ? 'public'
+              : hs.first.holidayType == HolidayType.religious
+                  ? 'religious'
+                  : 'traditional'),
     };
   }
   final marks = <String, String>{};
@@ -92,7 +103,7 @@ Future<void> syncHomeWidget(AppStore store) async {
         flag(o.date, 't');
         names.putIfAbsent(o.date, () => obsTitle(o, lang));
       } else if (o.kind == Kind.sil) {
-        flag(o.date, 's');
+        if (store.notifySil) flag(o.date, 's');
       }
     }
   }
@@ -112,7 +123,11 @@ Future<void> syncHomeWidget(AppStore store) async {
       'notifyOn': store.notifyOn,
       'notifyDaily': store.notifyDaily,
       'notifySil': store.notifySil,
-      'sil_days': upcomingSilDates().join(','),
+      'notifyPublic': store.notifyPublic,
+      'notifyReligious': store.notifyReligious,
+      'sil_days': store.notifySil ? upcomingSilDates().join(',') : '',
+      'public_hols': jsonEncode(upcomingHolidays(HolidayType.public)),
+      'religious_hols': jsonEncode(upcomingHolidays(HolidayType.religious)),
     });
   } catch (_) {}
 }
@@ -263,6 +278,8 @@ Future<void> cancelSilNotify() async {
 
 Future<void> syncNativeAlarms(AppStore store) async {
   if (!canPinHomeWidget) return;
+  _widgetSig = '';
+  await syncHomeWidget(store);
   if (store.notifyOn && store.notifyDaily) {
     await armDailyNotify();
   } else {

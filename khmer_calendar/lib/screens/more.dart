@@ -631,6 +631,26 @@ class NotificationsPage extends StatelessWidget {
                     },
                   ),
                   SegmentedSwitch(
+                    icon: Icons.flag_outlined,
+                    title: t(lang, 'remindPublic'),
+                    subtitle: t(lang, 'remindPublicSub'),
+                    value: store.notifyPublic,
+                    onChanged: (v) async {
+                      await toggle(v, store.setNotifyPublic);
+                      await syncNativeAlarms(store);
+                    },
+                  ),
+                  SegmentedSwitch(
+                    icon: Icons.temple_buddhist_outlined,
+                    title: t(lang, 'remindReligious'),
+                    subtitle: t(lang, 'remindReligiousSub'),
+                    value: store.notifyReligious,
+                    onChanged: (v) async {
+                      await toggle(v, store.setNotifyReligious);
+                      await syncNativeAlarms(store);
+                    },
+                  ),
+                  SegmentedSwitch(
                     icon: Icons.brightness_2_outlined,
                     title: t(lang, 'remindSil'),
                     subtitle: t(lang, 'remindSilSub'),
@@ -639,20 +659,6 @@ class NotificationsPage extends StatelessWidget {
                       await toggle(v, store.setNotifySil);
                       await syncNativeAlarms(store);
                     },
-                  ),
-                  SegmentedSwitch(
-                    icon: Icons.event,
-                    title: t(lang, 'remindEvents'),
-                    subtitle: t(lang, 'remindEventsSub'),
-                    value: store.notifyEvents,
-                    onChanged: (v) => toggle(v, store.setNotifyEvents),
-                  ),
-                  SegmentedSwitch(
-                    icon: Icons.celebration,
-                    title: t(lang, 'remindHolidays'),
-                    subtitle: t(lang, 'remindHolidaysSub'),
-                    value: store.notifyHolidays,
-                    onChanged: (v) => toggle(v, store.setNotifyHolidays),
                   ),
                   SegmentedSwitch(
                     icon: Icons.task_alt,

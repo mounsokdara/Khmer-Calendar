@@ -12,13 +12,17 @@ import android.os.Build
 object NotifyKit {
     const val CHANNEL_DAILY = "khmer_daily"
     const val CHANNEL_SIL = "khmer_sil"
-    const val CHANNEL_HOLIDAYS = "khmer_holidays"
-    const val CHANNEL_EVENTS = "khmer_events"
+    const val CHANNEL_PUBLIC = "khmer_public"
+    const val CHANNEL_RELIGIOUS = "khmer_religious"
     const val CHANNEL_TASKS = "khmer_tasks"
     const val DAILY_ID = 1001
     const val SIL_ID = 1002
+    const val PUBLIC_ID = 1003
+    const val RELIGIOUS_ID = 1004
     const val DAILY_REQ = 41
     const val SIL_REQ = 42
+    const val PUBLIC_REQ = 43
+    const val RELIGIOUS_REQ = 44
 
     fun dailyOn(context: Context): Boolean = WidgetStore.dailyOn(context)
 
@@ -27,7 +31,7 @@ object NotifyKit {
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < 26) return
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
-        listOf("khmer_daily_digest", "khmer_reminders").forEach { id ->
+        listOf("khmer_daily_digest", "khmer_reminders", "khmer_holidays", "khmer_events").forEach { id ->
             try {
                 nm.deleteNotificationChannel(id)
             } catch (_: Exception) {
@@ -46,9 +50,9 @@ object NotifyKit {
             nm.createNotificationChannel(c)
         }
         ch(CHANNEL_DAILY, if (km) "រំលឹកប្រចាំថ្ងៃ" else "Daily reminder", if (km) "ជូនដំណឹងព្រឹកពីប្រតិទិនថ្ងៃនេះ" else "Morning calendar recap")
-        ch(CHANNEL_SIL, if (km) "ថ្ងៃសីល" else "Silas day", if (km) "ជូនដំណឹងនៅថ្ងៃសីល" else "Reminder on precept days", high = true)
-        ch(CHANNEL_HOLIDAYS, if (km) "ថ្ងៃឈប់សម្រាក" else "Holidays", if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holidays")
-        ch(CHANNEL_EVENTS, if (km) "ព្រឹត្តិការណ៍" else "Events", if (km) "ព្រឹត្តិការណ៍ក្នុងប្រតិទិន" else "Calendar events")
+        ch(CHANNEL_SIL, if (km) "ថ្ងៃសីល" else "Silas days", if (km) "ជូនដំណឹងនៅថ្ងៃសីល" else "Silas day alerts", high = true)
+        ch(CHANNEL_PUBLIC, if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holidays", if (km) "ជូនដំណឹងថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holiday alerts", high = true)
+        ch(CHANNEL_RELIGIOUS, if (km) "ថ្ងៃបុណ្យសាសនា" else "Religious holidays", if (km) "ជូនដំណឹងថ្ងៃបុណ្យសាសនា" else "Religious holiday alerts", high = true)
         ch(CHANNEL_TASKS, if (km) "កិច្ចការ" else "Tasks", if (km) "ការរំលឹកកិច្ចការ" else "Task reminders")
     }
 
@@ -122,9 +126,15 @@ object NotifyKit {
         return c.timeInMillis
     }
 
+    fun publicOn(context: Context): Boolean = WidgetStore.publicOn(context)
+
+    fun religiousOn(context: Context): Boolean = WidgetStore.religiousOn(context)
+
     fun sync(context: Context) {
         if (dailyOn(context)) DailyDigestNotify.schedule(context) else DailyDigestNotify.cancel(context)
         if (silOn(context)) SilNotify.schedule(context) else SilNotify.cancel(context)
+        if (publicOn(context)) PublicHolidayNotify.schedule(context) else PublicHolidayNotify.cancel(context)
+        if (religiousOn(context)) ReligiousHolidayNotify.schedule(context) else ReligiousHolidayNotify.cancel(context)
     }
 
     fun writeFlags(context: Context, notifyOn: Boolean?, notifyDaily: Boolean?, notifySil: Boolean?) {

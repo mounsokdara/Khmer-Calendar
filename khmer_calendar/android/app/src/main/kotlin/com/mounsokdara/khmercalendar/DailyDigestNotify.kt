@@ -3,7 +3,6 @@ package com.mounsokdara.khmercalendar
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import java.util.Calendar
 
 /** Optional morning digest. Off unless notifyDaily is explicitly true. */
 object DailyDigestNotify {
@@ -32,14 +31,29 @@ object DailyDigestNotify {
         if (!NotifyKit.dailyOn(context)) return
         val iso = WidgetStore.todayIso()
         val payload = WidgetStore.dayPayload(context, iso)
-        val weekday = payload?.optString("weekday").takeUnless { it.isNullOrEmpty() } ?: WidgetStore.weekdayToday(context)
-        val day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-        val lunar = payload?.optString("lunar").orEmpty()
+        val km = WidgetStore.lang(context) != "en"
+        val title = if (km) "ប្រតិទិនថ្ងៃនេះ" else "Today's calendar"
+        val lines = mutableListOf<String>()
+        val detail = WidgetStore.dayDetail(context, iso)
+        if (detail.isNotEmpty()) lines.add(detail)
         val holiday = payload?.optString("holiday").orEmpty()
-        val body =
-            listOf(lunar, holiday).filter { it.isNotEmpty() }.joinToString("  ")
-                .ifEmpty { WidgetStore.title(context) }
-        NotifyKit.post(context, NotifyKit.DAILY_ID, NotifyKit.CHANNEL_DAILY, "$weekday $day", body, "day", iso)
+        val hkind = payload?.optString("hkind").orEmpty()
+        if (holiday.isNotEmpty()) {
+            val kind =
+                when (hkind) {
+                    "religious" -> if (km) "ថ្ងៃបុណ្យសាសនា" else "Religious holiday"
+                    "traditional" -> if (km) "ថ្ងៃប្រពៃណីខ្មែរ" else "Khmer tradition"
+                    else -> if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holiday"
+                }
+            lines.add("$kind: $holiday")
+        }
+        if (payload?.optString("sil") == "1") {
+            val moon = payload?.optString("moon").orEmpty()
+            val sil = if (km) "ថ្ងៃសីល" else "Silas day"
+            lines.add(if (moon.isNotEmpty()) "$sil ($moon)" else sil)
+        }
+        val body = lines.filter { it.isNotEmpty() }.joinToString("\n").ifEmpty { WidgetStore.title(context) }
+        NotifyKit.post(context, NotifyKit.DAILY_ID, NotifyKit.CHANNEL_DAILY, title, body, "day", iso)
     }
 }
 

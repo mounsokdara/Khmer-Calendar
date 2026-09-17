@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'khmer-calendar-web-1789599106362';
+const CACHE = 'khmer-calendar-web-1789614674280';
 const PRECACHE = [
   "./_redirects",
   "./assets/AssetManifest.bin",

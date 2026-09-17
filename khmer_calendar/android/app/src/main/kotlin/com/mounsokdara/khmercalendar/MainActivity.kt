@@ -114,13 +114,15 @@ class MainActivity : FlutterActivity() {
         listOf(
             "iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang",
             "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list",
-            "sil_days",
+            "sil_days", "public_hols", "religious_hols",
         ).forEach { putStr(it) }
         (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }
         (map["wx_index"] as? Number)?.let { ed.putInt("wx_index", it.toInt()) }
         (map["notifyOn"] as? Boolean)?.let { ed.putBoolean("notifyOn", it) }
         (map["notifyDaily"] as? Boolean)?.let { ed.putBoolean("notifyDaily", it) }
         (map["notifySil"] as? Boolean)?.let { ed.putBoolean("notifySil", it) }
+        (map["notifyPublic"] as? Boolean)?.let { ed.putBoolean("notifyPublic", it) }
+        (map["notifyReligious"] as? Boolean)?.let { ed.putBoolean("notifyReligious", it) }
         ed.apply()
         NotifyKit.sync(this)
     }

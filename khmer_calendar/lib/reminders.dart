@@ -23,10 +23,18 @@ String _reminderSig = '';
 
 NotificationDetails _detailsFor(String channel) {
   final android = switch (channel) {
-    'holidays' => const AndroidNotificationDetails(
-        'khmer_holidays',
-        'Holidays',
-        channelDescription: 'Public holidays',
+    'public' => const AndroidNotificationDetails(
+        'khmer_public',
+        'Public holidays',
+        channelDescription: 'Public holiday alerts',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'religious' => const AndroidNotificationDetails(
+        'khmer_religious',
+        'Religious holidays',
+        channelDescription: 'Religious holiday alerts',
         importance: Importance.high,
         priority: Priority.high,
         icon: 'ic_stat_notify',
@@ -41,8 +49,8 @@ NotificationDetails _detailsFor(String channel) {
       ),
     'sil' => const AndroidNotificationDetails(
         'khmer_sil',
-        'Silas day',
-        channelDescription: 'Precept day reminders',
+        'Silas days',
+        channelDescription: 'Silas day alerts',
         importance: Importance.high,
         priority: Priority.high,
         icon: 'ic_stat_notify',
@@ -56,9 +64,9 @@ NotificationDetails _detailsFor(String channel) {
         icon: 'ic_stat_notify',
       ),
     _ => const AndroidNotificationDetails(
-        'khmer_events',
-        'Events',
-        channelDescription: 'Calendar events',
+        'khmer_tasks',
+        'Tasks',
+        channelDescription: 'Task reminders',
         importance: Importance.high,
         priority: Priority.high,
         icon: 'ic_stat_notify',
@@ -244,7 +252,7 @@ Future<void> syncReminders(AppStore store) async {
     return;
   }
   final sig =
-      '${store.notifyDaily}|${store.notifySil}|${store.notifyEvents}|${store.notifyHolidays}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+      '${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyReligious}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
   if (sig == _reminderSig) return;
   _reminderSig = sig;
   final shots = _collect(store);

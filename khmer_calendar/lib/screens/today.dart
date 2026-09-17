@@ -50,7 +50,7 @@ class _TodayPageState extends State<TodayPage> {
                       onPressed: () => store.goToDate(today),
                       icon: const Icon(Icons.today),
                     ),
-                  if (L.isSilDay)
+                  if (L.isSilDay && store.notifySil)
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8),
                       child: SilMark(size: 22),

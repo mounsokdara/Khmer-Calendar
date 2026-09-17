@@ -43,9 +43,12 @@ object SilNotify {
         val lang = WidgetStore.lang(context)
         val iso = WidgetStore.todayIso()
         val payload = WidgetStore.dayPayload(context, iso)
-        val lunar = payload?.optString("lunar").orEmpty()
-        val title = if (lang == "en") "Silas day" else "ថ្ងៃសីល"
-        val body = lunar.ifEmpty { title }
+        val km = lang != "en"
+        val title = if (km) "ថ្ងៃសីល" else "Silas day"
+        val moon = payload?.optString("moon").orEmpty()
+        val detail = WidgetStore.dayDetail(context, iso)
+        val head = if (moon.isNotEmpty()) "$title ($moon)" else title
+        val body = listOf(head, detail).filter { it.isNotEmpty() }.joinToString("\n")
         NotifyKit.post(context, NotifyKit.SIL_ID, NotifyKit.CHANNEL_SIL, title, body, "day", iso)
     }
 }
