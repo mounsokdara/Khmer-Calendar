@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -38,6 +39,7 @@ NotificationDetails _detailsFor(String channel) {
         importance: Importance.high,
         priority: Priority.high,
         icon: 'ic_stat_notify',
+        color: Color(0xFF1E88E5),
       ),
     'tasks' => const AndroidNotificationDetails(
         'khmer_tasks',

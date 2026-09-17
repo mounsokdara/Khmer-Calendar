@@ -86,6 +86,22 @@ class MainActivity : FlutterActivity() {
                     SilNotify.cancel(this)
                     result.success(true)
                 }
+                "armPublic" -> {
+                    PublicHolidayNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
+                    result.success(true)
+                }
+                "cancelPublic" -> {
+                    PublicHolidayNotify.cancel(this)
+                    result.success(true)
+                }
+                "armReligious" -> {
+                    ReligiousHolidayNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
+                    result.success(true)
+                }
+                "cancelReligious" -> {
+                    ReligiousHolidayNotify.cancel(this)
+                    result.success(true)
+                }
                 "getLaunch" -> result.success(launchMap(intent))
                 else -> result.notImplemented()
             }

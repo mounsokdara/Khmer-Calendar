@@ -127,7 +127,7 @@ Future<void> syncHomeWidget(AppStore store) async {
       'notifyReligious': store.notifyReligious,
       'sil_days': store.notifySil ? upcomingSilDates().join(',') : '',
       'public_hols': jsonEncode(upcomingHolidays(HolidayType.public)),
-      'religious_hols': jsonEncode(upcomingHolidays(HolidayType.religious)),
+      'religious_hols': jsonEncode(upcomingBlueHolidays()),
     });
   } catch (_) {}
 }
@@ -276,7 +276,35 @@ Future<void> cancelSilNotify() async {
   } catch (_) {}
 }
 
-Future<void> syncNativeAlarms(AppStore store) async {
+Future<void> armPublicNotify({bool showNow = false}) async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('armPublic', {'showNow': showNow});
+  } catch (_) {}
+}
+
+Future<void> cancelPublicNotify() async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('cancelPublic');
+  } catch (_) {}
+}
+
+Future<void> armReligiousNotify({bool showNow = false}) async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('armReligious', {'showNow': showNow});
+  } catch (_) {}
+}
+
+Future<void> cancelReligiousNotify() async {
+  if (!canPinHomeWidget) return;
+  try {
+    await _ch.invokeMethod<void>('cancelReligious');
+  } catch (_) {}
+}
+
+Future<void> syncNativeAlarms(AppStore store, {bool showNow = false}) async {
   if (!canPinHomeWidget) return;
   _widgetSig = '';
   await syncHomeWidget(store);
@@ -286,8 +314,18 @@ Future<void> syncNativeAlarms(AppStore store) async {
     await cancelDailyNotify();
   }
   if (store.notifyOn && store.notifySil) {
-    await armSilNotify(showNow: true);
+    await armSilNotify(showNow: showNow);
   } else {
     await cancelSilNotify();
+  }
+  if (store.notifyOn && store.notifyPublic) {
+    await armPublicNotify(showNow: showNow);
+  } else {
+    await cancelPublicNotify();
+  }
+  if (store.notifyOn && store.notifyReligious) {
+    await armReligiousNotify(showNow: showNow);
+  } else {
+    await cancelReligiousNotify();
   }
 }

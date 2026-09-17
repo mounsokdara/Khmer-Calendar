@@ -18,9 +18,11 @@ void main() {
 
   test('holidays of 2026 include Khmer New Year', () {
     final list = holidaysOfYear(2026);
-    expect(list.length, 24);
+    expect(list.length, 26);
     expect(list.any((h) => h.date == '2026-04-14' && h.nameEn == 'Khmer New Year'), isTrue);
-    expect(list.any((h) => h.date == '2026-02-02' && h.nameEn == 'Meak Bochea'), isTrue);
+    expect(list.any((h) => h.date == '2026-02-02' && h.nameEn == 'Meak Bochea' && h.type == HolidayType.religious), isTrue);
+    expect(list.any((h) => h.nameKm == 'វិសាខបូជា' && h.type == HolidayType.religious), isTrue);
+    expect(list.any((h) => h.nameKm == 'វិសាខបូជា' && h.type == HolidayType.public), isTrue);
   });
 
   test('khmer numerals', () {

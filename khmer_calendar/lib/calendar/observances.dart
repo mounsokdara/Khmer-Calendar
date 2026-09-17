@@ -262,19 +262,27 @@ String lunarLabel(String iso, Lang lang) {
 String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';
-  return o.holidayType == HolidayType.public ? 'sunday' : 'holiday';
+  if (o.holidayType == HolidayType.public) return 'sunday';
+  return 'holiday';
 }
 
 bool isPublicHoliday(String iso) => holidaysOn(iso).any((h) => h.type == HolidayType.public);
 
+bool isReligiousHoliday(String iso) {
+  if (holidaysOn(iso).any((h) => h.type == HolidayType.religious || h.type == HolidayType.traditional)) {
+    return true;
+  }
+  final y = fromIso(iso).year;
+  return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
+}
+
 String dayTone(String iso, bool inMonth) {
   if (!inMonth) return 'muted';
   final d = fromIso(iso);
+  if (isReligiousHoliday(iso)) return 'holiday';
   if (d.weekday % 7 == 0 || isPublicHoliday(iso)) return 'sunday';
   final info = dayInfo(iso);
   if ((info.holidays != null && info.holidays!.isNotEmpty) || holidaysOn(iso).isNotEmpty) return 'holiday';
-  final y = d.year;
-  if (kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso)) return 'holiday';
   return 'default';
 }
 

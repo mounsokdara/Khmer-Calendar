@@ -21,8 +21,8 @@ object NotifyKit {
     const val RELIGIOUS_ID = 1004
     const val DAILY_REQ = 41
     const val SIL_REQ = 42
-    const val PUBLIC_REQ = 43
-    const val RELIGIOUS_REQ = 44
+    const val PUBLIC_REQ = 4300
+    const val RELIGIOUS_REQ = 4400
 
     fun dailyOn(context: Context): Boolean = WidgetStore.dailyOn(context)
 
@@ -56,7 +56,7 @@ object NotifyKit {
         ch(CHANNEL_TASKS, if (km) "កិច្ចការ" else "Tasks", if (km) "ការរំលឹកកិច្ចការ" else "Task reminders")
     }
 
-    fun post(context: Context, id: Int, channel: String, title: String, body: String, tab: String, date: String?) {
+    fun post(context: Context, id: Int, channel: String, title: String, body: String, tab: String, date: String?, color: Int? = null) {
         ensureChannels(context)
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
         val builder =
@@ -66,16 +66,18 @@ object NotifyKit {
                 @Suppress("DEPRECATION")
                 Notification.Builder(context)
             }
-        val n =
-            builder
-                .setSmallIcon(R.drawable.ic_stat_notify)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setStyle(Notification.BigTextStyle().bigText(body))
-                .setAutoCancel(true)
-                .setContentIntent(WidgetStore.launch(context, tab, date))
-                .build()
-        nm.notify(id, n)
+        builder
+            .setSmallIcon(R.drawable.ic_stat_notify)
+            .setContentTitle(title)
+            .setContentText(body)
+            .setStyle(Notification.BigTextStyle().bigText(body))
+            .setAutoCancel(true)
+            .setContentIntent(WidgetStore.launch(context, tab, date))
+        if (color != null) {
+            builder.setColor(color)
+            if (Build.VERSION.SDK_INT >= 26) builder.setColorized(false)
+        }
+        nm.notify(id, builder.build())
     }
 
     fun cancelNote(context: Context, id: Int) {

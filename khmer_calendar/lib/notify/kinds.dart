@@ -182,8 +182,26 @@ class ReligiousHolidayReminder extends ReminderKind {
   bool get nativeAndroid => true;
 
   @override
-  List<ReminderShot> collect(AppStore store, DateTime now) =>
-      _holidayShots(store, now, HolidayType.religious, 'religious');
+  List<ReminderShot> collect(AppStore store, DateTime now) {
+    final lang = store.lang;
+    final out = <ReminderShot>[];
+    for (final h in upcomingBlueHolidays()) {
+      final day = fromIso(h['d']!);
+      final when = DateTime(day.year, day.month, day.day, 8);
+      if (!when.isAfter(now)) continue;
+      final name = lang == Lang.en ? h['en']! : h['km']!;
+      out.add(
+        ReminderShot(
+          'hol-religious-${h['d']}-${h['km']}',
+          name,
+          '${t(lang, 'holidayReligious')}\n${calendarDetail(day, lang)}',
+          when,
+          channel: 'religious',
+        ),
+      );
+    }
+    return out;
+  }
 }
 
 class TaskReminder extends ReminderKind {
@@ -237,6 +255,32 @@ List<String> upcomingSilDates({int days = 200}) {
 }
 
 List<Map<String, String>> upcomingHolidays(HolidayType type, {int years = 2}) {
+  return _upcomingHolidayMaps((h) => h.type == type, years: years);
+}
+
+List<Map<String, String>> upcomingBlueHolidays({int years = 2}) {
+  final out = _upcomingHolidayMaps(
+    (h) => h.type == HolidayType.religious || h.type == HolidayType.traditional,
+    years: years,
+  );
+  final now = DateTime.now();
+  final today = isoOf(DateTime(now.year, now.month, now.day));
+  final seen = {for (final h in out) '${h['d']}-${h['km']}'};
+  void addObs(Observance o) {
+    if (o.date.compareTo(today) < 0) return;
+    final key = '${o.date}-${o.title}';
+    if (!seen.add(key)) return;
+    out.add({'d': o.date, 'km': o.title, 'en': o.titleEn});
+  }
+  for (var y = now.year; y <= now.year + years; y++) {
+    kanBenOf(y).forEach(addObs);
+    senKantongOf(y).forEach(addObs);
+  }
+  out.sort((a, b) => a['d']!.compareTo(b['d']!));
+  return out;
+}
+
+List<Map<String, String>> _upcomingHolidayMaps(bool Function(Holiday h) keep, {int years = 2}) {
   final now = DateTime.now();
   final today = isoOf(DateTime(now.year, now.month, now.day));
   final out = <Map<String, String>>[];
@@ -249,7 +293,7 @@ List<Map<String, String>> upcomingHolidays(HolidayType type, {int years = 2}) {
       continue;
     }
     for (final h in list) {
-      if (h.type != type) continue;
+      if (!keep(h)) continue;
       if (h.date.compareTo(today) < 0) continue;
       final key = '${h.date}-${h.nameKm}';
       if (!seen.add(key)) continue;

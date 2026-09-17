@@ -118,6 +118,8 @@ class SegmentedSwitch extends StatelessWidget {
   const SegmentedSwitch({
     super.key,
     this.icon,
+    this.leading,
+    this.iconColor,
     required this.title,
     this.subtitle,
     required this.value,
@@ -125,6 +127,8 @@ class SegmentedSwitch extends StatelessWidget {
   });
 
   final IconData? icon;
+  final Widget? leading;
+  final Color? iconColor;
   final String title;
   final String? subtitle;
   final bool value;
@@ -134,7 +138,7 @@ class SegmentedSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       contentPadding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
-      secondary: icon == null ? null : Icon(icon, size: 24),
+      secondary: leading ?? (icon == null ? null : Icon(icon, size: 24, color: iconColor)),
       title: Text(
         title,
         maxLines: 2,

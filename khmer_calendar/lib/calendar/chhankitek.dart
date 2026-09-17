@@ -527,12 +527,14 @@ bool _lunarMatches(LunarDay e, {required String month, required String status, r
     e.khmerMonth == month && e.moonStatus == status && days.contains(e.moonDay);
 
 void _pushHoliday(List<Holiday> e, Holiday t) {
-  final n = e.indexWhere((x) => x.date == t.date && (x.nameEn == t.nameEn || x.nameKm == t.nameKm));
+  final n = e.indexWhere(
+    (x) => x.date == t.date && x.type == t.type && (x.nameEn == t.nameEn || x.nameKm == t.nameKm),
+  );
   if (n == -1) {
     e.add(t);
     return;
   }
-  if (e[n].type != HolidayType.public && t.type == HolidayType.public) e[n] = t;
+  e[n] = t;
 }
 
 void _applyLunarHolidays(List<Holiday> list, LunarDay t, String n) {

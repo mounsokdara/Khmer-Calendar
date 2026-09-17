@@ -20,6 +20,7 @@ import '../widgets/overlay_page.dart';
 import '../widgets/scheme_chips.dart';
 import '../widgets/segmented_list.dart';
 import '../widgets/dialog_actions.dart';
+import '../widgets/sil_mark.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Calendar/releases/latest/download';
 
@@ -642,22 +643,23 @@ class NotificationsPage extends StatelessWidget {
                   ),
                   SegmentedSwitch(
                     icon: Icons.temple_buddhist_outlined,
+                    iconColor: religiousColor,
                     title: t(lang, 'remindReligious'),
                     subtitle: t(lang, 'remindReligiousSub'),
                     value: store.notifyReligious,
                     onChanged: (v) async {
                       await toggle(v, store.setNotifyReligious);
-                      await syncNativeAlarms(store);
+                      await syncNativeAlarms(store, showNow: v);
                     },
                   ),
                   SegmentedSwitch(
-                    icon: Icons.brightness_2_outlined,
+                    leading: const SilMark(size: 24),
                     title: t(lang, 'remindSil'),
                     subtitle: t(lang, 'remindSilSub'),
                     value: store.notifySil,
                     onChanged: (v) async {
                       await toggle(v, store.setNotifySil);
-                      await syncNativeAlarms(store);
+                      await syncNativeAlarms(store, showNow: v);
                     },
                   ),
                   SegmentedSwitch(
