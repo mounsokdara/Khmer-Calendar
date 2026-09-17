@@ -1,26 +1,21 @@
-import 'dart:io';
+import 'package:flutter/services.dart';
 
-import 'package:launch_at_startup/launch_at_startup.dart';
+const _ch = MethodChannel('khmer.autostart');
 
-void _setup() {
-  LaunchAtStartup.instance.setup(
-    appName: 'Khmer Calendar',
-    appPath: Platform.resolvedExecutable,
-  );
+Future<bool> _call(String method) async {
+  try {
+    return await _ch.invokeMethod<bool>(method) ?? false;
+  } on MissingPluginException {
+    return false;
+  } catch (_) {
+    return false;
+  }
 }
 
-Future<bool> enableDesktopAutostart() async {
-  _setup();
-  await LaunchAtStartup.instance.enable();
-  return LaunchAtStartup.instance.isEnabled();
-}
+Future<bool> enableDesktopAutostart() => _call('enable');
 
 Future<void> disableDesktopAutostart() async {
-  _setup();
-  await LaunchAtStartup.instance.disable();
+  await _call('disable');
 }
 
-Future<bool> isDesktopAutostartEnabled() async {
-  _setup();
-  return LaunchAtStartup.instance.isEnabled();
-}
+Future<bool> isDesktopAutostartEnabled() => _call('isEnabled');

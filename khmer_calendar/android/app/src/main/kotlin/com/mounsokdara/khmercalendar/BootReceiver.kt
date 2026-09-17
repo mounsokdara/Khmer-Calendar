@@ -1,6 +1,5 @@
 package com.mounsokdara.khmercalendar
 
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,16 +17,7 @@ class BootReceiver : BroadcastReceiver() {
         ) {
             return
         }
-        try {
-            context.stopService(Intent(context, KeepAliveService::class.java))
-            val nm = context.getSystemService(NotificationManager::class.java)
-            nm?.cancel(KeepAliveService.ID)
-        } catch (_: Exception) {
-        }
-        NotifyKit.sync(context)
-        TodayWidgetProvider.refreshAll(context)
-        MonthWidgetProvider.refreshAll(context)
-        WeatherWidgetProvider.refreshAll(context)
+        BootWork.run(context)
     }
 
     companion object {

@@ -33,7 +33,22 @@ const _apis = [
   ),
   _Credit('Device geolocation', 'Finds the nearest city for weather'),
   _Credit('System notifications', 'Event, holiday, and task reminders'),
-  _Credit('Launch at startup', 'Starts the app when the device boots'),
+  _Credit(
+    'Windows Run key',
+    'Starts the desktop app at Windows sign-in. Also uses the Startup folder.',
+  ),
+  _Credit(
+    'macOS SMAppService',
+    'Registers the app as a login item on macOS 13 and later',
+  ),
+  _Credit(
+    'XDG Autostart',
+    'Writes a .desktop file so Linux desktops start the app at login',
+  ),
+  _Credit(
+    'Android App Startup',
+    'Re-arms reminders and widgets when the process starts after boot',
+  ),
 ];
 
 const _libraries = [
@@ -51,7 +66,6 @@ const _libraries = [
   _Credit('flutter_local_notifications', 'Schedules reminders'),
   _Credit('flutter_timezone', 'Local time zone for alarms'),
   _Credit('timezone', 'Time zone database'),
-  _Credit('launch_at_startup', 'Desktop auto start'),
   _Credit('dynamic_color', 'Wallpaper colors on Material You devices'),
   _Credit('cupertino_icons', 'iOS-style icons'),
 ];
