@@ -69,21 +69,6 @@
           navigator.serviceWorker.register('offline.js').catch(function () {});
         });
       }
-      var grok = document.createElement('script');
-      grok.src = 'https://grok.com/grok-app-builder/extensions.js';
-      grok.async = true;
-      grok.onerror = function () {};
-      document.head.appendChild(grok);
-
-      var CHANNEL = "grok-preview-bridge";
-      window.addEventListener("message", function (ev) {
-        var d = ev.data;
-        if (!d || d.channel !== CHANNEL) return;
-        if (d.type === "navigate" && typeof d.path === "string" && d.path.charAt(0) === "/" && d.path.indexOf("//") !== 0) {
-          history.pushState({}, "", d.path);
-        }
-        if (d.type === "history" && (d.delta === -1 || d.delta === 1)) history.go(d.delta);
-      });
       window.addEventListener("flutter-first-frame", function () {
         var boot = document.getElementById("boot");
         if (boot) boot.remove();
