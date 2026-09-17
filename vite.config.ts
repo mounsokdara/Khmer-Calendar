@@ -8,7 +8,7 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 // @ts-expect-error JS plugin alongside the TS vite config
-import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
+import { appPwaPlugin } from "./scripts/app-pwa-plugin.mjs";
 // @ts-expect-error JS plugin alongside the TS vite config
 import { appEnvPlugin } from "./scripts/app-env-plugin.mjs";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
@@ -119,7 +119,7 @@ const NATIVE_PACKS = new Set([
 function nativePackMiddleware(root: string) {
   return (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const urlPath = decodeURIComponent((req.url ?? "").split("?")[0] ?? "");
-    const hit = urlPath.match(/^\/native\/([^/]+)$/);
+    const hit = urlPath.match(/^\/native\/([^/]+)\$/);
     if (!hit) {
       next();
       return;
@@ -189,7 +189,7 @@ export default defineConfig(({ command, isPreview }) => ({
     authPopupPlugin(),
     nativeDownloadPlugin(),
     appEnvPlugin(),
-    grokPwaPlugin(),
+    appPwaPlugin(),
     tailwindcss(),
     tanstackStart(),
     ...(command === "build" || isPreview
