@@ -32,10 +32,10 @@ NotificationDetails _detailsFor(String channel) {
         priority: Priority.high,
         icon: 'ic_stat_notify',
       ),
-    'religious' => const AndroidNotificationDetails(
+    'religious' || 'others' => const AndroidNotificationDetails(
         'khmer_religious',
-        'Religious holidays',
-        channelDescription: 'Religious holiday alerts',
+        'Other holidays',
+        channelDescription: 'Alerts for other holidays',
         importance: Importance.high,
         priority: Priority.high,
         icon: 'ic_stat_notify',
@@ -86,7 +86,12 @@ void bindReminderSync(AppStore store) {
   if (_bound) return;
   _bound = true;
   store.addListener(() {
-    if (!store.notifyOn) return;
+    final sig = _reminderSignature(store);
+    if (store.notifyOn) {
+      if (sig == _reminderSig) return;
+    } else if (_reminderSig.isEmpty) {
+      return;
+    }
     _syncDebounce?.cancel();
     _syncDebounce = Timer(const Duration(milliseconds: 400), () => syncReminders(store));
   });
@@ -243,6 +248,9 @@ Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
   }
 }
 
+String _reminderSignature(AppStore store) =>
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+
 Future<void> syncReminders(AppStore store) async {
   if (!_ready) {
     if (store.notifyOn) await initReminderEngine();
@@ -253,8 +261,7 @@ Future<void> syncReminders(AppStore store) async {
     await cancelAllReminders();
     return;
   }
-  final sig =
-      '${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyReligious}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+  final sig = _reminderSignature(store);
   if (sig == _reminderSig) return;
   _reminderSig = sig;
   final shots = _collect(store);

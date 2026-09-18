@@ -52,7 +52,7 @@ object NotifyKit {
         ch(CHANNEL_DAILY, if (km) "រំលឹកប្រចាំថ្ងៃ" else "Daily reminder", if (km) "ជូនដំណឹងព្រឹកពីប្រតិទិនថ្ងៃនេះ" else "Morning calendar recap")
         ch(CHANNEL_SIL, if (km) "ថ្ងៃសីល" else "Silas days", if (km) "ជូនដំណឹងនៅថ្ងៃសីល" else "Silas day alerts", high = true)
         ch(CHANNEL_PUBLIC, if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holidays", if (km) "ជូនដំណឹងថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holiday alerts", high = true)
-        ch(CHANNEL_RELIGIOUS, if (km) "ថ្ងៃបុណ្យសាសនា" else "Religious holidays", if (km) "ជូនដំណឹងថ្ងៃបុណ្យសាសនា" else "Religious holiday alerts", high = true)
+        ch(CHANNEL_RELIGIOUS, if (km) "ថ្ងៃបុណ្យផ្សេងទៀត" else "Other holidays", if (km) "ជូនដំណឹងថ្ងៃបុណ្យផ្សេងទៀត" else "Other holiday alerts", high = true)
         ch(CHANNEL_TASKS, if (km) "កិច្ចការ" else "Tasks", if (km) "ការរំលឹកកិច្ចការ" else "Task reminders")
     }
 

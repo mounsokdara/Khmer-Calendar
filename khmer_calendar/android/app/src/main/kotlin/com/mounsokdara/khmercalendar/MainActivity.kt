@@ -136,6 +136,7 @@ class MainActivity : FlutterActivity() {
         (map["notifyDaily"] as? Boolean)?.let { ed.putBoolean("notifyDaily", it) }
         (map["notifySil"] as? Boolean)?.let { ed.putBoolean("notifySil", it) }
         (map["notifyPublic"] as? Boolean)?.let { ed.putBoolean("notifyPublic", it) }
+        (map["notifyOthers"] as? Boolean)?.let { ed.putBoolean("notifyOthers", it) }
         (map["notifyReligious"] as? Boolean)?.let { ed.putBoolean("notifyReligious", it) }
         ed.apply()
         NotifyKit.sync(this)

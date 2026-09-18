@@ -499,7 +499,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (!v) {
                         store.setNotifyOn(false);
                         await cancelAllReminders();
-                        await syncNativeAlarms(store);
+                        await syncHomeWidget(store);
                         return;
                       }
                       final ok = await requestNotifications(store);
@@ -598,20 +598,14 @@ class NotificationsPage extends StatelessWidget {
         final lang = store.lang;
 
         Future<void> toggle(bool v, void Function(bool) set) async {
-          if (!v) {
-            set(false);
-            await syncReminders(store);
-            return;
-          }
-          if (!store.notifyOn) {
+          if (v && !store.notifyOn) {
             final ok = await requestNotifications(store);
             if (!ok && context.mounted) {
               await promptIfDenied(store, context: context, kind: 'notify', allowed: notificationsAllowed);
             }
             if (!store.notifyOn) return;
           }
-          set(true);
-          await syncReminders(store);
+          set(v);
         }
 
         return OverlayScaffold(
@@ -626,41 +620,29 @@ class NotificationsPage extends StatelessWidget {
                     title: t(lang, 'remindDaily'),
                     subtitle: t(lang, 'remindDailySub'),
                     value: store.notifyDaily,
-                    onChanged: (v) async {
-                      await toggle(v, store.setNotifyDaily);
-                      await syncNativeAlarms(store);
-                    },
+                    onChanged: (v) => toggle(v, store.setNotifyDaily),
                   ),
                   SegmentedSwitch(
                     icon: Icons.flag_outlined,
                     title: t(lang, 'remindPublic'),
                     subtitle: t(lang, 'remindPublicSub'),
                     value: store.notifyPublic,
-                    onChanged: (v) async {
-                      await toggle(v, store.setNotifyPublic);
-                      await syncNativeAlarms(store);
-                    },
+                    onChanged: (v) => toggle(v, store.setNotifyPublic),
                   ),
                   SegmentedSwitch(
-                    icon: Icons.temple_buddhist_outlined,
+                    icon: Icons.event_outlined,
                     iconColor: religiousColor,
-                    title: t(lang, 'remindReligious'),
-                    subtitle: t(lang, 'remindReligiousSub'),
-                    value: store.notifyReligious,
-                    onChanged: (v) async {
-                      await toggle(v, store.setNotifyReligious);
-                      await syncNativeAlarms(store, showNow: v);
-                    },
+                    title: t(lang, 'remindOthers'),
+                    subtitle: t(lang, 'remindOthersSub'),
+                    value: store.notifyOthers,
+                    onChanged: (v) => toggle(v, store.setNotifyOthers),
                   ),
                   SegmentedSwitch(
                     leading: const SilMark(size: 24),
                     title: t(lang, 'remindSil'),
                     subtitle: t(lang, 'remindSilSub'),
                     value: store.notifySil,
-                    onChanged: (v) async {
-                      await toggle(v, store.setNotifySil);
-                      await syncNativeAlarms(store, showNow: v);
-                    },
+                    onChanged: (v) => toggle(v, store.setNotifySil),
                   ),
                   SegmentedSwitch(
                     icon: Icons.task_alt,

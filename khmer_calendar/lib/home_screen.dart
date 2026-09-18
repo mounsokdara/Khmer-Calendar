@@ -17,26 +17,34 @@ import 'wx_cache.dart';
 const _ch = MethodChannel('khmer.permissions');
 var _bound = false;
 Timer? _widgetDebounce;
-String _widgetSig = '';
+String _displaySig = '';
+String _notifySig = '';
+Map<String, dynamic>? _displayPayload;
 
 bool get canPinHomeWidget {
   if (kIsWeb) return false;
   return defaultTargetPlatform == TargetPlatform.android;
 }
 
+String _widgetDisplaySig(AppStore store) =>
+    '${store.lang}|${store.weekStartsOn}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}').join(',')}|${todayIso()}';
+
+String _widgetNotifySig(AppStore store) =>
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}';
+
 void bindHomeWidget(AppStore store) {
   if (_bound) return;
   _bound = true;
   store.addListener(() {
+    final sig = '${_widgetDisplaySig(store)}|${_widgetNotifySig(store)}';
+    if (sig == '$_displaySig|$_notifySig') return;
     _widgetDebounce?.cancel();
-    _widgetDebounce = Timer(const Duration(milliseconds: 450), () async {
-      await syncHomeWidget(store);
-      await syncNativeAlarms(store);
+    _widgetDebounce = Timer(const Duration(milliseconds: 450), () {
+      syncHomeWidget(store);
     });
   });
   syncHomeWidget(store);
   syncWeatherWidget(store);
-  syncNativeAlarms(store);
   _ch.setMethodCallHandler((call) async {
     if (call.method == 'open') applyWidgetLaunch(store, call.arguments);
   });
@@ -53,10 +61,28 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
 
 Future<void> syncHomeWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
-  final sig =
-      '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyReligious}|${store.events.length}|${todayIso()}';
-  if (sig == _widgetSig) return;
-  _widgetSig = sig;
+  final displaySig = _widgetDisplaySig(store);
+  final notifySig = _widgetNotifySig(store);
+  if (displaySig == _displaySig && notifySig == _notifySig) return;
+  if (displaySig != _displaySig || _displayPayload == null) {
+    _displayPayload = _buildWidgetDisplay(store);
+    _displaySig = displaySig;
+  }
+  _notifySig = notifySig;
+  try {
+    await _ch.invokeMethod<void>('updateWidget', {
+      ..._displayPayload!,
+      'notifyOn': store.notifyOn,
+      'notifyDaily': store.notifyDaily,
+      'notifySil': store.notifySil,
+      'notifyPublic': store.notifyPublic,
+      'notifyOthers': store.notifyOthers,
+      'notifyReligious': store.notifyOthers,
+    });
+  } catch (_) {}
+}
+
+Map<String, dynamic> _buildWidgetDisplay(AppStore store) {
   final now = DateTime.now();
   final iso = todayIso();
   final lunar = lunarOf(now);
@@ -91,53 +117,59 @@ Future<void> syncHomeWidget(AppStore store) async {
   }
   final marks = <String, String>{};
   final names = <String, String>{};
-  void flag(String iso, String f) {
-    final cur = marks[iso] ?? '';
-    if (!cur.contains(f)) marks[iso] = '$cur$f';
+  void flag(String day, String f) {
+    final cur = marks[day] ?? '';
+    if (!cur.contains(f)) marks[day] = '$cur$f';
   }
+
   for (var y = now.year - 5; y <= now.year + 5; y++) {
-    for (final o in yearObservances(y, store.events)) {
-      if (o.date.isEmpty) continue;
-      if (o.kind == Kind.holiday) {
-        if (o.holidayType == HolidayType.public) {
-          flag(o.date, 'p');
-        } else if (o.holidayType == HolidayType.religious ||
-            o.holidayType == HolidayType.traditional ||
-            o.holidayType == HolidayType.international) {
-          flag(o.date, 'h');
-        }
-        names.putIfAbsent(o.date, () => obsTitle(o, lang));
-      } else if (o.kind == Kind.event) {
-        flag(o.date, 't');
-        names.putIfAbsent(o.date, () => obsTitle(o, lang));
-      } else if (o.kind == Kind.sil) {
-        flag(o.date, 's');
+    List<Holiday> yearHols;
+    try {
+      yearHols = holidaysOfYear(y);
+    } catch (_) {
+      continue;
+    }
+    for (final h in yearHols) {
+      if (h.type == HolidayType.public) {
+        flag(h.date, 'p');
+      } else {
+        flag(h.date, 'h');
       }
+      names.putIfAbsent(h.date, () => lang == Lang.en ? h.nameEn : h.nameKm);
+    }
+    for (final o in [...kanBenOf(y), ...senKantongOf(y)]) {
+      flag(o.date, 'h');
+      names.putIfAbsent(o.date, () => obsTitle(o, lang));
+    }
+    var d = DateTime(y, 1, 1);
+    final last = DateTime(y, 12, 31);
+    while (!d.isAfter(last)) {
+      if (lunarOf(d).isSilDay) flag(isoOf(d), 's');
+      d = addDays(d, 1);
     }
   }
-  try {
-    await _ch.invokeMethod<void>('updateWidget', {
-      'iso': iso,
-      'day': '${now.day}',
-      'weekday': weekdaysFull(lang)[now.weekday % 7],
-      'lunar': lunarText,
-      'holiday': holiday,
-      'title': t(lang, 'appName'),
-      'days': jsonEncode(days),
-      'marks': jsonEncode(marks),
-      'names': jsonEncode(names),
-      'lang': lang == Lang.en ? 'en' : 'km',
-      'weekStartsOn': store.weekStartsOn,
-      'notifyOn': store.notifyOn,
-      'notifyDaily': store.notifyDaily,
-      'notifySil': store.notifySil,
-      'notifyPublic': store.notifyPublic,
-      'notifyReligious': store.notifyReligious,
-      'sil_days': store.notifySil ? upcomingSilDates().join(',') : '',
-      'public_hols': jsonEncode(upcomingHolidays(HolidayType.public)),
-      'religious_hols': jsonEncode(upcomingBlueHolidays()),
-    });
-  } catch (_) {}
+  for (final e in store.events) {
+    if (e.date.isEmpty) continue;
+    flag(e.date, 't');
+    names.putIfAbsent(e.date, () => e.title);
+  }
+
+  return {
+    'iso': iso,
+    'day': '${now.day}',
+    'weekday': weekdaysFull(lang)[now.weekday % 7],
+    'lunar': lunarText,
+    'holiday': holiday,
+    'title': t(lang, 'appName'),
+    'days': jsonEncode(days),
+    'marks': jsonEncode(marks),
+    'names': jsonEncode(names),
+    'lang': lang == Lang.en ? 'en' : 'km',
+    'weekStartsOn': store.weekStartsOn,
+    'sil_days': upcomingSilDates().join(','),
+    'public_hols': jsonEncode(upcomingHolidays(HolidayType.public)),
+    'religious_hols': jsonEncode(upcomingOtherHolidays()),
+  };
 }
 
 Future<void> syncWeatherWidget(AppStore store) async {
@@ -314,26 +346,5 @@ Future<void> cancelReligiousNotify() async {
 
 Future<void> syncNativeAlarms(AppStore store, {bool showNow = false}) async {
   if (!canPinHomeWidget) return;
-  _widgetSig = '';
   await syncHomeWidget(store);
-  if (store.notifyOn && store.notifyDaily) {
-    await armDailyNotify();
-  } else {
-    await cancelDailyNotify();
-  }
-  if (store.notifyOn && store.notifySil) {
-    await armSilNotify(showNow: showNow);
-  } else {
-    await cancelSilNotify();
-  }
-  if (store.notifyOn && store.notifyPublic) {
-    await armPublicNotify(showNow: showNow);
-  } else {
-    await cancelPublicNotify();
-  }
-  if (store.notifyOn && store.notifyReligious) {
-    await armReligiousNotify(showNow: showNow);
-  } else {
-    await cancelReligiousNotify();
-  }
 }

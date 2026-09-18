@@ -43,6 +43,7 @@ object DailyDigestNotify {
                 when (hkind) {
                     "religious" -> if (km) "ថ្ងៃបុណ្យសាសនា" else "Religious holiday"
                     "traditional" -> if (km) "ថ្ងៃប្រពៃណីខ្មែរ" else "Khmer tradition"
+                    "international" -> if (km) "ព្រឹត្តិការណ៍អន្តរជាតិ" else "International event"
                     else -> if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holiday"
                 }
             lines.add("$kind: $holiday")

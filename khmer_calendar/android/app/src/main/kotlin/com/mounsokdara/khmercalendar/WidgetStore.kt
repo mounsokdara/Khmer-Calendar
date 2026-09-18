@@ -102,7 +102,18 @@ object WidgetStore {
 
     fun publicOn(context: Context) = kindOn(context, "notifyPublic", true)
 
-    fun religiousOn(context: Context) = kindOn(context, "notifyReligious", true)
+    fun othersOn(context: Context): Boolean {
+        val p = prefs(context)
+        val enabled =
+            if (p.contains("notifyOthers")) {
+                p.getBoolean("notifyOthers", true)
+            } else {
+                p.getBoolean("notifyReligious", true)
+            }
+        return masterNotifyOn(context) && enabled
+    }
+
+    fun religiousOn(context: Context) = othersOn(context)
 
     fun dayDetail(context: Context, iso: String = todayIso()): String {
         val p = dayPayload(context, iso) ?: return ""

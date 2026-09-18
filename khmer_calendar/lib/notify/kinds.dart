@@ -26,7 +26,7 @@ const reminderKinds = <ReminderKind>[
   DailyReminder(),
   SilReminder(),
   PublicHolidayReminder(),
-  ReligiousHolidayReminder(),
+  OtherHolidayReminder(),
   TaskReminder(),
 ];
 
@@ -172,11 +172,11 @@ class PublicHolidayReminder extends ReminderKind {
       _holidayShots(store, now, HolidayType.public, 'public');
 }
 
-class ReligiousHolidayReminder extends ReminderKind {
-  const ReligiousHolidayReminder();
+class OtherHolidayReminder extends ReminderKind {
+  const OtherHolidayReminder();
 
   @override
-  bool enabled(AppStore store) => store.notifyReligious;
+  bool enabled(AppStore store) => store.notifyOthers;
 
   @override
   bool get nativeAndroid => true;
@@ -185,18 +185,23 @@ class ReligiousHolidayReminder extends ReminderKind {
   List<ReminderShot> collect(AppStore store, DateTime now) {
     final lang = store.lang;
     final out = <ReminderShot>[];
-    for (final h in upcomingBlueHolidays()) {
+    for (final h in upcomingOtherHolidays()) {
       final day = fromIso(h['d']!);
       final when = DateTime(day.year, day.month, day.day, 8);
       if (!when.isAfter(now)) continue;
       final name = lang == Lang.en ? h['en']! : h['km']!;
+      final type = switch (h['type']) {
+        'international' => HolidayType.international,
+        'traditional' => HolidayType.traditional,
+        _ => HolidayType.religious,
+      };
       out.add(
         ReminderShot(
-          'hol-religious-${h['d']}-${h['km']}',
+          'hol-other-${h['d']}-${h['km']}',
           name,
-          '${t(lang, 'holidayReligious')}\n${calendarDetail(day, lang)}',
+          '${holidayTypeLabel(type, lang)}\n${calendarDetail(day, lang)}',
           when,
-          channel: 'religious',
+          channel: 'others',
         ),
       );
     }
@@ -258,9 +263,12 @@ List<Map<String, String>> upcomingHolidays(HolidayType type, {int years = 2}) {
   return _upcomingHolidayMaps((h) => h.type == type, years: years);
 }
 
-List<Map<String, String>> upcomingBlueHolidays({int years = 2}) {
+List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
   final out = _upcomingHolidayMaps(
-    (h) => h.type == HolidayType.religious || h.type == HolidayType.traditional,
+    (h) =>
+        h.type == HolidayType.religious ||
+        h.type == HolidayType.traditional ||
+        h.type == HolidayType.international,
     years: years,
   );
   final now = DateTime.now();
@@ -270,7 +278,7 @@ List<Map<String, String>> upcomingBlueHolidays({int years = 2}) {
     if (o.date.compareTo(today) < 0) return;
     final key = '${o.date}-${o.title}';
     if (!seen.add(key)) return;
-    out.add({'d': o.date, 'km': o.title, 'en': o.titleEn});
+    out.add({'d': o.date, 'km': o.title, 'en': o.titleEn, 'type': 'traditional'});
   }
   for (var y = now.year; y <= now.year + years; y++) {
     kanBenOf(y).forEach(addObs);
@@ -297,7 +305,7 @@ List<Map<String, String>> _upcomingHolidayMaps(bool Function(Holiday h) keep, {i
       if (h.date.compareTo(today) < 0) continue;
       final key = '${h.date}-${h.nameKm}';
       if (!seen.add(key)) continue;
-      out.add({'d': h.date, 'km': h.nameKm, 'en': h.nameEn});
+      out.add({'d': h.date, 'km': h.nameKm, 'en': h.nameEn, 'type': h.type.name});
     }
   }
   return out;

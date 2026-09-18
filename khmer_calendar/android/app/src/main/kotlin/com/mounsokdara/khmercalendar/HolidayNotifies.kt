@@ -141,7 +141,7 @@ object ReligiousHolidayNotify {
         val item = WidgetStore.holidayEntry(context, LIST, iso) ?: return
         val km = WidgetStore.lang(context) != "en"
         val name = if (km) item.optString("km") else item.optString("en")
-        val kind = if (km) "ថ្ងៃបុណ្យសាសនា" else "Religious holiday"
+        val kind = if (km) "ថ្ងៃបុណ្យផ្សេងទៀត" else "Other holiday"
         val body = listOf(kind, WidgetStore.dayDetail(context, iso)).filter { it.isNotEmpty() }.joinToString("\n")
         NotifyKit.post(
             context,
