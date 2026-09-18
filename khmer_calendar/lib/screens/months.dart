@@ -412,7 +412,7 @@ class _DayCell extends StatelessWidget {
             child: Stack(
               alignment: Alignment.topCenter,
               children: [
-                if (lunar.isSilDay && inMonth && store.notifySil)
+                if (lunar.isSilDay && inMonth)
                   const Positioned(
                     top: 3,
                     right: 3,

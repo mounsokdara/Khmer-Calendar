@@ -103,7 +103,7 @@ Future<void> syncHomeWidget(AppStore store) async {
         flag(o.date, 't');
         names.putIfAbsent(o.date, () => obsTitle(o, lang));
       } else if (o.kind == Kind.sil) {
-        if (store.notifySil) flag(o.date, 's');
+        flag(o.date, 's');
       }
     }
   }
