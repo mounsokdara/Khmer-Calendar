@@ -101,7 +101,9 @@ Future<void> syncHomeWidget(AppStore store) async {
       if (o.kind == Kind.holiday) {
         if (o.holidayType == HolidayType.public) {
           flag(o.date, 'p');
-        } else if (o.holidayType == HolidayType.religious || o.holidayType == HolidayType.traditional) {
+        } else if (o.holidayType == HolidayType.religious ||
+            o.holidayType == HolidayType.traditional ||
+            o.holidayType == HolidayType.international) {
           flag(o.date, 'h');
         }
         names.putIfAbsent(o.date, () => obsTitle(o, lang));

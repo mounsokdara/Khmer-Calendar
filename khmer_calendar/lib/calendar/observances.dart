@@ -264,7 +264,6 @@ String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';
   if (o.holidayType == HolidayType.public) return 'sunday';
-  if (o.holidayType == HolidayType.international) return 'event';
   return 'holiday';
 }
 
@@ -278,11 +277,25 @@ bool isReligiousHoliday(String iso) {
   return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
 }
 
+bool isObservanceHoliday(String iso) {
+  if (holidaysOn(iso).any(
+    (h) =>
+        h.type == HolidayType.religious ||
+        h.type == HolidayType.traditional ||
+        h.type == HolidayType.international,
+  )) {
+    return true;
+  }
+  final y = fromIso(iso).year;
+  return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
+}
+
 String dayTone(String iso, bool inMonth) {
   if (!inMonth) return 'muted';
   final d = fromIso(iso);
-  if (isReligiousHoliday(iso)) return 'holiday';
-  if (d.weekday % 7 == 0 || isPublicHoliday(iso)) return 'sunday';
+  if (isPublicHoliday(iso)) return 'sunday';
+  if (isObservanceHoliday(iso)) return 'holiday';
+  if (d.weekday % 7 == 0) return 'sunday';
   return 'default';
 }
 

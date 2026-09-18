@@ -1,5 +1,7 @@
 // Khmer Chhankitek lunar engine, ported from the original APK calculator.
 
+import 'chinese_lunar.dart';
+
 enum HolidayType { public, religious, traditional, international }
 
 class Holiday {
@@ -571,6 +573,13 @@ void _applyLunarHolidays(List<Holiday> list, LunarDay t, String n) {
     _lunarMatches(t, month: 'អាសាឍ', status: _waxing, days: const [15]) ||
         _lunarMatches(t, month: 'ទុតិយាសាឍ', status: _waxing, days: const [15]),
   );
+  add(
+    'បុណ្យអាសាឡ្ហបូជា',
+    'Asalha Puja',
+    HolidayType.religious,
+    _lunarMatches(t, month: 'អាសាឍ', status: _waxing, days: const [15]) ||
+        _lunarMatches(t, month: 'ទុតិយាសាឍ', status: _waxing, days: const [15]),
+  );
   add('ចេញព្រះវស្សា', 'Leaving Vassa', HolidayType.religious, _lunarMatches(t, month: 'អស្សុជ', status: _waxing, days: const [15]));
   add('កឋិន', 'Kathina', HolidayType.religious, _lunarMatches(t, month: 'អស្សុជ', status: _waning, days: const [1]));
   add(
@@ -585,6 +594,78 @@ void _applyLunarHolidays(List<Holiday> list, LunarDay t, String n) {
     HolidayType.traditional,
     _lunarMatches(t, month: 'ផល្គុន', status: _waning, days: const [15]),
   );
+}
+
+void _applyChineseHolidays(List<Holiday> list, DateTime gregorian, String iso) {
+  final lunar = solarToChineseLunar(gregorian.year, gregorian.month, gregorian.day);
+  if (lunar == null) return;
+
+  void add(String km, String en, bool ok) {
+    if (ok) {
+      _pushHoliday(list, Holiday(date: iso, nameKm: km, nameEn: en, type: HolidayType.traditional));
+    }
+  }
+
+  if (!lunar.isLeap) {
+    add('សែនដកជើងធូប', 'Kitchen God Festival', lunar.month == 12 && lunar.day == 24);
+    add('បុណ្យចូលឆ្នាំចិន', 'Chinese New Year', lunar.month == 1 && lunar.day >= 1 && lunar.day <= 3);
+    add('សែននំចាំង', 'Sticky Rice Festival', lunar.month == 5 && lunar.day == 5);
+    add('សែនក្បាលទឹក', 'Hungry Ghost Festival', lunar.month == 7 && lunar.day == 15);
+    add('បុណ្យសែនព្រះខែ', 'Mid-Autumn Festival', lunar.month == 8 && lunar.day == 15);
+  }
+
+  final next = _addDays(gregorian, 1);
+  final tomorrow = solarToChineseLunar(next.year, next.month, next.day);
+  add(
+    'សែនចូលឆ្នាំចិន',
+    "Chinese New Year's Eve",
+    tomorrow != null && tomorrow.month == 1 && tomorrow.day == 1 && !tomorrow.isLeap,
+  );
+}
+
+int _qingmingAprilDay(int year) {
+  final y = year % 100;
+  final c = year >= 2000 ? 4.81 : 5.59;
+  return (y * 0.2422 + c).floor() - (y ~/ 4);
+}
+
+DateTime _winterSolsticeIct(int year) {
+  final y = (year - 2000) / 1000.0;
+  final y2 = y * y;
+  final y3 = y2 * y;
+  final y4 = y2 * y2;
+  final jde = 2451900.05952 + 365242.74049 * y - 0.06223 * y2 - 0.00823 * y3 + 0.00032 * y4;
+  final unixMs = ((jde - 2440587.5) * 86400000).round();
+  final ict = DateTime.fromMillisecondsSinceEpoch(unixMs + 7 * 3600 * 1000, isUtc: true);
+  return DateTime(ict.year, ict.month, ict.day);
+}
+
+DateTime _nthWeekdayOfMonth(int year, int month, int weekday, int n) {
+  final first = DateTime(year, month, 1);
+  final delta = (weekday - first.weekday + 7) % 7;
+  return DateTime(year, month, 1 + delta + (n - 1) * 7);
+}
+
+List<Holiday> _movableInternational(int e) {
+  final mother = _nthWeekdayOfMonth(e, 5, DateTime.sunday, 2);
+  final father = _nthWeekdayOfMonth(e, 6, DateTime.sunday, 3);
+  return [
+    Holiday(
+      date: toIso(DateTime(e, 4, _qingmingAprilDay(e))),
+      nameKm: 'សែនផ្នូរ',
+      nameEn: 'Tomb-Sweeping Day',
+      type: HolidayType.international,
+    ),
+    Holiday(date: toIso(mother), nameKm: 'ទិវាមាតា', nameEn: "Mother's Day", type: HolidayType.international),
+    Holiday(date: toIso(father), nameKm: 'ទិវាបិតា', nameEn: "Father's Day", type: HolidayType.international),
+  ];
+}
+
+List<Holiday> _solarTraditional(int e) {
+  final winter = _winterSolsticeIct(e);
+  return [
+    Holiday(date: toIso(winter), nameKm: 'សែននំអ៊ី', nameEn: 'Winter Solstice', type: HolidayType.traditional),
+  ];
 }
 
 List<Holiday> _khmerNewYearDays(int e) {
@@ -619,24 +700,48 @@ List<Holiday> _internationalEvents(int e) => [
       Holiday(date: '$e-03-04', nameKm: 'ទិវានយោបាយទឹក', nameEn: 'Water Policy Day', type: HolidayType.international),
       Holiday(date: '$e-03-06', nameKm: 'គោរពវិញ្ញាណក្ខន្ធសម្តេចព្រះសុរាម្រឹត', nameEn: 'Commemoration of King Suramarit', type: HolidayType.international),
       Holiday(date: '$e-03-21', nameKm: 'សមរាត្រីនិទាឃរដូវអង្គរ', nameEn: 'Angkor Spring Equinox', type: HolidayType.international),
+      Holiday(date: '$e-03-21', nameKm: 'ទិវាលុបបំបាត់ការរើសអើងពូជសាសន៍', nameEn: 'International Day for the Elimination of Racial Discrimination', type: HolidayType.international),
       Holiday(date: '$e-03-22', nameKm: 'ទិវាពិភពលោកទឹក', nameEn: 'World Water Day', type: HolidayType.international),
       Holiday(date: '$e-03-24', nameKm: 'ទិវាពិភពលោកកំចាត់ជម្ងឺរបេង', nameEn: 'World Tuberculosis Day', type: HolidayType.international),
       Holiday(date: '$e-04-07', nameKm: 'ទិវាសុខភាពពិភពលោក', nameEn: 'World Health Day', type: HolidayType.international),
       Holiday(date: '$e-04-22', nameKm: 'ទិវាផែនដី', nameEn: 'Earth Day', type: HolidayType.international),
+      Holiday(date: '$e-04-28', nameKm: 'ទិវាសុវត្ថិភាព និងសុខភាពការងារ', nameEn: 'World Day for Safety and Health at Work', type: HolidayType.international),
+      Holiday(date: '$e-05-03', nameKm: 'ទិវាសេរីភាពសារព័ត៌មានពិភពលោក', nameEn: 'World Press Freedom Day', type: HolidayType.international),
       Holiday(date: '$e-05-08', nameKm: 'ទិវាកាកបាទក្រហម', nameEn: 'World Red Cross Day', type: HolidayType.international),
+      Holiday(date: '$e-05-20', nameKm: 'ទិវាជាតិនៃការចងចាំ', nameEn: 'National Day of Remembrance', type: HolidayType.international),
+      Holiday(date: '$e-05-31', nameKm: 'ទិវាគ្មានថ្នាំជក់ពិភពលោក', nameEn: 'World No Tobacco Day', type: HolidayType.international),
       Holiday(date: '$e-06-01', nameKm: 'ទិវាកុមារអន្តរជាតិ', nameEn: "International Children's Day", type: HolidayType.international),
       Holiday(date: '$e-06-05', nameKm: 'ទិវាបរិស្ថានពិភពលោក', nameEn: 'World Environment Day', type: HolidayType.international),
+      Holiday(date: '$e-06-12', nameKm: 'ទិវាពិភពលោកប្រឆាំងពលកម្មកុមារ', nameEn: 'World Day Against Child Labour', type: HolidayType.international),
+      Holiday(date: '$e-06-26', nameKm: 'ទិវាអន្តរជាតិប្រឆាំងគ្រឿងញៀន', nameEn: 'International Day against Drug Abuse', type: HolidayType.international),
+      Holiday(date: '$e-07-01', nameKm: 'ទិវាត្រីជាតិ', nameEn: 'National Fish Day', type: HolidayType.international),
+      Holiday(date: '$e-07-03', nameKm: 'កម្ពុជាចូលជាសមាជិកអង្គការយូណេស្កូ', nameEn: 'Cambodia UNESCO Membership Day', type: HolidayType.international),
       Holiday(date: '$e-07-07', nameKm: 'ខួបបេតិកភណ្ឌពិភពលោក ប្រាសាទព្រះវិហារ', nameEn: 'Preah Vihear World Heritage Day', type: HolidayType.international),
       Holiday(date: '$e-07-08', nameKm: 'ខួបបេតិកភណ្ឌពិភពលោក សំបូរព្រៃគុក', nameEn: 'Sambor Prei Kuk World Heritage Day', type: HolidayType.international),
+      Holiday(date: '$e-07-09', nameKm: 'ទិវាដាំដើមឈើ', nameEn: 'Arbor Day', type: HolidayType.international),
+      Holiday(date: '$e-07-11', nameKm: 'ទិវាប្រជាជនពិភពលោក', nameEn: 'World Population Day', type: HolidayType.international),
+      Holiday(date: '$e-07-31', nameKm: 'ទិវាអាស៊ាន', nameEn: 'ASEAN Day', type: HolidayType.international),
+      Holiday(date: '$e-08-09', nameKm: 'ទិវាជនជាតិដើមអន្តរជាតិ', nameEn: "International Day of the World's Indigenous Peoples", type: HolidayType.international),
       Holiday(date: '$e-08-12', nameKm: 'ទិវាយុវជនអន្តរជាតិ', nameEn: 'International Youth Day', type: HolidayType.international),
+      Holiday(date: '$e-09-08', nameKm: 'ទិវាអក្ខរកម្មអន្តរជាតិ', nameEn: 'International Literacy Day', type: HolidayType.international),
+      Holiday(date: '$e-09-15', nameKm: 'ទិវាប្រជាធិបតេយ្យអន្តរជាតិ', nameEn: 'International Day of Democracy', type: HolidayType.international),
+      Holiday(date: '$e-09-16', nameKm: 'ទិវាអន្តរជាតិអភិរក្សស្រទាប់អូហ្សូន', nameEn: 'International Day for the Preservation of the Ozone Layer', type: HolidayType.international),
       Holiday(date: '$e-09-17', nameKm: 'ខួបបេតិកភណ្ឌពិភពលោក កោះកេរ', nameEn: 'Koh Ker World Heritage Day', type: HolidayType.international),
       Holiday(date: '$e-09-21', nameKm: 'ទិវាសន្តិភាពអន្តរជាតិ', nameEn: 'International Day of Peace', type: HolidayType.international),
       Holiday(date: '$e-09-22', nameKm: 'សមរាត្រីសរទរដូវអង្គរ', nameEn: 'Angkor Autumn Equinox', type: HolidayType.international),
+      Holiday(date: '$e-09-27', nameKm: 'ទិវាទេសចរណ៍ពិភពលោក', nameEn: 'World Tourism Day', type: HolidayType.international),
       Holiday(date: '$e-10-05', nameKm: 'ទិវាគ្រូបង្រៀនពិភពលោក', nameEn: "World Teachers' Day", type: HolidayType.international),
+      Holiday(date: '$e-10-23', nameKm: 'ទិវាកិច្ចព្រមព្រៀងសន្តិភាពទីក្រុងប៉ារីស', nameEn: 'Paris Peace Agreements Day', type: HolidayType.international),
       Holiday(date: '$e-10-24', nameKm: 'ទិវាអង្គការសហប្រជាជាតិ', nameEn: 'United Nations Day', type: HolidayType.international),
+      Holiday(date: '$e-10-31', nameKm: 'បុណ្យហាឡូវីន', nameEn: 'Halloween', type: HolidayType.international),
       Holiday(date: '$e-11-20', nameKm: 'ទិវាសិទ្ធិកុមារ', nameEn: "Universal Children's Day", type: HolidayType.international),
+      Holiday(date: '$e-11-25', nameKm: 'ទិវាអន្តរជាតិលុបបំបាត់អំពើហិង្សាលើស្ត្រី', nameEn: 'International Day for the Elimination of Violence against Women', type: HolidayType.international),
       Holiday(date: '$e-12-01', nameKm: 'ទិវាពិភពលោកប្រយុទ្ធនឹងជំងឺអេដស៍', nameEn: 'World AIDS Day', type: HolidayType.international),
+      Holiday(date: '$e-12-03', nameKm: 'ទិវាជនពិការអន្តរជាតិ', nameEn: 'International Day of Persons with Disabilities', type: HolidayType.international),
+      Holiday(date: '$e-12-07', nameKm: 'ទិវាអាកាសចរណ៍ស៊ីវិលអន្តរជាតិ', nameEn: 'International Civil Aviation Day', type: HolidayType.international),
+      Holiday(date: '$e-12-09', nameKm: 'ទិវាប្រឆាំងអំពើពុករលួយអន្តរជាតិ', nameEn: 'International Anti-Corruption Day', type: HolidayType.international),
       Holiday(date: '$e-12-10', nameKm: 'ទិវាសិទ្ធិមនុស្សអន្តរជាតិ', nameEn: 'Human Rights Day', type: HolidayType.international),
+      Holiday(date: '$e-12-12', nameKm: 'ទិវាអន្តរជាតិអព្យាក្រឹតភាព', nameEn: 'International Day of Neutrality', type: HolidayType.international),
       Holiday(date: '$e-12-14', nameKm: 'ខួបបេតិកភណ្ឌពិភពលោក អង្គរ', nameEn: 'Angkor World Heritage Day', type: HolidayType.international),
       Holiday(date: '$e-12-25', nameKm: 'បុណ្យណូអែល', nameEn: 'Christmas Day', type: HolidayType.international),
       Holiday(date: '$e-12-31', nameKm: 'ថ្ងៃឆ្លងឆ្នាំសកល', nameEn: "New Year's Eve", type: HolidayType.international),
@@ -656,6 +761,8 @@ List<Holiday> _fixedHolidays(int e) => [
       Holiday(date: '$e-11-09', nameKm: 'បុណ្យឯករាជ្យជាតិ', nameEn: 'Independence Day', type: HolidayType.public),
       Holiday(date: '$e-12-29', nameKm: 'ទិវាសន្តិភាពនៅកម្ពុជា', nameEn: 'Peace Day in Cambodia', type: HolidayType.public),
       ..._internationalEvents(e),
+      ..._movableInternational(e),
+      ..._solarTraditional(e),
     ];
 
 List<Holiday> holidaysOfYear(int e) {
@@ -667,6 +774,7 @@ List<Holiday> holidaysOfYear(int e) {
   final last = DateTime(e, 12, 31);
   while (!n.isAfter(last)) {
     _applyLunarHolidays(t, lunarOf(n), toIso(n));
+    _applyChineseHolidays(t, n, toIso(n));
     n = _addDays(n, 1);
   }
   t.sort((a, b) => a.date.compareTo(b.date));

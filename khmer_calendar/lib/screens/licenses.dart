@@ -85,6 +85,11 @@ const _other = [
     url: 'https://www.wikipedia.org',
   ),
   _Credit('Zodiac artwork', 'Khmer animal-year marks'),
+  _Credit(
+    'Chinese lunar year table',
+    'Traditional festival dates for 1900–2100. Same packed civil-lunar encoding used by KhmerDates and other open lunar calendars.',
+    url: 'https://github.com/ksx9999/KhmerDates',
+  ),
 ];
 
 Future<Map<String, List<LicenseEntry>>>? _licenseCache;
