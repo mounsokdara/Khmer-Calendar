@@ -152,6 +152,7 @@ int _kindRank(Kind k) => k == Kind.holiday ? 0 : k == Kind.sil ? 1 : 2;
 String holidayTypeLabel(HolidayType type, Lang lang) {
   if (type == HolidayType.public) return t(lang, 'holidayPublic');
   if (type == HolidayType.religious) return t(lang, 'holidayReligious');
+  if (type == HolidayType.international) return t(lang, 'holidayInternational');
   return t(lang, 'holidayTraditional');
 }
 
@@ -263,6 +264,7 @@ String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';
   if (o.holidayType == HolidayType.public) return 'sunday';
+  if (o.holidayType == HolidayType.international) return 'event';
   return 'holiday';
 }
 
@@ -281,8 +283,6 @@ String dayTone(String iso, bool inMonth) {
   final d = fromIso(iso);
   if (isReligiousHoliday(iso)) return 'holiday';
   if (d.weekday % 7 == 0 || isPublicHoliday(iso)) return 'sunday';
-  final info = dayInfo(iso);
-  if ((info.holidays != null && info.holidays!.isNotEmpty) || holidaysOn(iso).isNotEmpty) return 'holiday';
   return 'default';
 }
 

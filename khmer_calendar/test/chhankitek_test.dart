@@ -18,11 +18,25 @@ void main() {
 
   test('holidays of 2026 include Khmer New Year', () {
     final list = holidaysOfYear(2026);
-    expect(list.length, 26);
-    expect(list.any((h) => h.date == '2026-04-14' && h.nameEn == 'Khmer New Year'), isTrue);
+    expect(list.any((h) => h.date == '2026-04-14' && h.nameEn.contains('Khmer New Year') && h.type == HolidayType.public), isTrue);
+    expect(list.any((h) => h.date == '2026-04-14' && h.nameEn.contains('Moha Sangkran')), isTrue);
     expect(list.any((h) => h.date == '2026-02-02' && h.nameEn == 'Meak Bochea' && h.type == HolidayType.religious), isTrue);
     expect(list.any((h) => h.nameKm == 'វិសាខបូជា' && h.type == HolidayType.religious), isTrue);
     expect(list.any((h) => h.nameKm == 'វិសាខបូជា' && h.type == HolidayType.public), isTrue);
+  });
+
+  test('2026 global and extra Buddhist events', () {
+    final list = holidaysOfYear(2026);
+    expect(list.any((h) => h.date == '2026-02-14' && h.nameEn == "Valentine's Day" && h.type == HolidayType.international), isTrue);
+    expect(list.any((h) => h.date == '2026-12-25' && h.nameEn == 'Christmas Day' && h.type == HolidayType.international), isTrue);
+    expect(list.any((h) => h.date == '2026-12-10' && h.nameEn == 'Human Rights Day' && h.type == HolidayType.international), isTrue);
+    expect(list.any((h) => h.date == '2026-12-10' && h.type == HolidayType.public), isFalse);
+    expect(list.any((h) => h.nameEn == 'Entering Vassa' && h.type == HolidayType.religious), isTrue);
+    expect(list.any((h) => h.nameEn == 'Leaving Vassa' && h.type == HolidayType.religious), isTrue);
+    expect(list.any((h) => h.nameEn == 'Kathina' && h.type == HolidayType.religious), isTrue);
+    expect(list.any((h) => h.nameEn == 'Trasat Sangkran' && h.type == HolidayType.traditional), isTrue);
+    expect(list.where((h) => h.type == HolidayType.public).length, greaterThanOrEqualTo(16));
+    expect(list.where((h) => h.type == HolidayType.international).length, 28);
   });
 
   test('khmer numerals', () {

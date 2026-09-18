@@ -84,7 +84,9 @@ Future<void> syncHomeWidget(AppStore store) async {
               ? 'public'
               : hs.first.holidayType == HolidayType.religious
                   ? 'religious'
-                  : 'traditional'),
+                  : hs.first.holidayType == HolidayType.international
+                      ? 'international'
+                      : 'traditional'),
     };
   }
   final marks = <String, String>{};
@@ -97,7 +99,11 @@ Future<void> syncHomeWidget(AppStore store) async {
     for (final o in yearObservances(y, store.events)) {
       if (o.date.isEmpty) continue;
       if (o.kind == Kind.holiday) {
-        flag(o.date, o.holidayType == HolidayType.public ? 'p' : 'h');
+        if (o.holidayType == HolidayType.public) {
+          flag(o.date, 'p');
+        } else if (o.holidayType == HolidayType.religious || o.holidayType == HolidayType.traditional) {
+          flag(o.date, 'h');
+        }
         names.putIfAbsent(o.date, () => obsTitle(o, lang));
       } else if (o.kind == Kind.event) {
         flag(o.date, 't');
