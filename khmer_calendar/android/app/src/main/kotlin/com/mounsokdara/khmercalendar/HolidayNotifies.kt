@@ -98,7 +98,7 @@ class PublicHolidayReceiver : BroadcastReceiver() {
             return
         }
         PublicHolidayNotify.show(context, intent.getStringExtra("date") ?: WidgetStore.todayIso())
-        PublicHolidayNotify.schedule(context)
+        NotifyKit.sync(context)
     }
 }
 
@@ -173,6 +173,6 @@ class ReligiousHolidayReceiver : BroadcastReceiver() {
             return
         }
         ReligiousHolidayNotify.show(context, intent.getStringExtra("date") ?: WidgetStore.todayIso())
-        ReligiousHolidayNotify.schedule(context)
+        NotifyKit.sync(context)
     }
 }

@@ -30,7 +30,7 @@ String _widgetDisplaySig(AppStore store) =>
     '${store.lang}|${store.weekStartsOn}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}').join(',')}|${todayIso()}';
 
 String _widgetNotifySig(AppStore store) =>
-    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}';
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}:${e.startTime}:${e.reminderDate}:${e.reminderTime}:${e.done}:${e.title}').join(',')}';
 
 void bindHomeWidget(AppStore store) {
   if (_bound) return;
@@ -78,6 +78,8 @@ Future<void> syncHomeWidget(AppStore store) async {
       'notifyPublic': store.notifyPublic,
       'notifyOthers': store.notifyOthers,
       'notifyReligious': store.notifyOthers,
+      'notifyTasks': store.notifyTasks,
+      'notify_items': jsonEncode(notifyItemsOf(store)),
     });
   } catch (_) {}
 }

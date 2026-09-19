@@ -69,6 +69,6 @@ class SilNotifyReceiver : BroadcastReceiver() {
         }
         val iso = intent.getStringExtra("date") ?: WidgetStore.todayIso()
         if (iso == WidgetStore.todayIso()) SilNotify.show(context, iso)
-        SilNotify.schedule(context)
+        NotifyKit.sync(context)
     }
 }

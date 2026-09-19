@@ -197,42 +197,75 @@ class TaskReminder extends ReminderKind {
   bool enabled(AppStore store) => store.notifyTasks;
 
   @override
+  bool get nativeAndroid => true;
+
+  @override
   List<ReminderShot> collect(AppStore store, DateTime now) {
     final lang = store.lang;
     final out = <ReminderShot>[];
     for (final e in store.events) {
       if (e.done == true) continue;
-      if ((e.reminderDate ?? '').isEmpty) continue;
-      final day = fromIso(e.reminderDate!);
-      var hour = 9;
-      var minute = 0;
-      final tm = e.reminderTime ?? '';
-      if (tm.contains(':')) {
-        final p = tm.split(':');
-        hour = int.tryParse(p[0]) ?? 9;
-        minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
+      final reminder = (e.reminderDate ?? '').trim();
+      if (reminder.isNotEmpty) {
+        final shot = _taskShot(store, lang, e, fromIso(reminder), e.reminderTime, now);
+        if (shot != null) out.add(shot);
+        continue;
       }
-      final when = DateTime(day.year, day.month, day.day, hour, minute);
-      final time = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
-      final notes = (e.notes ?? '').trim();
-      final lines = <String>[
-        t(lang, 'notifyTaskKind'),
-        calendarDetail(day, lang),
-        time,
-      ];
-      if (notes.isNotEmpty) lines.add(notes);
-      out.add(ReminderShot('task-${e.id}', e.title, lines.join('\n'), when, channel: 'tasks'));
+      if (e.date.isEmpty) continue;
+      final start = fromIso(e.date);
+      var end = fromIso(e.endDate ?? e.date);
+      if (end.isBefore(start)) end = start;
+      for (var d = start; !d.isAfter(end); d = addDays(d, 1)) {
+        final shot = _taskShot(store, lang, e, d, e.allDay == true ? null : e.startTime, now);
+        if (shot != null) out.add(shot);
+      }
     }
     return out;
   }
 }
 
+ReminderShot? _taskShot(
+  AppStore store,
+  Lang lang,
+  CalendarEvent e,
+  DateTime day,
+  String? clock,
+  DateTime now,
+) {
+  var hour = 8;
+  var minute = 0;
+  final tm = clock ?? '';
+  if (tm.contains(':')) {
+    final p = tm.split(':');
+    hour = int.tryParse(p[0]) ?? 8;
+    minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
+  }
+  final when = DateTime(day.year, day.month, day.day, hour, minute);
+  if (!when.isAfter(now)) return null;
+  final time = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  final notes = (e.notes ?? '').trim();
+  return ReminderShot(
+    'task-${e.id}-${isoOf(day)}-$time',
+    e.title,
+    notes,
+    when,
+    channel: 'tasks',
+    bodyOf: () {
+      final lines = <String>[t(lang, 'notifyTaskKind'), calendarDetail(day, lang), time];
+      if (notes.isNotEmpty) lines.add(notes);
+      return lines.join('\n');
+    },
+  );
+}
+
 bool get androidNativeAlarms => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-String _horizonKey() {
-  final n = DateTime.now();
-  return isoOf(DateTime(n.year, n.month, n.day));
+int notifyEndYear([DateTime? now]) {
+  final n = now ?? DateTime.now();
+  return n.year + 1;
 }
+
+String _horizonKey() => '${isoOf(DateTime.now())}|${notifyEndYear()}';
 
 String? _silKey;
 List<String>? _silCache;
@@ -250,8 +283,8 @@ void warmNotifyLists() {
 
 List<String> upcomingSilDates({int? throughYear}) {
   final now = DateTime.now();
-  final endYear = throughYear ?? now.year + 2;
-  final key = '${_horizonKey()}|$endYear';
+  final endYear = throughYear ?? notifyEndYear(now);
+  final key = '${isoOf(DateTime(now.year, now.month, now.day))}|$endYear';
   if (_silCache != null && _silKey == key) return _silCache!;
   final last = DateTime(endYear, 12, 31);
   final out = <String>[];
@@ -265,24 +298,23 @@ List<String> upcomingSilDates({int? throughYear}) {
   return out;
 }
 
-List<Map<String, String>> upcomingHolidays(HolidayType type, {int years = 2}) {
-  final key = '${_horizonKey()}|$years|${type.name}';
+List<Map<String, String>> upcomingHolidays(HolidayType type) {
+  final key = '${_horizonKey()}|${type.name}';
   final hit = _typeCache[key];
   if (hit != null) return hit;
-  final out = _upcomingHolidayMaps((h) => h.type == type, years: years);
+  final out = _upcomingHolidayMaps((h) => h.type == type);
   _typeCache[key] = out;
   return out;
 }
 
-List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
-  final key = '${_horizonKey()}|$years';
+List<Map<String, String>> upcomingOtherHolidays() {
+  final key = _horizonKey();
   if (_otherCache != null && _otherKey == key) return _otherCache!;
   final out = _upcomingHolidayMaps(
     (h) =>
         h.type == HolidayType.religious ||
         h.type == HolidayType.traditional ||
         h.type == HolidayType.international,
-    years: years,
   );
   final now = DateTime.now();
   final today = isoOf(DateTime(now.year, now.month, now.day));
@@ -293,7 +325,7 @@ List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
     if (!seen.add(k)) return;
     out.add({'d': o.date, 'km': o.title, 'en': o.titleEn, 'type': 'traditional'});
   }
-  for (var y = now.year; y <= now.year + years; y++) {
+  for (var y = now.year; y <= notifyEndYear(now); y++) {
     kanBenOf(y).forEach(addObs);
     senKantongOf(y).forEach(addObs);
   }
@@ -303,12 +335,12 @@ List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
   return out;
 }
 
-List<Map<String, String>> _upcomingHolidayMaps(bool Function(Holiday h) keep, {int years = 2}) {
+List<Map<String, String>> _upcomingHolidayMaps(bool Function(Holiday h) keep) {
   final now = DateTime.now();
   final today = isoOf(DateTime(now.year, now.month, now.day));
   final out = <Map<String, String>>[];
   final seen = <String>{};
-  for (var y = now.year; y <= now.year + years; y++) {
+  for (var y = now.year; y <= notifyEndYear(now); y++) {
     List<Holiday> list;
     try {
       list = holidaysOfYear(y);
@@ -325,3 +357,26 @@ List<Map<String, String>> _upcomingHolidayMaps(bool Function(Holiday h) keep, {i
   }
   return out;
 }
+
+List<Map<String, dynamic>> notifyItemsOf(AppStore store) {
+  if (!store.notifyOn) return [];
+  final now = DateTime.now();
+  final out = <Map<String, dynamic>>[];
+  for (final kind in reminderKinds) {
+    if (kind is DailyReminder) continue;
+    if (!kind.enabled(store)) continue;
+    for (final shot in kind.collect(store, now)) {
+      final row = <String, dynamic>{
+        'd': isoOf(DateTime(shot.when.year, shot.when.month, shot.when.day)),
+        'h': shot.when.hour,
+        'm': shot.when.minute,
+        'ch': shot.channel,
+        'title': shot.title,
+      };
+      if (shot.body.isNotEmpty) row['notes'] = shot.body;
+      out.add(row);
+    }
+  }
+  return out;
+}
+

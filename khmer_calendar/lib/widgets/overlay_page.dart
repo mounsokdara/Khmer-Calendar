@@ -39,7 +39,8 @@ class OverlayScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onHorizontalDragEnd: (d) {
-        if ((d.primaryVelocity ?? 0) > 420) _back(context);
+        final fling = MediaQuery.sizeOf(context).width;
+        if ((d.primaryVelocity ?? 0) > fling) _back(context);
       },
       child: Scaffold(
         appBar: AppBar(

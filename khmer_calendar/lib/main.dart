@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -147,6 +148,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         return MaterialApp.router(
           title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
           debugShowCheckedModeBanner: false,
+          scrollBehavior: const _AppScrollBehavior(),
           locale: Locale(s.lang == Lang.en ? 'en' : 'km'),
           supportedLocales: const [Locale('km'), Locale('en')],
           localizationsDelegates: const [
@@ -162,4 +164,16 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       },
     );
   }
+}
+
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
 }

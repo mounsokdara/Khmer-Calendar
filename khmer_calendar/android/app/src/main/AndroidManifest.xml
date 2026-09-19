@@ -116,6 +116,9 @@
         <receiver
             android:name=".ReligiousHolidayReceiver"
             android:exported="false"/>
+        <receiver
+            android:name=".ShotReceiver"
+            android:exported="false"/>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>

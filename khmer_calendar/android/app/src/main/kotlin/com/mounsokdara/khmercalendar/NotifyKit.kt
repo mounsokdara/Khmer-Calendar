@@ -20,12 +20,14 @@ object NotifyKit {
     const val SIL_ID = 1002
     const val PUBLIC_ID = 1003
     const val RELIGIOUS_ID = 1004
+    const val TASK_ID = 1005
     const val DAILY_REQ = 41
     const val SIL_REQ = 42
     const val SIL_ALARM_BASE = 3000
     const val PUBLIC_REQ = 4300
     const val RELIGIOUS_REQ = 5000
     const val LEGACY_RELIGIOUS_REQ = 4400
+    const val SHOT_REQ = 6100
     const val CANCEL_FALLBACK = 512
 
     fun dailyOn(context: Context): Boolean = WidgetStore.dailyOn(context)
@@ -136,12 +138,12 @@ object NotifyKit {
 
     fun religiousOn(context: Context): Boolean = WidgetStore.religiousOn(context)
 
-    fun millisAt(iso: String, hour: Int): Long? {
+    fun millisAt(iso: String, hour: Int, minute: Int = 0): Long? {
         val bits = iso.split("-")
         if (bits.size < 3) return null
         return try {
             val c = Calendar.getInstance()
-            c.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
+            c.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, minute, 0)
             c.set(Calendar.MILLISECOND, 0)
             c.timeInMillis
         } catch (_: Exception) {
@@ -151,6 +153,16 @@ object NotifyKit {
 
     fun datedPi(context: Context, cls: Class<*>, req: Int, iso: String): PendingIntent {
         val intent = Intent(context, cls).putExtra("date", iso)
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(context, req, intent, flags)
+    }
+
+    fun shotPi(context: Context, cls: Class<*>, req: Int, iso: String, hour: Int, minute: Int): PendingIntent {
+        val intent =
+            Intent(context, cls)
+                .putExtra("date", iso)
+                .putExtra("hour", hour)
+                .putExtra("minute", minute)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         return PendingIntent.getBroadcast(context, req, intent, flags)
     }
@@ -205,8 +217,16 @@ object NotifyKit {
 
     fun sync(context: Context) {
         if (dailyOn(context)) DailyDigestNotify.schedule(context) else DailyDigestNotify.cancel(context)
-        if (silOn(context)) SilNotify.schedule(context) else SilNotify.cancel(context)
-        if (publicOn(context)) PublicHolidayNotify.schedule(context) else PublicHolidayNotify.cancel(context)
-        if (religiousOn(context)) ReligiousHolidayNotify.schedule(context) else ReligiousHolidayNotify.cancel(context)
+        cancelIsoAlarms(context, SilNotifyReceiver::class.java, SIL_ALARM_BASE, "sil_days_alarm_n")
+        cancelAlarm(context, broadcastPi(context, SilNotifyReceiver::class.java, SIL_REQ))
+        cancelIsoAlarms(context, PublicHolidayReceiver::class.java, PUBLIC_REQ, "public_hols_alarm_n")
+        cancelIsoAlarms(
+            context,
+            ReligiousHolidayReceiver::class.java,
+            RELIGIOUS_REQ,
+            "religious_hols_alarm_n",
+            intArrayOf(LEGACY_RELIGIOUS_REQ),
+        )
+        DayShots.schedule(context)
     }
 }
