@@ -311,7 +311,6 @@ Future<void> keepOnlyGranted(AppStore store) async {
   if (!_android && store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
   if (store.locationOn && !os.location) store.setLocationOn(false);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
   if (!store.notifyOn) await cancelAllReminders();
 }
 
@@ -323,7 +322,6 @@ Future<void> writeGrantedFlags(AppStore store) async {
   if (!_android) store.setAutoLaunchOn(os.autoLaunch);
   store.setLocationOn(os.location);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
   if (os.notify) {
     await initReminderEngine();
   } else {
@@ -388,7 +386,6 @@ Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   final ok = await backgroundAllowed();
   store.setBackgroundOn(ok);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
   if (ok) await initReminderEngine();
   return ok;
 }
@@ -396,7 +393,6 @@ Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
 Future<void> stopBackground(AppStore store) async {
   store.setBackgroundOn(false);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
 }
 
 /// Open OEM auto-start / desktop login items. Android cannot report whether
@@ -545,7 +541,6 @@ Future<void> applyStoredPermissions(AppStore store) async {
   bindReminderSync(store);
   bindHomeWidget(store);
   warmNotifyLists();
-  await _native('stopKeepAlive');
   if (store.notifyOn) {
     await initReminderEngine();
     Future<void>.delayed(const Duration(milliseconds: 120), () => syncReminders(store));

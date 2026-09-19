@@ -52,14 +52,6 @@ class MainActivity : FlutterActivity() {
                     )
                 "openLocationSettings" ->
                     startOrFail(result, REQ_LOCATION, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                "startKeepAlive" -> {
-                    stopKeepAlive()
-                    result.success(true)
-                }
-                "stopKeepAlive" -> {
-                    stopKeepAlive()
-                    result.success(true)
-                }
                 "updateWidget" -> {
                     saveWidget(call.arguments)
                     TodayWidgetProvider.refreshAll(this)
@@ -68,38 +60,6 @@ class MainActivity : FlutterActivity() {
                     result.success(true)
                 }
                 "pinWidget" -> result.success(pinWidget(call.argument<String>("kind")))
-                "armDaily" -> {
-                    DailyNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
-                    result.success(true)
-                }
-                "cancelDaily" -> {
-                    DailyNotify.cancel(this)
-                    result.success(true)
-                }
-                "armSil" -> {
-                    SilNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
-                    result.success(true)
-                }
-                "cancelSil" -> {
-                    SilNotify.cancel(this)
-                    result.success(true)
-                }
-                "armPublic" -> {
-                    PublicHolidayNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
-                    result.success(true)
-                }
-                "cancelPublic" -> {
-                    PublicHolidayNotify.cancel(this)
-                    result.success(true)
-                }
-                "armReligious" -> {
-                    ReligiousHolidayNotify.arm(this, call.argument<Boolean>("showNow") ?: false)
-                    result.success(true)
-                }
-                "cancelReligious" -> {
-                    ReligiousHolidayNotify.cancel(this)
-                    result.success(true)
-                }
                 "getLaunch" -> result.success(launchMap(intent))
                 else -> result.notImplemented()
             }
@@ -160,17 +120,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun stopKeepAlive() {
-        try {
-            stopService(Intent(this, KeepAliveService::class.java))
-        } catch (_: Exception) {
-        }
-        try {
-            getSystemService(NotificationManager::class.java)?.cancel(KeepAliveService.ID)
-        } catch (_: Exception) {
-        }
-    }
-
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         @Suppress("DEPRECATION")
@@ -193,7 +142,6 @@ class MainActivity : FlutterActivity() {
             "battery" to isIgnoringBattery(),
             "exactAlarm" to canExactAlarms(),
             "oemAutoStart" to hasOemAutoStartScreen(),
-            "keepAlive" to KeepAliveService.running,
         )
     }
 

@@ -1082,7 +1082,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       setState(() => notify = false);
       store.setNotifyOn(false);
       await cancelAllReminders();
-      await syncNativeAlarms(store);
+      await syncHomeWidget(store);
       return;
     }
     await requestNotifications(store);

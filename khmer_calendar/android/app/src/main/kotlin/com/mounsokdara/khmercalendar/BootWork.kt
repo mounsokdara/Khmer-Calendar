@@ -2,16 +2,13 @@ package com.mounsokdara.khmercalendar
 
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 
 /** Shared work for process start (App Startup) and BOOT_COMPLETED. */
 object BootWork {
     fun run(context: Context) {
         val app = context.applicationContext
         try {
-            app.stopService(Intent(app, KeepAliveService::class.java))
-            app.getSystemService(NotificationManager::class.java)
-                ?.cancel(KeepAliveService.ID)
+            app.getSystemService(NotificationManager::class.java)?.cancel(41)
         } catch (_: Exception) {
         }
         try {

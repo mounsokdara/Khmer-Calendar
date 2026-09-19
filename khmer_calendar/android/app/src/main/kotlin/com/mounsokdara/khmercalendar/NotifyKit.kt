@@ -209,12 +209,4 @@ object NotifyKit {
         if (publicOn(context)) PublicHolidayNotify.schedule(context) else PublicHolidayNotify.cancel(context)
         if (religiousOn(context)) ReligiousHolidayNotify.schedule(context) else ReligiousHolidayNotify.cancel(context)
     }
-
-    fun writeFlags(context: Context, notifyOn: Boolean?, notifyDaily: Boolean?, notifySil: Boolean?) {
-        val ed = WidgetStore.prefs(context).edit()
-        notifyOn?.let { ed.putBoolean("notifyOn", it) }
-        notifyDaily?.let { ed.putBoolean("notifyDaily", it) }
-        notifySil?.let { ed.putBoolean("notifySil", it) }
-        ed.apply()
-    }
 }

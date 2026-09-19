@@ -61,7 +61,6 @@ const _libraries = [
   _Credit('geolocator', 'GPS location'),
   _Credit('intl', 'Dates and numbers'),
   _Credit('path_provider', 'App files on disk'),
-  _Credit('share_plus', 'Share a date or task'),
   _Credit('permission_handler', 'Asks the OS for permissions'),
   _Credit('flutter_local_notifications', 'Schedules reminders'),
   _Credit('flutter_timezone', 'Local time zone for alarms'),

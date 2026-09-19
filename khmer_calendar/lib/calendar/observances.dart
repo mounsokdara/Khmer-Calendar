@@ -269,14 +269,6 @@ String colorKind(Observance o) {
 
 bool isPublicHoliday(String iso) => holidaysOn(iso).any((h) => h.type == HolidayType.public);
 
-bool isReligiousHoliday(String iso) {
-  if (holidaysOn(iso).any((h) => h.type == HolidayType.religious || h.type == HolidayType.traditional)) {
-    return true;
-  }
-  final y = fromIso(iso).year;
-  return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
-}
-
 bool isObservanceHoliday(String iso) {
   if (holidaysOn(iso).any(
     (h) =>

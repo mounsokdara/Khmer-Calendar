@@ -124,43 +124,6 @@ object WidgetStore {
         ).filter { it.isNotEmpty() }.joinToString("\n")
     }
 
-    fun holidayEntry(context: Context, listKey: String, iso: String = todayIso()): org.json.JSONObject? {
-        val raw = prefs(context).getString(listKey, "[]") ?: return null
-        return try {
-            val arr = org.json.JSONArray(raw)
-            for (i in 0 until arr.length()) {
-                val o = arr.optJSONObject(i) ?: continue
-                if (o.optString("d") == iso) return o
-            }
-            null
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    fun nextListedAt(context: Context, listKey: String, hour: Int): Pair<String, org.json.JSONObject>? {
-        val raw = prefs(context).getString(listKey, "[]") ?: return null
-        val today = todayIso()
-        val now = System.currentTimeMillis()
-        return try {
-            val arr = org.json.JSONArray(raw)
-            for (i in 0 until arr.length()) {
-                val o = arr.optJSONObject(i) ?: continue
-                val iso = o.optString("d")
-                if (iso.length < 10 || iso < today) continue
-                val bits = iso.split("-")
-                if (bits.size < 3) continue
-                val cal = Calendar.getInstance()
-                cal.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
-                cal.set(Calendar.MILLISECOND, 0)
-                if (cal.timeInMillis > now + 30_000) return iso to o
-            }
-            null
-        } catch (_: Exception) {
-            null
-        }
-    }
-
     fun isSilDay(context: Context, iso: String = todayIso()): Boolean {
         return silIsoList(context).any { it == iso }
     }
@@ -168,16 +131,5 @@ object WidgetStore {
     fun silIsoList(context: Context): List<String> {
         val raw = prefs(context).getString("sil_days", "") ?: return emptyList()
         return raw.split(",").map { it.trim() }.filter { it.length >= 10 }
-    }
-
-    fun nextSilAt(context: Context, hour: Int = 7): Long? {
-        val today = todayIso()
-        val now = System.currentTimeMillis()
-        for (iso in silIsoList(context)) {
-            if (iso < today) continue
-            val calMillis = NotifyKit.millisAt(iso, hour) ?: continue
-            if (calMillis > now + 30_000) return calMillis
-        }
-        return null
     }
 }
