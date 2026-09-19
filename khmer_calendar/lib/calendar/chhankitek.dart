@@ -177,6 +177,7 @@ final _yearHolidays = <int, List<Holiday>>{};
 final _newYearCache = <int, ({DateTime gregorianStartDate, int totalDays})>{};
 final _vesak16 = <int, DateTime>{};
 final _dayCache = <String, LunarDay>{};
+final _lunarCache = <String, LunarDay>{};
 final _yearCursorCache = <int, ({int month, int day})>{};
 
 int _mod(int e, int t) => (e % t + t) % t;
@@ -489,6 +490,9 @@ String _fullLine(String e, String t, String? n) {
 
 LunarDay lunarOf(Object d) {
   final e = parseDate(d);
+  final iso = toIso(e);
+  final hit = _lunarCache[iso];
+  if (hit != null) return hit;
   final t = _khmerYearOf(e);
   final n = _lunarParts(e);
   final moon = _moonOf(n.monthDay);
@@ -500,7 +504,7 @@ LunarDay lunarOf(Object d) {
   final observance = _silText(n.monthDay, moon.moonStatus, u);
   final h = _lunarLine(l, moon.moonDay, moon.moonStatus, n.khmerMonth, s, c, a);
   final g = _gregLine(e);
-  return LunarDay(
+  final out = LunarDay(
     gregorianDate: toIso(e),
     dayOfWeek: l,
     buddhistEraYear: a,
@@ -523,6 +527,8 @@ LunarDay lunarOf(Object d) {
     observanceText: observance,
     fullText: _fullLine(h, g, observance),
   );
+  _lunarCache[iso] = out;
+  return out;
 }
 
 bool _lunarMatches(LunarDay e, {required String month, required String status, required List<int> days}) =>

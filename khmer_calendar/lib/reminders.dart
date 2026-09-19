@@ -216,7 +216,7 @@ void _fireWebDue() {
     if (p.when.isAfter(now.add(const Duration(seconds: 20)))) continue;
     if (p.when.isBefore(todayStart)) continue;
     _fired.add(p.key);
-    webnotify.showBrowserNotification(p.title, p.body, tag: p.key);
+    webnotify.showBrowserNotification(p.title, p.resolveBody(), tag: p.key);
   }
 }
 
@@ -230,8 +230,9 @@ void _armWeb(List<ReminderShot> shots) {
 Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
   if (shot.when.isBefore(DateTime.now())) return;
   final when = tz.TZDateTime.from(shot.when, tz.local);
+  final body = shot.resolveBody();
   Future<void> run(AndroidScheduleMode mode) {
-    return _plugin.zonedSchedule(id, shot.title, shot.body, when, _detailsFor(shot.channel), androidScheduleMode: mode);
+    return _plugin.zonedSchedule(id, shot.title, body, when, _detailsFor(shot.channel), androidScheduleMode: mode);
   }
 
   try {
@@ -249,7 +250,7 @@ Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
 }
 
 String _reminderSignature(AppStore store) =>
-    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.backgroundOn}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
 
 List<ReminderShot> _pluginPending(List<ReminderShot> shots) {
   final now = DateTime.now();

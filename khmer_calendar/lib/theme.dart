@@ -417,6 +417,8 @@ ThemeData buildTheme({
 const silColor = Color(0xFFD4920F);
 const religiousColor = Color(0xFF1E88E5);
 const religiousColorOnDark = Color(0xFF90CAF9);
+const publicHolidayFill = Color(0xFFC62828);
+const otherHolidayFill = religiousColor;
 
 const wideBreak = 840.0;
 const mediumBreak = 720.0;
@@ -477,7 +479,7 @@ Color dayToneColor(BuildContext context, String tone) {
   final cs = Theme.of(context).colorScheme;
   switch (tone) {
     case 'sunday':
-      return const Color(0xFFC62828);
+      return publicHolidayFill;
     case 'holiday':
       return Theme.of(context).brightness == Brightness.dark ? religiousColorOnDark : religiousColor;
     case 'sil':

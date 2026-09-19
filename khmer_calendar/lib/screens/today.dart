@@ -6,6 +6,7 @@ import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
+import '../theme.dart';
 import '../widgets/animal.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/overlay_page.dart';
@@ -162,12 +163,16 @@ class _DayPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Card(
             elevation: 0,
-            color: cs.primaryContainer,
+            color: h.holidayType == HolidayType.public ? publicHolidayFill : otherHolidayFill,
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => showHolidayInfo(context, store, h),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Text(obsTitle(h, lang), style: TextStyle(color: cs.onPrimaryContainer, fontWeight: FontWeight.bold)),
+                child: Text(
+                  obsTitle(h, lang),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),

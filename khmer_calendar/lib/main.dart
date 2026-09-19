@@ -37,13 +37,14 @@ class KhmerCalendarApp extends StatefulWidget {
 
 class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
   late final GoRouter router;
+  String _visualSig = '';
 
   @override
   void initState() {
     super.initState();
     widget.store.addListener(_onStore);
     router = GoRouter(
-      refreshListenable: widget.store,
+      refreshListenable: widget.store.routerTick,
       initialLocation: '/splash',
       redirect: (ctx, state) {
         if (!widget.store.hydrated) return '/splash';
@@ -108,7 +109,14 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     );
   }
 
-  void _onStore() => setState(() {});
+  void _onStore() {
+    final s = widget.store;
+    final sig =
+        '${s.theme}|${s.colorScheme}|${s.materialYou}|${s.dynamicColor}|${s.extraDark}|${s.accentColor}|${s.highlightColor}|${s.highlightAlpha}|${s.lang}|${s.hydrated}|${s.setupDone}';
+    if (sig == _visualSig) return;
+    _visualSig = sig;
+    setState(() {});
+  }
 
   @override
   void dispose() {

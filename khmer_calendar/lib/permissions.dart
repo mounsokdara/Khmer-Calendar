@@ -10,6 +10,7 @@ import 'autostart_io.dart' if (dart.library.html) 'autostart_stub.dart' as autos
 import 'home_screen.dart';
 import 'i18n.dart';
 import 'location.dart';
+import 'notify/kinds.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
 import 'reminders.dart';
 import 'store.dart';
@@ -312,7 +313,6 @@ Future<void> keepOnlyGranted(AppStore store) async {
   await _syncNativeFlags(store);
   await _native('stopKeepAlive');
   if (!store.notifyOn) await cancelAllReminders();
-  if (!store.notifyOn) await syncHomeWidget(store);
 }
 
 /// After Continue asked the OS, store only what is actually allowed.
@@ -326,11 +326,8 @@ Future<void> writeGrantedFlags(AppStore store) async {
   await _native('stopKeepAlive');
   if (os.notify) {
     await initReminderEngine();
-    await syncReminders(store);
-    await syncHomeWidget(store);
   } else {
     await cancelAllReminders();
-    await syncHomeWidget(store);
   }
 }
 
@@ -354,11 +351,8 @@ Future<bool> requestNotifications(AppStore store) async {
   store.setNotifyOn(ok);
   if (ok) {
     await initReminderEngine();
-    await syncReminders(store);
-    await syncHomeWidget(store);
   } else {
     await cancelAllReminders();
-    await syncHomeWidget(store);
   }
   return ok;
 }
@@ -395,10 +389,7 @@ Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   store.setBackgroundOn(ok);
   await _syncNativeFlags(store);
   await _native('stopKeepAlive');
-  if (ok) {
-    await initReminderEngine();
-    await syncReminders(store);
-  }
+  if (ok) await initReminderEngine();
   return ok;
 }
 
@@ -553,11 +544,11 @@ Future<void> applyStoredPermissions(AppStore store) async {
   await keepOnlyGranted(store);
   bindReminderSync(store);
   bindHomeWidget(store);
+  warmNotifyLists();
   await _native('stopKeepAlive');
   if (store.notifyOn) {
     await initReminderEngine();
-    await syncReminders(store);
-    await syncHomeWidget(store);
+    Future<void>.delayed(const Duration(milliseconds: 120), () => syncReminders(store));
   }
   if (store.autoLaunchOn && _desktop) {
     try {

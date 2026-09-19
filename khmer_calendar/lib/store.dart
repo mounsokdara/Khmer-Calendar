@@ -81,6 +81,10 @@ class CalendarEvent {
 
 enum TabId { today, months, events, weather, more }
 
+class RouterTick extends ChangeNotifier {
+  void bump() => notifyListeners();
+}
+
 const _legacyDefaultCities = ['phnom-penh', 'banteay-meanchey', 'kampong-cham', 'kratie'];
 
 class AppStore extends ChangeNotifier {
@@ -115,6 +119,7 @@ class AppStore extends ChangeNotifier {
   bool hydrated = false;
   String? pendingRoute;
   Timer? _persistDebounce;
+  final routerTick = RouterTick();
 
   Brightness get brightness {
     if (theme == 'light') return Brightness.light;
@@ -178,6 +183,7 @@ class AppStore extends ChangeNotifier {
     if (wait > 0) await Future<void>.delayed(Duration(milliseconds: wait));
     hydrated = true;
     notifyListeners();
+    routerTick.bump();
   }
 
   Future<void> persist() async {
@@ -298,6 +304,7 @@ class AppStore extends ChangeNotifier {
     }
     if (route != null) pendingRoute = route;
     _touch();
+    routerTick.bump();
   }
 
   void setTheme(String v) {
@@ -349,8 +356,10 @@ class AppStore extends ChangeNotifier {
   }
 
   void setSetupDone(bool v) {
+    if (setupDone == v) return;
     setupDone = v;
     _touch();
+    routerTick.bump();
   }
 
   void setLastTab(TabId v) {
@@ -376,47 +385,55 @@ class AppStore extends ChangeNotifier {
   }
 
   void setNotifyOn(bool v) {
+    if (notifyOn == v) return;
     notifyOn = v;
-    notifyListeners();
-    persist();
+    _touch();
   }
 
   void setBackgroundOn(bool v) {
+    if (backgroundOn == v) return;
     backgroundOn = v;
     _touch();
   }
 
   void setLocationOn(bool v) {
+    if (locationOn == v) return;
     locationOn = v;
     _touch();
   }
 
   void setAutoLaunchOn(bool v) {
+    if (autoLaunchOn == v) return;
     autoLaunchOn = v;
     _touch();
   }
 
   void setNotifyPublic(bool v) {
+    if (notifyPublic == v) return;
     notifyPublic = v;
     _touch();
   }
 
   void setNotifyOthers(bool v) {
+    if (notifyOthers == v) return;
     notifyOthers = v;
     _touch();
   }
 
   void setNotifyTasks(bool v) {
+    if (notifyTasks == v) return;
     notifyTasks = v;
     _touch();
   }
 
   void setNotifyDaily(bool v) {
+    if (notifyDaily == v) return;
     notifyDaily = v;
     _touch();
   }
 
   void setNotifySil(bool v) {
+    if (notifySil == v) return;
     notifySil = v;
     _touch();
   }

@@ -7,12 +7,15 @@ import '../i18n.dart';
 import '../store.dart';
 
 class ReminderShot {
-  const ReminderShot(this.key, this.title, this.body, this.when, {this.channel = 'tasks'});
+  const ReminderShot(this.key, this.title, this.body, this.when, {this.channel = 'tasks', this.bodyOf});
   final String key;
   final String title;
   final String body;
   final DateTime when;
   final String channel;
+  final String Function()? bodyOf;
+
+  String resolveBody() => bodyOf == null ? body : bodyOf!();
 }
 
 abstract class ReminderKind {
@@ -107,15 +110,18 @@ class SilReminder extends ReminderKind {
       final d = fromIso(iso);
       final when = DateTime(d.year, d.month, d.day, 7);
       if (!when.isAfter(now)) continue;
-      final info = lunarOf(d);
-      final phase = silPhaseLabel(info, lang);
       out.add(
         ReminderShot(
           'sil-$iso',
           t(lang, 'silDay'),
-          '${t(lang, 'silDay')} ($phase)\n${calendarDetail(d, lang)}',
+          '',
           when,
           channel: 'sil',
+          bodyOf: () {
+            final info = lunarOf(d);
+            final phase = silPhaseLabel(info, lang);
+            return '${t(lang, 'silDay')} ($phase)\n${calendarDetail(d, lang)}';
+          },
         ),
       );
     }
@@ -146,9 +152,10 @@ List<ReminderShot> _holidayShotsFrom(
       ReminderShot(
         'hol-${h['type']}-${h['d']}-${h['km']}',
         name,
-        '${holidayTypeLabel(type, lang)}\n${calendarDetail(day, lang)}',
+        '',
         when,
         channel: channel,
+        bodyOf: () => '${holidayTypeLabel(type, lang)}\n${calendarDetail(day, lang)}',
       ),
     );
   }
@@ -222,23 +229,54 @@ class TaskReminder extends ReminderKind {
 
 bool get androidNativeAlarms => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
+String _horizonKey() {
+  final n = DateTime.now();
+  return isoOf(DateTime(n.year, n.month, n.day));
+}
+
+String? _silKey;
+List<String>? _silCache;
+String? _otherKey;
+List<Map<String, String>>? _otherCache;
+final _typeCache = <String, List<Map<String, String>>>{};
+
+void warmNotifyLists() {
+  Future<void>.delayed(const Duration(milliseconds: 300), () {
+    upcomingSilDates();
+    upcomingHolidays(HolidayType.public);
+    upcomingOtherHolidays();
+  });
+}
+
 List<String> upcomingSilDates({int? throughYear}) {
   final now = DateTime.now();
-  final last = DateTime(throughYear ?? now.year + 2, 12, 31);
+  final endYear = throughYear ?? now.year + 2;
+  final key = '${_horizonKey()}|$endYear';
+  if (_silCache != null && _silKey == key) return _silCache!;
+  final last = DateTime(endYear, 12, 31);
   final out = <String>[];
   var d = DateTime(now.year, now.month, now.day);
   while (!d.isAfter(last)) {
     if (lunarOf(d).isSilDay) out.add(isoOf(d));
     d = addDays(d, 1);
   }
+  _silKey = key;
+  _silCache = out;
   return out;
 }
 
 List<Map<String, String>> upcomingHolidays(HolidayType type, {int years = 2}) {
-  return _upcomingHolidayMaps((h) => h.type == type, years: years);
+  final key = '${_horizonKey()}|$years|${type.name}';
+  final hit = _typeCache[key];
+  if (hit != null) return hit;
+  final out = _upcomingHolidayMaps((h) => h.type == type, years: years);
+  _typeCache[key] = out;
+  return out;
 }
 
 List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
+  final key = '${_horizonKey()}|$years';
+  if (_otherCache != null && _otherKey == key) return _otherCache!;
   final out = _upcomingHolidayMaps(
     (h) =>
         h.type == HolidayType.religious ||
@@ -251,8 +289,8 @@ List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
   final seen = {for (final h in out) '${h['d']}-${h['km']}'};
   void addObs(Observance o) {
     if (o.date.compareTo(today) < 0) return;
-    final key = '${o.date}-${o.title}';
-    if (!seen.add(key)) return;
+    final k = '${o.date}-${o.title}';
+    if (!seen.add(k)) return;
     out.add({'d': o.date, 'km': o.title, 'en': o.titleEn, 'type': 'traditional'});
   }
   for (var y = now.year; y <= now.year + years; y++) {
@@ -260,6 +298,8 @@ List<Map<String, String>> upcomingOtherHolidays({int years = 2}) {
     senKantongOf(y).forEach(addObs);
   }
   out.sort((a, b) => a['d']!.compareTo(b['d']!));
+  _otherKey = key;
+  _otherCache = out;
   return out;
 }
 
