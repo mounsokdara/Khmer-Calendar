@@ -210,11 +210,11 @@ List<ReminderShot> _collect(AppStore store) {
 void _fireWebDue() {
   if (!webnotify.isBrowserNotificationGranted()) return;
   final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day);
   for (final p in _webShots) {
     if (_fired.contains(p.key)) continue;
-    final late = now.difference(p.when);
-    if (late.isNegative && late.abs() > const Duration(seconds: 15)) continue;
-    if (late > const Duration(minutes: 2)) continue;
+    if (p.when.isAfter(now.add(const Duration(seconds: 20)))) continue;
+    if (p.when.isBefore(todayStart)) continue;
     _fired.add(p.key);
     webnotify.showBrowserNotification(p.title, p.body, tag: p.key);
   }
@@ -251,6 +251,15 @@ Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
 String _reminderSignature(AppStore store) =>
     '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
 
+List<ReminderShot> _pluginPending(List<ReminderShot> shots) {
+  final now = DateTime.now();
+  final future = shots.where((s) => s.when.isAfter(now)).toList()..sort((a, b) => a.when.compareTo(b.when));
+  if (defaultTargetPlatform != TargetPlatform.iOS) return future;
+  const iosPendingCap = 60;
+  if (future.length <= iosPendingCap) return future;
+  return future.sublist(0, iosPendingCap);
+}
+
 Future<void> syncReminders(AppStore store) async {
   if (!_ready) {
     if (store.notifyOn) await initReminderEngine();
@@ -273,7 +282,7 @@ Future<void> syncReminders(AppStore store) async {
     await _plugin.cancelAll();
   } catch (_) {}
   var id = 1;
-  for (final shot in shots) {
+  for (final shot in _pluginPending(shots)) {
     await _scheduleNative(shot, id++, store.backgroundOn);
   }
 }

@@ -103,57 +103,54 @@ class SilReminder extends ReminderKind {
   List<ReminderShot> collect(AppStore store, DateTime now) {
     final lang = store.lang;
     final out = <ReminderShot>[];
-    var d = DateTime(now.year, now.month, now.day);
-    for (var i = 0; i < 180; i++) {
+    for (final iso in upcomingSilDates()) {
+      final d = fromIso(iso);
+      final when = DateTime(d.year, d.month, d.day, 7);
+      if (!when.isAfter(now)) continue;
       final info = lunarOf(d);
-      if (info.isSilDay) {
-        final when = DateTime(d.year, d.month, d.day, 7);
-        if (when.isAfter(now)) {
-          final phase = silPhaseLabel(info, lang);
-          out.add(
-            ReminderShot(
-              'sil-${isoOf(d)}',
-              t(lang, 'silDay'),
-              '${t(lang, 'silDay')} ($phase)\n${calendarDetail(d, lang)}',
-              when,
-              channel: 'sil',
-            ),
-          );
-        }
-      }
-      d = addDays(d, 1);
-      if (out.length >= 12) break;
+      final phase = silPhaseLabel(info, lang);
+      out.add(
+        ReminderShot(
+          'sil-$iso',
+          t(lang, 'silDay'),
+          '${t(lang, 'silDay')} ($phase)\n${calendarDetail(d, lang)}',
+          when,
+          channel: 'sil',
+        ),
+      );
     }
     return out;
   }
 }
 
-List<ReminderShot> _holidayShots(AppStore store, DateTime now, HolidayType type, String channel) {
+List<ReminderShot> _holidayShotsFrom(
+  AppStore store,
+  DateTime now,
+  List<Map<String, String>> items,
+  String channel,
+) {
   final lang = store.lang;
   final out = <ReminderShot>[];
-  for (final y in {now.year, now.year + 1}) {
-    List<Holiday> list;
-    try {
-      list = holidaysOfYear(y);
-    } catch (_) {
-      continue;
-    }
-    for (final h in list) {
-      if (h.type != type) continue;
-      final day = fromIso(h.date);
-      final when = DateTime(day.year, day.month, day.day, 8);
-      if (!when.isAfter(now)) continue;
-      final name = lang == Lang.en ? h.nameEn : h.nameKm;
-      out.add(
-        ReminderShot(
-          'hol-${h.type.name}-${h.date}',
-          name,
-          '${holidayTypeLabel(h.type, lang)}\n${calendarDetail(day, lang)}',
-          when,
-          channel: channel,
-        ),
-      );
-    }
+  for (final h in items) {
+    final day = fromIso(h['d']!);
+    final when = DateTime(day.year, day.month, day.day, 8);
+    if (!when.isAfter(now)) continue;
+    final name = lang == Lang.en ? h['en']! : h['km']!;
+    final type = switch (h['type']) {
+      'public' => HolidayType.public,
+      'international' => HolidayType.international,
+      'traditional' => HolidayType.traditional,
+      _ => HolidayType.religious,
+    };
+    out.add(
+      ReminderShot(
+        'hol-${h['type']}-${h['d']}-${h['km']}',
+        name,
+        '${holidayTypeLabel(type, lang)}\n${calendarDetail(day, lang)}',
+        when,
+        channel: channel,
+      ),
+    );
   }
   return out;
 }
@@ -169,7 +166,7 @@ class PublicHolidayReminder extends ReminderKind {
 
   @override
   List<ReminderShot> collect(AppStore store, DateTime now) =>
-      _holidayShots(store, now, HolidayType.public, 'public');
+      _holidayShotsFrom(store, now, upcomingHolidays(HolidayType.public), 'public');
 }
 
 class OtherHolidayReminder extends ReminderKind {
@@ -182,31 +179,8 @@ class OtherHolidayReminder extends ReminderKind {
   bool get nativeAndroid => true;
 
   @override
-  List<ReminderShot> collect(AppStore store, DateTime now) {
-    final lang = store.lang;
-    final out = <ReminderShot>[];
-    for (final h in upcomingOtherHolidays()) {
-      final day = fromIso(h['d']!);
-      final when = DateTime(day.year, day.month, day.day, 8);
-      if (!when.isAfter(now)) continue;
-      final name = lang == Lang.en ? h['en']! : h['km']!;
-      final type = switch (h['type']) {
-        'international' => HolidayType.international,
-        'traditional' => HolidayType.traditional,
-        _ => HolidayType.religious,
-      };
-      out.add(
-        ReminderShot(
-          'hol-other-${h['d']}-${h['km']}',
-          name,
-          '${holidayTypeLabel(type, lang)}\n${calendarDetail(day, lang)}',
-          when,
-          channel: 'others',
-        ),
-      );
-    }
-    return out;
-  }
+  List<ReminderShot> collect(AppStore store, DateTime now) =>
+      _holidayShotsFrom(store, now, upcomingOtherHolidays(), 'others');
 }
 
 class TaskReminder extends ReminderKind {
@@ -248,11 +222,12 @@ class TaskReminder extends ReminderKind {
 
 bool get androidNativeAlarms => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
-List<String> upcomingSilDates({int days = 200}) {
+List<String> upcomingSilDates({int? throughYear}) {
+  final now = DateTime.now();
+  final last = DateTime(throughYear ?? now.year + 2, 12, 31);
   final out = <String>[];
-  var d = DateTime.now();
-  d = DateTime(d.year, d.month, d.day);
-  for (var i = 0; i < days; i++) {
+  var d = DateTime(now.year, now.month, now.day);
+  while (!d.isAfter(last)) {
     if (lunarOf(d).isSilDay) out.add(isoOf(d));
     d = addDays(d, 1);
   }

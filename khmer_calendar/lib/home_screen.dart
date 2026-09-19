@@ -82,6 +82,30 @@ Future<void> syncHomeWidget(AppStore store) async {
   } catch (_) {}
 }
 
+Map<String, String> _dayNotifyFields(DateTime d, Lang lang, List<CalendarEvent> events) {
+  final di = isoOf(d);
+  final lu = lunarOf(d);
+  final hs = observancesOn(di, events).where((e) => e.kind == Kind.holiday);
+  return {
+    'lunar': lang == Lang.en ? lunarLabel(di, lang) : lu.lunarDateText,
+    'holiday': hs.isEmpty ? '' : obsTitle(hs.first, lang),
+    'weekday': weekdaysFull(lang)[d.weekday % 7],
+    'gregorian': lang == Lang.en ? gregorianLabel(d, lang) : lu.gregorianDateText,
+    'be': lang == Lang.en ? 'B.E. ${lu.buddhistEraYear}' : 'ព.ស. ${lu.buddhistEraYearKhmer}',
+    'moon': silPhaseLabel(lu, lang),
+    'sil': lu.isSilDay ? '1' : '',
+    'hkind': hs.isEmpty
+        ? ''
+        : (hs.first.holidayType == HolidayType.public
+            ? 'public'
+            : hs.first.holidayType == HolidayType.religious
+                ? 'religious'
+                : hs.first.holidayType == HolidayType.international
+                    ? 'international'
+                    : 'traditional'),
+  };
+}
+
 Map<String, dynamic> _buildWidgetDisplay(AppStore store) {
   final now = DateTime.now();
   final iso = todayIso();
@@ -90,30 +114,23 @@ Map<String, dynamic> _buildWidgetDisplay(AppStore store) {
   final lunarText = lang == Lang.en ? lunarLabel(iso, lang) : lunar.lunarDateText;
   final hols = observancesOn(iso, store.events).where((e) => e.kind == Kind.holiday);
   final holiday = hols.isEmpty ? '' : obsTitle(hols.first, lang);
+  final publicHols = upcomingHolidays(HolidayType.public);
+  final otherHols = upcomingOtherHolidays();
+  final silDays = upcomingSilDates();
+  final dayIsos = <String>{};
+  for (var i = 0; i < 90; i++) {
+    dayIsos.add(isoOf(DateTime(now.year, now.month, now.day + i)));
+  }
+  for (final h in publicHols) {
+    dayIsos.add(h['d']!);
+  }
+  for (final h in otherHols) {
+    dayIsos.add(h['d']!);
+  }
+  dayIsos.addAll(silDays);
   final days = <String, Map<String, String>>{};
-  for (var i = 0; i < 16; i++) {
-    final d = DateTime(now.year, now.month, now.day + i);
-    final di = isoOf(d);
-    final lu = lunarOf(d);
-    final hs = observancesOn(di, store.events).where((e) => e.kind == Kind.holiday);
-    days[di] = {
-      'lunar': lang == Lang.en ? lunarLabel(di, lang) : lu.lunarDateText,
-      'holiday': hs.isEmpty ? '' : obsTitle(hs.first, lang),
-      'weekday': weekdaysFull(lang)[d.weekday % 7],
-      'gregorian': lang == Lang.en ? gregorianLabel(d, lang) : lu.gregorianDateText,
-      'be': lang == Lang.en ? 'B.E. ${lu.buddhistEraYear}' : 'ព.ស. ${lu.buddhistEraYearKhmer}',
-      'moon': silPhaseLabel(lu, lang),
-      'sil': lu.isSilDay ? '1' : '',
-      'hkind': hs.isEmpty
-          ? ''
-          : (hs.first.holidayType == HolidayType.public
-              ? 'public'
-              : hs.first.holidayType == HolidayType.religious
-                  ? 'religious'
-                  : hs.first.holidayType == HolidayType.international
-                      ? 'international'
-                      : 'traditional'),
-    };
+  for (final di in dayIsos) {
+    days[di] = _dayNotifyFields(fromIso(di), lang, store.events);
   }
   final marks = <String, String>{};
   final names = <String, String>{};
@@ -166,9 +183,9 @@ Map<String, dynamic> _buildWidgetDisplay(AppStore store) {
     'names': jsonEncode(names),
     'lang': lang == Lang.en ? 'en' : 'km',
     'weekStartsOn': store.weekStartsOn,
-    'sil_days': upcomingSilDates().join(','),
-    'public_hols': jsonEncode(upcomingHolidays(HolidayType.public)),
-    'religious_hols': jsonEncode(upcomingOtherHolidays()),
+    'sil_days': silDays.join(','),
+    'public_hols': jsonEncode(publicHols),
+    'religious_hols': jsonEncode(otherHols),
   };
 }
 

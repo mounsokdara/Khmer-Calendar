@@ -162,23 +162,21 @@ object WidgetStore {
     }
 
     fun isSilDay(context: Context, iso: String = todayIso()): Boolean {
-        val raw = prefs(context).getString("sil_days", "") ?: return false
-        return raw.split(",").any { it.trim() == iso }
+        return silIsoList(context).any { it == iso }
+    }
+
+    fun silIsoList(context: Context): List<String> {
+        val raw = prefs(context).getString("sil_days", "") ?: return emptyList()
+        return raw.split(",").map { it.trim() }.filter { it.length >= 10 }
     }
 
     fun nextSilAt(context: Context, hour: Int = 7): Long? {
-        val raw = prefs(context).getString("sil_days", "") ?: return null
         val today = todayIso()
         val now = System.currentTimeMillis()
-        for (part in raw.split(",")) {
-            val iso = part.trim()
-            if (iso.length < 10 || iso < today) continue
-            val bits = iso.split("-")
-            if (bits.size < 3) continue
-            val cal = Calendar.getInstance()
-            cal.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
-            cal.set(Calendar.MILLISECOND, 0)
-            if (cal.timeInMillis > now + 30_000) return cal.timeInMillis
+        for (iso in silIsoList(context)) {
+            if (iso < today) continue
+            val calMillis = NotifyKit.millisAt(iso, hour) ?: continue
+            if (calMillis > now + 30_000) return calMillis
         }
         return null
     }

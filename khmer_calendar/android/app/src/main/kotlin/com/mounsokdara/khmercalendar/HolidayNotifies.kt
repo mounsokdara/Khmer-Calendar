@@ -1,36 +1,19 @@
 package com.mounsokdara.khmercalendar
 
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Calendar
 
 private const val RELIGIOUS_BLUE = 0xFF1E88E5.toInt()
-private const val MAX_HOLIDAY_ALARMS = 24
 
-private fun holidayAt(iso: String, hour: Int): Long? {
-    val bits = iso.split("-")
-    if (bits.size < 3) return null
-    val c = Calendar.getInstance()
-    c.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
-    c.set(Calendar.MILLISECOND, 0)
-    return c.timeInMillis
-}
-
-private fun holidayPi(context: Context, cls: Class<*>, req: Int, iso: String): PendingIntent {
-    val intent = Intent(context, cls).putExtra("date", iso)
-    val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    return PendingIntent.getBroadcast(context, req, intent, flags)
-}
-
+/** Holidays listed by Flutter from holidaysOfYear / observances — not a hardcoded subset. */
 private fun listedHolidays(context: Context, listKey: String): List<Pair<String, JSONObject>> {
     val raw = WidgetStore.prefs(context).getString(listKey, "[]") ?: return emptyList()
     return try {
         val arr = JSONArray(raw)
-        val out = ArrayList<Pair<String, JSONObject>>()
+        val out = ArrayList<Pair<String, JSONObject>>(arr.length())
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
             val iso = o.optString("d")
@@ -42,22 +25,27 @@ private fun listedHolidays(context: Context, listKey: String): List<Pair<String,
     }
 }
 
-private fun scheduleHolidayAlarms(context: Context, listKey: String, cls: Class<*>, baseReq: Int, hour: Int) {
-    val now = System.currentTimeMillis()
-    var n = 0
-    for ((iso, _) in listedHolidays(context, listKey)) {
-        val at = holidayAt(iso, hour) ?: continue
-        if (at <= now + 30_000) continue
-        NotifyKit.setExact(context, at, holidayPi(context, cls, baseReq + n, iso))
-        n++
-        if (n >= MAX_HOLIDAY_ALARMS) break
-    }
+private fun itemsOn(context: Context, listKey: String, iso: String): List<JSONObject> {
+    return listedHolidays(context, listKey).mapNotNull { if (it.first == iso) it.second else null }
 }
 
-private fun cancelHolidayAlarms(context: Context, cls: Class<*>, baseReq: Int) {
-    for (i in 0 until MAX_HOLIDAY_ALARMS) {
-        NotifyKit.cancelAlarm(context, holidayPi(context, cls, baseReq + i, ""))
+private fun namesFor(items: List<JSONObject>, km: Boolean): List<String> {
+    val out = ArrayList<String>()
+    val seen = HashSet<String>()
+    for (item in items) {
+        val name = if (km) item.optString("km") else item.optString("en")
+        if (name.isNotEmpty() && seen.add(name)) out.add(name)
     }
+    return out
+}
+
+private fun armListed(context: Context, listKey: String, cls: Class<*>, baseReq: Int, extraBases: IntArray = intArrayOf()) {
+    val isos = listedHolidays(context, listKey).map { it.first }
+    NotifyKit.scheduleIsoAlarms(context, isos, cls, baseReq, 8, "${listKey}_alarm_n", extraBases)
+}
+
+private fun cancelListed(context: Context, listKey: String, cls: Class<*>, baseReq: Int, extraBases: IntArray = intArrayOf()) {
+    NotifyKit.cancelIsoAlarms(context, cls, baseReq, "${listKey}_alarm_n", extraBases)
 }
 
 object PublicHolidayNotify {
@@ -78,23 +66,28 @@ object PublicHolidayNotify {
             return
         }
         NotifyKit.ensureChannels(context)
-        cancelHolidayAlarms(context, PublicHolidayReceiver::class.java, NotifyKit.PUBLIC_REQ)
-        scheduleHolidayAlarms(context, LIST, PublicHolidayReceiver::class.java, NotifyKit.PUBLIC_REQ, 8)
+        armListed(context, LIST, PublicHolidayReceiver::class.java, NotifyKit.PUBLIC_REQ)
     }
 
     fun cancel(context: Context) {
-        cancelHolidayAlarms(context, PublicHolidayReceiver::class.java, NotifyKit.PUBLIC_REQ)
+        cancelListed(context, LIST, PublicHolidayReceiver::class.java, NotifyKit.PUBLIC_REQ)
         NotifyKit.cancelNote(context, NotifyKit.PUBLIC_ID)
     }
 
     fun show(context: Context, iso: String = WidgetStore.todayIso()) {
         if (!WidgetStore.publicOn(context)) return
-        val item = WidgetStore.holidayEntry(context, LIST, iso) ?: return
+        val items = itemsOn(context, LIST, iso)
+        if (items.isEmpty()) return
         val km = WidgetStore.lang(context) != "en"
-        val name = if (km) item.optString("km") else item.optString("en")
+        val names = namesFor(items, km)
         val kind = if (km) "ថ្ងៃឈប់សម្រាកសាធារណៈ" else "Public holiday"
-        val body = listOf(kind, WidgetStore.dayDetail(context, iso)).filter { it.isNotEmpty() }.joinToString("\n")
-        NotifyKit.post(context, NotifyKit.PUBLIC_ID, NotifyKit.CHANNEL_PUBLIC, name.ifEmpty { kind }, body, "day", iso)
+        val title = names.firstOrNull()?.ifEmpty { kind } ?: kind
+        val extra = names.drop(1)
+        val body =
+            (extra + kind + WidgetStore.dayDetail(context, iso))
+                .filter { it.isNotEmpty() }
+                .joinToString("\n")
+        NotifyKit.post(context, NotifyKit.PUBLIC_ID, NotifyKit.CHANNEL_PUBLIC, title, body, "day", iso)
     }
 }
 
@@ -127,27 +120,44 @@ object ReligiousHolidayNotify {
             return
         }
         NotifyKit.ensureChannels(context)
-        cancelHolidayAlarms(context, ReligiousHolidayReceiver::class.java, NotifyKit.RELIGIOUS_REQ)
-        scheduleHolidayAlarms(context, LIST, ReligiousHolidayReceiver::class.java, NotifyKit.RELIGIOUS_REQ, 8)
+        armListed(
+            context,
+            LIST,
+            ReligiousHolidayReceiver::class.java,
+            NotifyKit.RELIGIOUS_REQ,
+            intArrayOf(NotifyKit.LEGACY_RELIGIOUS_REQ),
+        )
     }
 
     fun cancel(context: Context) {
-        cancelHolidayAlarms(context, ReligiousHolidayReceiver::class.java, NotifyKit.RELIGIOUS_REQ)
+        cancelListed(
+            context,
+            LIST,
+            ReligiousHolidayReceiver::class.java,
+            NotifyKit.RELIGIOUS_REQ,
+            intArrayOf(NotifyKit.LEGACY_RELIGIOUS_REQ),
+        )
         NotifyKit.cancelNote(context, NotifyKit.RELIGIOUS_ID)
     }
 
     fun show(context: Context, iso: String = WidgetStore.todayIso()) {
         if (!WidgetStore.religiousOn(context)) return
-        val item = WidgetStore.holidayEntry(context, LIST, iso) ?: return
+        val items = itemsOn(context, LIST, iso)
+        if (items.isEmpty()) return
         val km = WidgetStore.lang(context) != "en"
-        val name = if (km) item.optString("km") else item.optString("en")
+        val names = namesFor(items, km)
         val kind = if (km) "ថ្ងៃបុណ្យផ្សេងទៀត" else "Other holiday"
-        val body = listOf(kind, WidgetStore.dayDetail(context, iso)).filter { it.isNotEmpty() }.joinToString("\n")
+        val title = names.firstOrNull()?.ifEmpty { kind } ?: kind
+        val extra = names.drop(1)
+        val body =
+            (extra + kind + WidgetStore.dayDetail(context, iso))
+                .filter { it.isNotEmpty() }
+                .joinToString("\n")
         NotifyKit.post(
             context,
             NotifyKit.RELIGIOUS_ID,
             NotifyKit.CHANNEL_RELIGIOUS,
-            name.ifEmpty { kind },
+            title,
             body,
             "day",
             iso,

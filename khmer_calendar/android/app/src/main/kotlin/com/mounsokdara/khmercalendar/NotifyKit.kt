@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import java.util.Calendar
 
 object NotifyKit {
     const val CHANNEL_DAILY = "khmer_daily"
@@ -21,8 +22,11 @@ object NotifyKit {
     const val RELIGIOUS_ID = 1004
     const val DAILY_REQ = 41
     const val SIL_REQ = 42
+    const val SIL_ALARM_BASE = 3000
     const val PUBLIC_REQ = 4300
-    const val RELIGIOUS_REQ = 4400
+    const val RELIGIOUS_REQ = 5000
+    const val LEGACY_RELIGIOUS_REQ = 4400
+    const val CANCEL_FALLBACK = 512
 
     fun dailyOn(context: Context): Boolean = WidgetStore.dailyOn(context)
 
@@ -112,25 +116,92 @@ object NotifyKit {
     }
 
     fun morningOf(year: Int, month: Int, day: Int): Long {
-        val c = java.util.Calendar.getInstance()
+        val c = Calendar.getInstance()
         c.set(year, month - 1, day, 7, 0, 0)
-        c.set(java.util.Calendar.MILLISECOND, 0)
+        c.set(Calendar.MILLISECOND, 0)
         return c.timeInMillis
     }
 
     fun nextMorning(): Long {
-        val c = java.util.Calendar.getInstance()
-        c.set(java.util.Calendar.HOUR_OF_DAY, 7)
-        c.set(java.util.Calendar.MINUTE, 0)
-        c.set(java.util.Calendar.SECOND, 0)
-        c.set(java.util.Calendar.MILLISECOND, 0)
-        if (c.timeInMillis <= System.currentTimeMillis() + 30_000) c.add(java.util.Calendar.DATE, 1)
+        val c = Calendar.getInstance()
+        c.set(Calendar.HOUR_OF_DAY, 7)
+        c.set(Calendar.MINUTE, 0)
+        c.set(Calendar.SECOND, 0)
+        c.set(Calendar.MILLISECOND, 0)
+        if (c.timeInMillis <= System.currentTimeMillis() + 30_000) c.add(Calendar.DATE, 1)
         return c.timeInMillis
     }
 
     fun publicOn(context: Context): Boolean = WidgetStore.publicOn(context)
 
     fun religiousOn(context: Context): Boolean = WidgetStore.religiousOn(context)
+
+    fun millisAt(iso: String, hour: Int): Long? {
+        val bits = iso.split("-")
+        if (bits.size < 3) return null
+        return try {
+            val c = Calendar.getInstance()
+            c.set(bits[0].toInt(), bits[1].toInt() - 1, bits[2].toInt(), hour, 0, 0)
+            c.set(Calendar.MILLISECOND, 0)
+            c.timeInMillis
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun datedPi(context: Context, cls: Class<*>, req: Int, iso: String): PendingIntent {
+        val intent = Intent(context, cls).putExtra("date", iso)
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(context, req, intent, flags)
+    }
+
+    private fun existingPi(context: Context, cls: Class<*>, req: Int): PendingIntent? {
+        val intent = Intent(context, cls)
+        val flags = PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+        return PendingIntent.getBroadcast(context, req, intent, flags)
+    }
+
+    fun scheduleIsoAlarms(
+        context: Context,
+        isos: List<String>,
+        cls: Class<*>,
+        baseReq: Int,
+        hour: Int,
+        countKey: String,
+        extraCancelBases: IntArray = intArrayOf(),
+    ) {
+        cancelIsoAlarms(context, cls, baseReq, countKey, extraCancelBases)
+        val now = System.currentTimeMillis()
+        var n = 0
+        val seen = HashSet<String>()
+        for (iso in isos) {
+            if (iso.length < 10 || !seen.add(iso)) continue
+            val at = millisAt(iso, hour) ?: continue
+            if (at <= now + 30_000) continue
+            setExact(context, at, datedPi(context, cls, baseReq + n, iso))
+            n++
+        }
+        WidgetStore.prefs(context).edit().putInt(countKey, n).apply()
+    }
+
+    fun cancelIsoAlarms(
+        context: Context,
+        cls: Class<*>,
+        baseReq: Int,
+        countKey: String,
+        extraCancelBases: IntArray = intArrayOf(),
+    ) {
+        val stored = WidgetStore.prefs(context).getInt(countKey, CANCEL_FALLBACK)
+        fun wipe(base: Int) {
+            for (i in 0 until stored) {
+                val pi = existingPi(context, cls, base + i) ?: continue
+                cancelAlarm(context, pi)
+            }
+        }
+        wipe(baseReq)
+        extraCancelBases.forEach(::wipe)
+        WidgetStore.prefs(context).edit().remove(countKey).apply()
+    }
 
     fun sync(context: Context) {
         if (dailyOn(context)) DailyDigestNotify.schedule(context) else DailyDigestNotify.cancel(context)
