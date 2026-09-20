@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,6 +20,7 @@ import '../widgets/overlay_page.dart';
 import '../widgets/scheme_chips.dart';
 import '../widgets/segmented_list.dart';
 import '../widgets/dialog_actions.dart';
+import '../widgets/sil_mark.dart';
 
 const _release = 'https://github.com/mounsokdara/Khmer-Calendar/releases/latest/download';
 
@@ -498,7 +499,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       if (!v) {
                         store.setNotifyOn(false);
                         await cancelAllReminders();
-                        await cancelDailyNotify();
+                        await syncHomeWidget(store);
                         return;
                       }
                       final ok = await requestNotifications(store);
@@ -550,7 +551,7 @@ class _PrivacyPageState extends State<PrivacyPage> {
                         return;
                       }
                       final ok = await requestAutoLaunch(store, context: context);
-                      if (!ok && context.mounted) {
+                      if (!ok && context.mounted && defaultTargetPlatform != TargetPlatform.android) {
                         await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed);
                         store.setAutoLaunchOn(await autoLaunchAllowed());
                       }
@@ -597,20 +598,14 @@ class NotificationsPage extends StatelessWidget {
         final lang = store.lang;
 
         Future<void> toggle(bool v, void Function(bool) set) async {
-          if (!v) {
-            set(false);
-            await syncReminders(store);
-            return;
-          }
-          if (!store.notifyOn) {
+          if (v && !store.notifyOn) {
             final ok = await requestNotifications(store);
             if (!ok && context.mounted) {
               await promptIfDenied(store, context: context, kind: 'notify', allowed: notificationsAllowed);
             }
             if (!store.notifyOn) return;
           }
-          set(true);
-          await syncReminders(store);
+          set(v);
         }
 
         return OverlayScaffold(
@@ -621,18 +616,33 @@ class NotificationsPage extends StatelessWidget {
               SegmentedGroup(
                 children: [
                   SegmentedSwitch(
-                    icon: Icons.event,
-                    title: t(lang, 'remindEvents'),
-                    subtitle: t(lang, 'remindEventsSub'),
-                    value: store.notifyEvents,
-                    onChanged: (v) => toggle(v, store.setNotifyEvents),
+                    icon: Icons.wb_sunny_outlined,
+                    title: t(lang, 'remindDaily'),
+                    subtitle: t(lang, 'remindDailySub'),
+                    value: store.notifyDaily,
+                    onChanged: (v) => toggle(v, store.setNotifyDaily),
                   ),
                   SegmentedSwitch(
-                    icon: Icons.celebration,
-                    title: t(lang, 'remindHolidays'),
-                    subtitle: t(lang, 'remindHolidaysSub'),
-                    value: store.notifyHolidays,
-                    onChanged: (v) => toggle(v, store.setNotifyHolidays),
+                    icon: Icons.flag_outlined,
+                    title: t(lang, 'remindPublic'),
+                    subtitle: t(lang, 'remindPublicSub'),
+                    value: store.notifyPublic,
+                    onChanged: (v) => toggle(v, store.setNotifyPublic),
+                  ),
+                  SegmentedSwitch(
+                    icon: Icons.event_outlined,
+                    iconColor: religiousColor,
+                    title: t(lang, 'remindOthers'),
+                    subtitle: t(lang, 'remindOthersSub'),
+                    value: store.notifyOthers,
+                    onChanged: (v) => toggle(v, store.setNotifyOthers),
+                  ),
+                  SegmentedSwitch(
+                    leading: const SilMark(size: 24),
+                    title: t(lang, 'remindSil'),
+                    subtitle: t(lang, 'remindSilSub'),
+                    value: store.notifySil,
+                    onChanged: (v) => toggle(v, store.setNotifySil),
                   ),
                   SegmentedSwitch(
                     icon: Icons.task_alt,
@@ -1072,7 +1082,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
       setState(() => notify = false);
       store.setNotifyOn(false);
       await cancelAllReminders();
-      await cancelDailyNotify();
+      await syncHomeWidget(store);
       return;
     }
     await requestNotifications(store);
@@ -1131,7 +1141,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
     }
     await requestAutoLaunch(store, context: context);
     if (!mounted) return;
-    if (!store.autoLaunchOn) {
+    if (!store.autoLaunchOn && defaultTargetPlatform != TargetPlatform.android) {
       if (await promptIfDenied(store, context: context, kind: 'auto', allowed: autoLaunchAllowed)) {
         if (!mounted) return;
         await requestAutoLaunch(store, context: context);

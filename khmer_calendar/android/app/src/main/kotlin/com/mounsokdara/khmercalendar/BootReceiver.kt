@@ -1,6 +1,5 @@
 package com.mounsokdara.khmercalendar
 
-import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,19 +17,7 @@ class BootReceiver : BroadcastReceiver() {
         ) {
             return
         }
-        try {
-            context.stopService(Intent(context, KeepAliveService::class.java))
-            val nm = context.getSystemService(NotificationManager::class.java)
-            nm?.cancel(KeepAliveService.ID)
-        } catch (_: Exception) {
-        }
-        val replaced = action == Intent.ACTION_MY_PACKAGE_REPLACED
-        val prefs = WidgetStore.prefs(context)
-        val want = prefs.getBoolean("notifyOn", false)
-        if (want) DailyNotify.arm(context, showNow = replaced) else DailyNotify.cancel(context)
-        TodayWidgetProvider.refreshAll(context)
-        MonthWidgetProvider.refreshAll(context)
-        WeatherWidgetProvider.refreshAll(context)
+        BootWork.run(context)
     }
 
     companion object {

@@ -6,11 +6,12 @@ import '../calendar/observances.dart';
 import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
+import '../theme.dart';
 import '../widgets/animal.dart';
+import '../widgets/carousel_slider.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
-import '../widgets/slide_track.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
 
@@ -35,8 +36,6 @@ class _TodayPageState extends State<TodayPage> {
         final today = todayIso();
         final isToday = store.selected == today;
         final L = lunarOf(selected);
-        final prev = addDays(selected, -1);
-        final next = addDays(selected, 1);
 
         return Column(
           children: [
@@ -65,12 +64,15 @@ class _TodayPageState extends State<TodayPage> {
               ),
             ),
             Expanded(
-              child: SlideTrack(
-                pageId: store.selected,
-                onShift: (dir) => store.goToDate(isoOf(addDays(selected, dir))),
-                previous: _DayPanel(day: prev, store: store, onCopy: _copy),
-                current: _DayPanel(day: selected, store: store, onCopy: _copy),
-                next: _DayPanel(day: next, store: store, onCopy: _copy),
+              child: CarouselSlider(
+                index: dayIndexOf(selected),
+                itemCount: dayCount(),
+                itemBuilder: (context, i) => _DayPanel(
+                  day: dayFromIndex(i),
+                  store: store,
+                  onCopy: _copy,
+                ),
+                onIndexChanged: (i) => store.goToDate(isoOf(dayFromIndex(i))),
               ),
             ),
             if (_toast != null)
@@ -162,12 +164,16 @@ class _DayPanel extends StatelessWidget {
           const SizedBox(height: 8),
           Card(
             elevation: 0,
-            color: cs.primaryContainer,
+            color: h.holidayType == HolidayType.public ? publicHolidayFill : otherHolidayFill,
+            clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: () => showHolidayInfo(context, store, h),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Text(obsTitle(h, lang), style: TextStyle(color: cs.onPrimaryContainer, fontWeight: FontWeight.bold)),
+                child: Text(
+                  obsTitle(h, lang),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),

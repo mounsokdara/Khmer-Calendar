@@ -7,11 +7,11 @@ import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
+import '../widgets/carousel_slider.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/obs_row.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
-import '../widgets/slide_track.dart';
 import '../widgets/task_sheet.dart';
 import '../widgets/wheel_picker.dart';
 
@@ -27,11 +27,6 @@ class _MonthsPageState extends State<MonthsPage> {
   bool _expanded = false;
 
   AppStore get store => widget.store;
-
-  void _shiftMonth(int dir) {
-    final cur = fromIso(store.cursor);
-    store.setCursor(isoOf(addMonths(cur, dir)));
-  }
 
   void _openObs(Observance item) {
     store.goToDate(item.date);
@@ -186,14 +181,24 @@ class _MonthsPageState extends State<MonthsPage> {
   }
 
   Widget _slide(DateTime cursor, {required bool fill}) {
-    final prev = addMonths(cursor, -1);
-    final next = addMonths(cursor, 1);
-    return SlideTrack(
-      pageId: isoOf(DateTime(cursor.year, cursor.month, 1)),
-      onShift: _shiftMonth,
-      previous: _MonthGrid(month: prev, store: store, interactive: false, expanded: _expanded, fill: fill),
-      current: _MonthGrid(month: cursor, store: store, interactive: true, expanded: _expanded, fill: fill),
-      next: _MonthGrid(month: next, store: store, interactive: false, expanded: _expanded, fill: fill),
+    return CarouselSlider(
+      index: monthIndexOf(cursor),
+      itemCount: monthCount(),
+      itemBuilder: (context, i) {
+        final month = monthFromIndex(i);
+        return _MonthGrid(
+          month: month,
+          store: store,
+          interactive: true,
+          expanded: _expanded,
+          fill: fill,
+        );
+      },
+      onIndexChanged: (i) {
+        final next = monthFromIndex(i);
+        final day = cursor.day.clamp(1, daysInMonth(next));
+        store.setCursor(isoOf(DateTime(next.year, next.month, day)));
+      },
     );
   }
 

@@ -1,11 +1,11 @@
-# Khmer Calendar v1.0.0
+# Khmer Calendar v1.0.1
 
-First stable release of the native Khmer lunar calendar.
+Native Khmer lunar calendar for phone, desktop, and the web.
 
 **Website:** https://khmercalendar.pages.dev  
 **Source:** https://github.com/mounsokdara/Khmer-Calendar
 
-The public website is the same Flutter app as Android, Windows, macOS, and Linux. 
+The public website is the same Flutter app as Android, Windows, macOS, and Linux.
 
 ## Install
 
@@ -15,6 +15,14 @@ The public website is the same Flutter app as Android, Windows, macOS, and Linux
 - Linux: `KhmerCalendar-linux.tar.gz`
 - Source: `KhmerCalendar-project.zip`
 - Web: `KhmerCalendar-web.zip` or https://khmercalendar.pages.dev
+
+## Reminders in 1.0.1
+
+- Each reminder kind is its own class: daily, សីល, holidays, events, and tasks
+- Daily morning recap is **off by default** and has its own toggle
+- សីល (precept day) reminder for ៨កើត ១៥កើត ៨រោច ១៥រោច
+- Master notification permission no longer forces a daily alert
+- Turning a kind off cancels that alarm only
 
 ## Calendar
 
@@ -35,31 +43,30 @@ The public website is the same Flutter app as Android, Windows, macOS, and Linux
 - Open a day from the month grid to see that date
 - Full details when you tap a holiday or event label
 
+## Home screen widgets
+
+- Today widget
+- Month widget with holiday colors, សីល mark, task dots, names, and Today
+- Weather widget with city list, hourly, weekly, and sky clouds
+- Tap a day or widget to open that place in the app
+
 ## Weather
 
 - Open-Meteo forecasts for Cambodia cities
 - Add a city with the + button
 - GPS nearby city
 - Hourly and 7-day forecast
+- Cloud icons from the weather API
 - Swipe to remove a city
-
-## Reminders
-
-- Notifications for events, holidays, and your calendar reminder
-- Exact alarms after the app is closed
-- Auto start on boot (Android OEM and desktop)
-- Setup asks notifications, background, auto start, and GPS
-- Skip is available on setup
-- If a permission is denied, setup pauses and offers device settings
+- Weather is blocked when you are offline
 
 ## Theme
 
 - Light, dark, and system
-- Material You color schemes (horizontal chips)
-- Dynamic color: wallpaper colors when the device supports Material You
+- Material You color schemes
+- Dynamic color from wallpaper when the device supports Material You
 - Extra dark for AMOLED
 - Custom accent, highlight, and alpha when Material You is off
-- Dynamic color greys out the other color controls
 
 ## More
 
@@ -67,5 +74,4 @@ The public website is the same Flutter app as Android, Windows, macOS, and Linux
 - Privacy and permission toggles
 - Clear cache, reminders, weather, or all data
 - About: created by, version, licenses, source, website
-- Open source credits: languages, APIs, libraries, and the full package license list
 - MIT license, created by Moun Sokdara

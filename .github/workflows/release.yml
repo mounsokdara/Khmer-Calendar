@@ -3,6 +3,10 @@ name: Release
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "website/**"
+      - "**/*.md"
+      - ".github/workflows/website.yml"
   workflow_dispatch:
 
 concurrency:
@@ -159,17 +163,6 @@ jobs:
         with:
           name: web
           path: KhmerCalendar-web.zip
-      - name: Deploy Flutter website to Cloudflare
-        continue-on-error: true
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "No CLOUDFLARE_API_TOKEN. Cloudflare Git builds will use website/"
-            exit 0
-          fi
-          npx wrangler deploy
 
   release:
     needs: [android, linux, windows, macos, project, web]

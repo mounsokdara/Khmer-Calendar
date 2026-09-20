@@ -10,6 +10,7 @@ import 'autostart_io.dart' if (dart.library.html) 'autostart_stub.dart' as autos
 import 'home_screen.dart';
 import 'i18n.dart';
 import 'location.dart';
+import 'notify/kinds.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
 import 'reminders.dart';
 import 'store.dart';
@@ -268,12 +269,9 @@ Future<bool> autoLaunchAllowed() async {
       return false;
     }
   }
-  if (_android) {
-    final s = await _androidStatus();
-    if (s['stock'] == true) return true;
-    if (s['autoStartQueryable'] == true) return s['autoStart'] == true;
-    return false;
-  }
+  // Android: RECEIVE_BOOT_COMPLETED is always registered. OEM auto-start
+  // (Xiaomi, Oppo, Vivo, Huawei) is not part of AOSP and cannot be read.
+  if (_android) return true;
   return false;
 }
 
@@ -293,9 +291,7 @@ Future<OsPerms> readOsPermissions() async {
   final autoLaunch = await autoLaunchAllowed();
   final location = await locationAllowed();
   var queryable = false;
-  if (_android) {
-    queryable = (await _androidStatus())['autoStartQueryable'] == true;
-  } else if (_desktop) {
+  if (_desktop) {
     queryable = true;
   }
   return OsPerms(
@@ -312,12 +308,10 @@ Future<void> keepOnlyGranted(AppStore store) async {
   final os = await readOsPermissions();
   if (store.notifyOn && !os.notify) store.setNotifyOn(false);
   if (store.backgroundOn && !os.background) store.setBackgroundOn(false);
-  if (store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
+  if (!_android && store.autoLaunchOn && !os.autoLaunch) store.setAutoLaunchOn(false);
   if (store.locationOn && !os.location) store.setLocationOn(false);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
   if (!store.notifyOn) await cancelAllReminders();
-  if (!store.notifyOn) await cancelDailyNotify();
 }
 
 /// After Continue asked the OS, store only what is actually allowed.
@@ -325,18 +319,13 @@ Future<void> writeGrantedFlags(AppStore store) async {
   final os = await readOsPermissions();
   store.setNotifyOn(os.notify);
   store.setBackgroundOn(os.background);
-  store.setAutoLaunchOn(os.autoLaunch);
+  if (!_android) store.setAutoLaunchOn(os.autoLaunch);
   store.setLocationOn(os.location);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
   if (os.notify) {
     await initReminderEngine();
-    await syncReminders(store);
-    await syncHomeWidget(store);
-    await armDailyNotify(showNow: true);
   } else {
     await cancelAllReminders();
-    await cancelDailyNotify();
   }
 }
 
@@ -360,12 +349,8 @@ Future<bool> requestNotifications(AppStore store) async {
   store.setNotifyOn(ok);
   if (ok) {
     await initReminderEngine();
-    await syncReminders(store);
-    await syncHomeWidget(store);
-    await armDailyNotify(showNow: true);
   } else {
     await cancelAllReminders();
-    await cancelDailyNotify();
   }
   return ok;
 }
@@ -401,21 +386,17 @@ Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   final ok = await backgroundAllowed();
   store.setBackgroundOn(ok);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
-  if (ok) {
-    await initReminderEngine();
-    await syncReminders(store);
-  }
+  if (ok) await initReminderEngine();
   return ok;
 }
 
 Future<void> stopBackground(AppStore store) async {
   store.setBackgroundOn(false);
   await _syncNativeFlags(store);
-  await _native('stopKeepAlive');
 }
 
-/// Open OEM auto-start / desktop login items, then re-read whether it is allowed.
+/// Open OEM auto-start / desktop login items. Android cannot report whether
+/// the manufacturer whitelist is on, so the user flag is the source of truth.
 Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
     store.setAutoLaunchOn(false);
@@ -424,24 +405,24 @@ Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   try {
     if (_android) {
       final s = await _androidStatus();
-      if (s['stock'] != true) {
-        await _pause();
-        await _native('openAutoStart');
-      }
-      var os = await readOsPermissions();
-      if (s['stock'] != true && !os.autoStartQueryable) {
+      if (s['oemAutoStart'] == true) {
         final ctx = context;
         if (ctx != null && ctx.mounted) {
-          final confirmed = await _confirm(ctx, store.lang, 'autoLaunchConfirm', 'autoLaunchConfirmSub');
-          store.setAutoLaunchOn(confirmed);
-          await _syncNativeFlags(store);
-          return confirmed;
+          final go = await _confirm(ctx, store.lang, 'autoLaunchConfirm', 'autoLaunchConfirmSub');
+          if (!go) {
+            store.setAutoLaunchOn(false);
+            await _syncNativeFlags(store);
+            return false;
+          }
         }
-        store.setAutoLaunchOn(false);
-        await _syncNativeFlags(store);
-        return false;
+        await _native('openAutoStart');
+        await _waitForResume();
       }
-    } else if (_desktop) {
+      store.setAutoLaunchOn(true);
+      await _syncNativeFlags(store);
+      return true;
+    }
+    if (_desktop) {
       try {
         await autostart.enableDesktopAutostart();
       } catch (e) {
@@ -525,7 +506,15 @@ Future<bool> requestAllPermissions(
     return false;
   }
   await _pause();
-  if (!await step(
+  if (_android) {
+    onStep?.call('askingAutoLaunch');
+    try {
+      final autoCtx = context;
+      await requestAutoLaunch(store, context: autoCtx != null && autoCtx.mounted ? autoCtx : null);
+    } catch (e) {
+      debugPrint('all/auto: $e');
+    }
+  } else if (!await step(
     'askingAutoLaunch',
     'auto',
     () async {
@@ -551,11 +540,10 @@ Future<void> applyStoredPermissions(AppStore store) async {
   await keepOnlyGranted(store);
   bindReminderSync(store);
   bindHomeWidget(store);
-  await _native('stopKeepAlive');
+  warmNotifyLists();
   if (store.notifyOn) {
     await initReminderEngine();
-    await syncReminders(store);
-    await armDailyNotify(showNow: false);
+    Future<void>.delayed(const Duration(milliseconds: 120), () => syncReminders(store));
   }
   if (store.autoLaunchOn && _desktop) {
     try {

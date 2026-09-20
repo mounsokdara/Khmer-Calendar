@@ -204,8 +204,8 @@ class MonthWidgetProvider : AppWidgetProvider() {
                     when {
                         isToday -> COLOR_TODAY
                         !inMonth -> COLOR_DIM
-                        flags.contains('p') || sunday -> COLOR_PUBLIC
                         flags.contains('h') -> COLOR_OTHER
+                        flags.contains('p') || sunday -> COLOR_PUBLIC
                         else -> Color.WHITE
                     }
                 views.setTextColor(id, color)

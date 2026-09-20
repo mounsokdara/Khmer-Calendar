@@ -152,6 +152,7 @@ int _kindRank(Kind k) => k == Kind.holiday ? 0 : k == Kind.sil ? 1 : 2;
 String holidayTypeLabel(HolidayType type, Lang lang) {
   if (type == HolidayType.public) return t(lang, 'holidayPublic');
   if (type == HolidayType.religious) return t(lang, 'holidayReligious');
+  if (type == HolidayType.international) return t(lang, 'holidayInternational');
   return t(lang, 'holidayTraditional');
 }
 
@@ -262,19 +263,31 @@ String lunarLabel(String iso, Lang lang) {
 String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';
-  return o.holidayType == HolidayType.public ? 'sunday' : 'holiday';
+  if (o.holidayType == HolidayType.public) return 'sunday';
+  return 'holiday';
 }
 
 bool isPublicHoliday(String iso) => holidaysOn(iso).any((h) => h.type == HolidayType.public);
 
+bool isObservanceHoliday(String iso) {
+  if (holidaysOn(iso).any(
+    (h) =>
+        h.type == HolidayType.religious ||
+        h.type == HolidayType.traditional ||
+        h.type == HolidayType.international,
+  )) {
+    return true;
+  }
+  final y = fromIso(iso).year;
+  return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
+}
+
 String dayTone(String iso, bool inMonth) {
   if (!inMonth) return 'muted';
   final d = fromIso(iso);
-  if (d.weekday % 7 == 0 || isPublicHoliday(iso)) return 'sunday';
-  final info = dayInfo(iso);
-  if ((info.holidays != null && info.holidays!.isNotEmpty) || holidaysOn(iso).isNotEmpty) return 'holiday';
-  final y = d.year;
-  if (kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso)) return 'holiday';
+  if (isPublicHoliday(iso)) return 'sunday';
+  if (isObservanceHoliday(iso)) return 'holiday';
+  if (d.weekday % 7 == 0) return 'sunday';
   return 'default';
 }
 

@@ -1,9 +1,0 @@
-@import "tailwindcss";
-@import "./app-overrides.css";
-
-@layer base {
-  button:not(:disabled),
-  [role="button"]:not(:disabled) {
-    cursor: pointer;
-  }
-}

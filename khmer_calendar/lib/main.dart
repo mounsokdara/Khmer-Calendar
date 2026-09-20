@@ -1,4 +1,5 @@
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -37,13 +38,14 @@ class KhmerCalendarApp extends StatefulWidget {
 
 class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
   late final GoRouter router;
+  String _visualSig = '';
 
   @override
   void initState() {
     super.initState();
     widget.store.addListener(_onStore);
     router = GoRouter(
-      refreshListenable: widget.store,
+      refreshListenable: widget.store.routerTick,
       initialLocation: '/splash',
       redirect: (ctx, state) {
         if (!widget.store.hydrated) return '/splash';
@@ -108,7 +110,14 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     );
   }
 
-  void _onStore() => setState(() {});
+  void _onStore() {
+    final s = widget.store;
+    final sig =
+        '${s.theme}|${s.colorScheme}|${s.materialYou}|${s.dynamicColor}|${s.extraDark}|${s.accentColor}|${s.highlightColor}|${s.highlightAlpha}|${s.lang}|${s.hydrated}|${s.setupDone}';
+    if (sig == _visualSig) return;
+    _visualSig = sig;
+    setState(() {});
+  }
 
   @override
   void dispose() {
@@ -139,6 +148,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         return MaterialApp.router(
           title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
           debugShowCheckedModeBanner: false,
+          scrollBehavior: const _AppScrollBehavior(),
           locale: Locale(s.lang == Lang.en ? 'en' : 'km'),
           supportedLocales: const [Locale('km'), Locale('en')],
           localizationsDelegates: const [
@@ -154,4 +164,16 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       },
     );
   }
+}
+
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.trackpad,
+      };
 }

@@ -2,12 +2,37 @@
 
 #include <optional>
 
+#include <flutter/standard_method_codec.h>
+
+#include "autostart.h"
 #include "flutter/generated_plugin_registrant.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
 FlutterWindow::~FlutterWindow() {}
+
+void FlutterWindow::RegisterAutostartChannel() {
+  autostart_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(), "khmer.autostart",
+          &flutter::StandardMethodCodec::GetInstance());
+  autostart_channel_->SetMethodCallHandler(
+      [](const flutter::MethodCall<flutter::EncodableValue>& call,
+         std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
+             result) {
+        const std::string& method = call.method_name();
+        if (method == "enable") {
+          result->Success(flutter::EncodableValue(KhmerAutostartEnable()));
+        } else if (method == "disable") {
+          result->Success(flutter::EncodableValue(KhmerAutostartDisable()));
+        } else if (method == "isEnabled") {
+          result->Success(flutter::EncodableValue(KhmerAutostartIsEnabled()));
+        } else {
+          result->NotImplemented();
+        }
+      });
+}
 
 bool FlutterWindow::OnCreate() {
   if (!Win32Window::OnCreate()) {
@@ -25,6 +50,7 @@ bool FlutterWindow::OnCreate() {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
+  RegisterAutostartChannel();
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
@@ -40,6 +66,7 @@ bool FlutterWindow::OnCreate() {
 }
 
 void FlutterWindow::OnDestroy() {
+  autostart_channel_.reset();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
   }

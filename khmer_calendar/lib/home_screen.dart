@@ -9,6 +9,7 @@ import 'calendar/observances.dart';
 import 'dates.dart';
 import 'i18n.dart';
 import 'net.dart';
+import 'notify/kinds.dart';
 import 'store.dart';
 import 'weather.dart';
 import 'wx_cache.dart';
@@ -16,19 +17,31 @@ import 'wx_cache.dart';
 const _ch = MethodChannel('khmer.permissions');
 var _bound = false;
 Timer? _widgetDebounce;
-String _widgetSig = '';
+String _displaySig = '';
+String _notifySig = '';
+Map<String, dynamic>? _displayPayload;
 
 bool get canPinHomeWidget {
   if (kIsWeb) return false;
   return defaultTargetPlatform == TargetPlatform.android;
 }
 
+String _widgetDisplaySig(AppStore store) =>
+    '${store.lang}|${store.weekStartsOn}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}').join(',')}|${todayIso()}';
+
+String _widgetNotifySig(AppStore store) =>
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}:${e.startTime}:${e.reminderDate}:${e.reminderTime}:${e.done}:${e.title}').join(',')}';
+
 void bindHomeWidget(AppStore store) {
   if (_bound) return;
   _bound = true;
   store.addListener(() {
+    final sig = '${_widgetDisplaySig(store)}|${_widgetNotifySig(store)}';
+    if (sig == '$_displaySig|$_notifySig') return;
     _widgetDebounce?.cancel();
-    _widgetDebounce = Timer(const Duration(milliseconds: 450), () => syncHomeWidget(store));
+    _widgetDebounce = Timer(const Duration(milliseconds: 450), () {
+      syncHomeWidget(store);
+    });
   });
   syncHomeWidget(store);
   syncWeatherWidget(store);
@@ -48,9 +61,54 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
 
 Future<void> syncHomeWidget(AppStore store) async {
   if (!canPinHomeWidget) return;
-  final sig = '${store.lang}|${store.weekStartsOn}|${store.notifyOn}|${store.events.length}|${todayIso()}';
-  if (sig == _widgetSig) return;
-  _widgetSig = sig;
+  final displaySig = _widgetDisplaySig(store);
+  final notifySig = _widgetNotifySig(store);
+  if (displaySig == _displaySig && notifySig == _notifySig) return;
+  if (displaySig != _displaySig || _displayPayload == null) {
+    _displayPayload = _buildWidgetDisplay(store);
+    _displaySig = displaySig;
+  }
+  _notifySig = notifySig;
+  try {
+    await _ch.invokeMethod<void>('updateWidget', {
+      ..._displayPayload!,
+      'notifyOn': store.notifyOn,
+      'notifyDaily': store.notifyDaily,
+      'notifySil': store.notifySil,
+      'notifyPublic': store.notifyPublic,
+      'notifyOthers': store.notifyOthers,
+      'notifyReligious': store.notifyOthers,
+      'notifyTasks': store.notifyTasks,
+      'notify_items': jsonEncode(notifyItemsOf(store)),
+    });
+  } catch (_) {}
+}
+
+Map<String, String> _dayNotifyFields(DateTime d, Lang lang, List<CalendarEvent> events) {
+  final di = isoOf(d);
+  final lu = lunarOf(d);
+  final hs = observancesOn(di, events).where((e) => e.kind == Kind.holiday);
+  return {
+    'lunar': lang == Lang.en ? lunarLabel(di, lang) : lu.lunarDateText,
+    'holiday': hs.isEmpty ? '' : obsTitle(hs.first, lang),
+    'weekday': weekdaysFull(lang)[d.weekday % 7],
+    'gregorian': lang == Lang.en ? gregorianLabel(d, lang) : lu.gregorianDateText,
+    'be': lang == Lang.en ? 'B.E. ${lu.buddhistEraYear}' : 'ព.ស. ${lu.buddhistEraYearKhmer}',
+    'moon': silPhaseLabel(lu, lang),
+    'sil': lu.isSilDay ? '1' : '',
+    'hkind': hs.isEmpty
+        ? ''
+        : (hs.first.holidayType == HolidayType.public
+            ? 'public'
+            : hs.first.holidayType == HolidayType.religious
+                ? 'religious'
+                : hs.first.holidayType == HolidayType.international
+                    ? 'international'
+                    : 'traditional'),
+  };
+}
+
+Map<String, dynamic> _buildWidgetDisplay(AppStore store) {
   final now = DateTime.now();
   final iso = todayIso();
   final lunar = lunarOf(now);
@@ -58,54 +116,79 @@ Future<void> syncHomeWidget(AppStore store) async {
   final lunarText = lang == Lang.en ? lunarLabel(iso, lang) : lunar.lunarDateText;
   final hols = observancesOn(iso, store.events).where((e) => e.kind == Kind.holiday);
   final holiday = hols.isEmpty ? '' : obsTitle(hols.first, lang);
+  final publicHols = upcomingHolidays(HolidayType.public);
+  final otherHols = upcomingOtherHolidays();
+  final silDays = upcomingSilDates();
+  final dayIsos = <String>{};
+  for (var i = 0; i < 90; i++) {
+    dayIsos.add(isoOf(DateTime(now.year, now.month, now.day + i)));
+  }
+  for (final h in publicHols) {
+    dayIsos.add(h['d']!);
+  }
+  for (final h in otherHols) {
+    dayIsos.add(h['d']!);
+  }
+  dayIsos.addAll(silDays);
   final days = <String, Map<String, String>>{};
-  for (var i = 0; i < 16; i++) {
-    final d = DateTime(now.year, now.month, now.day + i);
-    final di = isoOf(d);
-    final lu = lunarOf(d);
-    final hs = observancesOn(di, store.events).where((e) => e.kind == Kind.holiday);
-    days[di] = {
-      'lunar': lang == Lang.en ? lunarLabel(di, lang) : lu.lunarDateText,
-      'holiday': hs.isEmpty ? '' : obsTitle(hs.first, lang),
-      'weekday': weekdaysFull(lang)[d.weekday % 7],
-    };
+  for (final di in dayIsos) {
+    days[di] = _dayNotifyFields(fromIso(di), lang, store.events);
   }
   final marks = <String, String>{};
   final names = <String, String>{};
-  void flag(String iso, String f) {
-    final cur = marks[iso] ?? '';
-    if (!cur.contains(f)) marks[iso] = '$cur$f';
+  void flag(String day, String f) {
+    final cur = marks[day] ?? '';
+    if (!cur.contains(f)) marks[day] = '$cur$f';
   }
+
   for (var y = now.year - 5; y <= now.year + 5; y++) {
-    for (final o in yearObservances(y, store.events)) {
-      if (o.date.isEmpty) continue;
-      if (o.kind == Kind.holiday) {
-        flag(o.date, o.holidayType == HolidayType.public ? 'p' : 'h');
-        names.putIfAbsent(o.date, () => obsTitle(o, lang));
-      } else if (o.kind == Kind.event) {
-        flag(o.date, 't');
-        names.putIfAbsent(o.date, () => obsTitle(o, lang));
-      } else if (o.kind == Kind.sil) {
-        flag(o.date, 's');
+    List<Holiday> yearHols;
+    try {
+      yearHols = holidaysOfYear(y);
+    } catch (_) {
+      continue;
+    }
+    for (final h in yearHols) {
+      if (h.type == HolidayType.public) {
+        flag(h.date, 'p');
+      } else {
+        flag(h.date, 'h');
       }
+      names.putIfAbsent(h.date, () => lang == Lang.en ? h.nameEn : h.nameKm);
+    }
+    for (final o in [...kanBenOf(y), ...senKantongOf(y)]) {
+      flag(o.date, 'h');
+      names.putIfAbsent(o.date, () => obsTitle(o, lang));
+    }
+    var d = DateTime(y, 1, 1);
+    final last = DateTime(y, 12, 31);
+    while (!d.isAfter(last)) {
+      if (lunarOf(d).isSilDay) flag(isoOf(d), 's');
+      d = addDays(d, 1);
     }
   }
-  try {
-    await _ch.invokeMethod<void>('updateWidget', {
-      'iso': iso,
-      'day': '${now.day}',
-      'weekday': weekdaysFull(lang)[now.weekday % 7],
-      'lunar': lunarText,
-      'holiday': holiday,
-      'title': t(lang, 'appName'),
-      'days': jsonEncode(days),
-      'marks': jsonEncode(marks),
-      'names': jsonEncode(names),
-      'lang': lang == Lang.en ? 'en' : 'km',
-      'weekStartsOn': store.weekStartsOn,
-      'notifyOn': store.notifyOn,
-    });
-  } catch (_) {}
+  for (final e in store.events) {
+    if (e.date.isEmpty) continue;
+    flag(e.date, 't');
+    names.putIfAbsent(e.date, () => e.title);
+  }
+
+  return {
+    'iso': iso,
+    'day': '${now.day}',
+    'weekday': weekdaysFull(lang)[now.weekday % 7],
+    'lunar': lunarText,
+    'holiday': holiday,
+    'title': t(lang, 'appName'),
+    'days': jsonEncode(days),
+    'marks': jsonEncode(marks),
+    'names': jsonEncode(names),
+    'lang': lang == Lang.en ? 'en' : 'km',
+    'weekStartsOn': store.weekStartsOn,
+    'sil_days': silDays.join(','),
+    'public_hols': jsonEncode(publicHols),
+    'religious_hols': jsonEncode(otherHols),
+  };
 }
 
 Future<void> syncWeatherWidget(AppStore store) async {
@@ -222,18 +305,4 @@ Future<bool> pinHomeWidget([String kind = 'today']) async {
   } catch (_) {
     return false;
   }
-}
-
-Future<void> armDailyNotify({bool showNow = false}) async {
-  if (!canPinHomeWidget) return;
-  try {
-    await _ch.invokeMethod<void>('armDaily', {'showNow': showNow});
-  } catch (_) {}
-}
-
-Future<void> cancelDailyNotify() async {
-  if (!canPinHomeWidget) return;
-  try {
-    await _ch.invokeMethod<void>('cancelDaily');
-  } catch (_) {}
 }

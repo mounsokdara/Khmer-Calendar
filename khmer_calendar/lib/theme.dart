@@ -415,13 +415,17 @@ ThemeData buildTheme({
 }
 
 const silColor = Color(0xFFD4920F);
+const religiousColor = Color(0xFF1E88E5);
+const religiousColorOnDark = Color(0xFF90CAF9);
+const publicHolidayFill = Color(0xFFC62828);
+const otherHolidayFill = religiousColor;
 
 const wideBreak = 840.0;
 const mediumBreak = 720.0;
 const xlBreak = 1180.0;
 
-const appVersion = '1.0.0';
-const appBuildNumber = 1;
+const appVersion = '1.0.1';
+const appBuildNumber = 2;
 const appAuthor = 'Moun Sokdara';
 const appLicense = 'MIT License';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
@@ -475,9 +479,9 @@ Color dayToneColor(BuildContext context, String tone) {
   final cs = Theme.of(context).colorScheme;
   switch (tone) {
     case 'sunday':
-      return const Color(0xFFC62828);
+      return publicHolidayFill;
     case 'holiday':
-      return cs.primary;
+      return Theme.of(context).brightness == Brightness.dark ? religiousColorOnDark : religiousColor;
     case 'sil':
       return silColor;
     case 'event':
