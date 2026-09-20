@@ -1,3 +1,4 @@
 name = "khmercalendar"
 compatibility_date = "2026-01-15"
+# Publish the committed Flutter web app. GitHub Actions rebuilds website/ from Dart.
 pages_build_output_dir = "./website"

@@ -30,14 +30,9 @@ function flutterWorks(bin) {
   }
 }
 
+/** True only when this process is Cloudflare Pages CI — not when GHA has an account id secret. */
 function isCloudflareHost() {
-  return Boolean(
-    process.env.CF_PAGES ||
-      process.env.CF_PAGES_BRANCH ||
-      process.env.WORKERS_CI ||
-      process.env.CLOUDFLARE_ACCOUNT_ID ||
-      process.env.CLOUDFLARE,
-  );
+  return Boolean(process.env.CF_PAGES || process.env.CF_PAGES_BRANCH || process.env.WORKERS_CI);
 }
 
 function run(bin, args, cwd = app) {
@@ -100,13 +95,16 @@ function useCommittedWebsite() {
   stageWebsite(website);
 }
 
+const watchMode = process.env.FLUTTER_WEB_WATCH === "1";
+const skipPubGet = watchMode || process.env.SKIP_PUB_GET === "1";
+
 const bin = flutterBin();
 if (isCloudflareHost() || !flutterWorks(bin)) {
   useCommittedWebsite();
   process.exit(0);
 }
 
-run(bin, ["pub", "get"]);
+if (!skipPubGet) run(bin, ["pub", "get"]);
 run(bin, ["build", "web", "--release", "--no-web-resources-cdn", "--base-href", "/"]);
 
 const out = join(app, "build/web");
@@ -115,7 +113,11 @@ if (!isFlutterWebsite(out)) {
   process.exit(1);
 }
 writeOfflineWorker(out);
-copyDir(out, join(root, "dist"));
-copyDir(out, join(root, "flutter-web"));
-copyDir(out, website);
-console.log("Flutter website staged to dist/, flutter-web/, and website/ with local CanvasKit and offline worker");
+if (!watchMode) {
+  copyDir(out, join(root, "dist"));
+  copyDir(out, join(root, "flutter-web"));
+  copyDir(out, website);
+  console.log("Flutter website staged to dist/, flutter-web/, and website/ with local CanvasKit and offline worker");
+} else {
+  console.log("Flutter website rebuilt for preview");
+}
