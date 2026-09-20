@@ -8,10 +8,10 @@ import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../widgets/animal.dart';
+import '../widgets/carousel_slider.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
-import '../widgets/slide_track.dart';
 import '../widgets/swipe_delete.dart';
 import '../widgets/task_sheet.dart';
 
@@ -36,8 +36,6 @@ class _TodayPageState extends State<TodayPage> {
         final today = todayIso();
         final isToday = store.selected == today;
         final L = lunarOf(selected);
-        final prev = addDays(selected, -1);
-        final next = addDays(selected, 1);
 
         return Column(
           children: [
@@ -66,12 +64,15 @@ class _TodayPageState extends State<TodayPage> {
               ),
             ),
             Expanded(
-              child: SlideTrack(
-                pageId: store.selected,
-                onShift: (dir) => store.goToDate(isoOf(addDays(selected, dir))),
-                previous: _DayPanel(day: prev, store: store, onCopy: _copy),
-                current: _DayPanel(day: selected, store: store, onCopy: _copy),
-                next: _DayPanel(day: next, store: store, onCopy: _copy),
+              child: CarouselSlider(
+                index: dayIndexOf(selected),
+                itemCount: dayCount(),
+                itemBuilder: (context, i) => _DayPanel(
+                  day: dayFromIndex(i),
+                  store: store,
+                  onCopy: _copy,
+                ),
+                onIndexChanged: (i) => store.goToDate(isoOf(dayFromIndex(i))),
               ),
             ),
             if (_toast != null)
