@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../i18n.dart';
 import '../store.dart';
+import '../theme.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key, required this.store});
@@ -150,7 +151,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
                 bottom: 28,
                 left: 0,
                 right: 0,
-                child: Text('Version 1.1.0', textAlign: TextAlign.center, style: TextStyle(color: Color(0x9EFFFFFF), fontSize: 13)),
+                child: Text('Version $appVersion', textAlign: TextAlign.center, style: TextStyle(color: Color(0x9EFFFFFF), fontSize: 13)),
               ),
             ],
           ),

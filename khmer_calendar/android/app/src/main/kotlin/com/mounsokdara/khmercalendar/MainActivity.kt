@@ -31,27 +31,18 @@ class MainActivity : FlutterActivity() {
                     val bg = call.argument<Boolean>("background") ?: false
                     val auto = call.argument<Boolean>("autoLaunch") ?: false
                     getSharedPreferences(BootReceiver.PREFS, Context.MODE_PRIVATE)
-                        .edit()
-                        .putBoolean("background", bg)
-                        .putBoolean("autoLaunch", auto)
-                        .apply()
+                        .edit().putBoolean("background", bg).putBoolean("autoLaunch", auto).apply()
                     result.success(true)
                 }
                 "checkStatus" -> result.success(statusMap())
+                "isHapticFeedbackEnabled" -> result.success(isHapticFeedbackEnabled())
                 "isIgnoringBattery" -> result.success(isIgnoringBattery())
                 "requestBatteryExemption" -> requestBatteryExemption(result)
-                "openBatterySettings" ->
-                    startOrFail(result, REQ_BATTERY_LIST, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                "openBatterySettings" -> startOrFail(result, REQ_BATTERY_LIST, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                 "requestExactAlarm" -> requestExactAlarm(result)
                 "openAutoStart" -> openAutoStart(result)
-                "openAppSettings" ->
-                    startOrFail(
-                        result,
-                        REQ_SETTINGS,
-                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:$packageName")),
-                    )
-                "openLocationSettings" ->
-                    startOrFail(result, REQ_LOCATION, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                "openAppSettings" -> startOrFail(result, REQ_SETTINGS, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:$packageName")))
+                "openLocationSettings" -> startOrFail(result, REQ_LOCATION, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 "updateWidget" -> {
                     saveWidget(call.arguments)
                     TodayWidgetProvider.refreshAll(this)
@@ -64,6 +55,12 @@ class MainActivity : FlutterActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    private fun isHapticFeedbackEnabled(): Boolean = try {
+        Settings.System.getInt(contentResolver, Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0
+    } catch (_: Settings.SettingNotFoundException) {
+        false
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -81,15 +78,8 @@ class MainActivity : FlutterActivity() {
     private fun saveWidget(args: Any?) {
         val map = args as? Map<*, *> ?: return
         val ed = getSharedPreferences(WidgetStore.PREFS, Context.MODE_PRIVATE).edit()
-        fun putStr(key: String) {
-            val v = map[key]
-            if (v is String) ed.putString(key, v)
-        }
-        listOf(
-            "iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang",
-            "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list",
-            "sil_days", "public_hols", "religious_hols", "notify_items",
-        ).forEach { putStr(it) }
+        fun putStr(key: String) { (map[key] as? String)?.let { ed.putString(key, it) } }
+        listOf("iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang", "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list", "sil_days", "public_hols", "religious_hols", "notify_items").forEach { putStr(it) }
         (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }
         (map["wx_index"] as? Number)?.let { ed.putInt("wx_index", it.toInt()) }
         (map["notifyOn"] as? Boolean)?.let { ed.putBoolean("notifyOn", it) }
@@ -107,170 +97,45 @@ class MainActivity : FlutterActivity() {
         if (Build.VERSION.SDK_INT < 26) return false
         val mgr = getSystemService(AppWidgetManager::class.java) ?: return false
         if (!mgr.isRequestPinAppWidgetSupported) return false
-        val cls =
-            when (kind) {
-                "month" -> MonthWidgetProvider::class.java
-                "weather" -> WeatherWidgetProvider::class.java
-                else -> TodayWidgetProvider::class.java
-            }
-        return try {
-            mgr.requestPinAppWidget(ComponentName(this, cls), null, null)
-            true
-        } catch (_: Exception) {
-            false
-        }
+        val cls = when (kind) { "month" -> MonthWidgetProvider::class.java; "weather" -> WeatherWidgetProvider::class.java; else -> TodayWidgetProvider::class.java }
+        return try { mgr.requestPinAppWidget(ComponentName(this, cls), null, null); true } catch (_: Exception) { false }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        @Suppress("DEPRECATION")
-        super.onActivityResult(requestCode, resultCode, data)
+        @Suppress("DEPRECATION") super.onActivityResult(requestCode, resultCode, data)
         if (requestCode != pendingCode) return
         val r = pending ?: return
         pending = null
         pendingCode = 0
-        when (requestCode) {
-            REQ_BATTERY -> r.success(isIgnoringBattery())
-            REQ_EXACT -> r.success(canExactAlarms())
-            REQ_AUTOSTART -> r.success(true)
-            else -> r.success(true)
-        }
+        when (requestCode) { REQ_BATTERY -> r.success(isIgnoringBattery()); REQ_EXACT -> r.success(canExactAlarms()); REQ_AUTOSTART -> r.success(true); else -> r.success(true) }
     }
 
-    private fun statusMap(): HashMap<String, Boolean> {
-        return hashMapOf(
-            "notify" to notificationsEnabled(),
-            "battery" to isIgnoringBattery(),
-            "exactAlarm" to canExactAlarms(),
-            "oemAutoStart" to hasOemAutoStartScreen(),
-        )
-    }
+    private fun statusMap(): HashMap<String, Boolean> = hashMapOf("notify" to notificationsEnabled(), "battery" to isIgnoringBattery(), "exactAlarm" to canExactAlarms(), "oemAutoStart" to hasOemAutoStartScreen())
 
     private fun notificationsEnabled(): Boolean {
-        if (Build.VERSION.SDK_INT >= 33) {
-            val granted =
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) ==
-                    PackageManager.PERMISSION_GRANTED
-            if (!granted) return false
-        }
-        if (Build.VERSION.SDK_INT >= 24) {
-            val nm = getSystemService(NotificationManager::class.java) ?: return false
-            return nm.areNotificationsEnabled()
-        }
+        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return false
+        if (Build.VERSION.SDK_INT >= 24) return getSystemService(NotificationManager::class.java)?.areNotificationsEnabled() ?: false
         return true
     }
-
-    private fun isIgnoringBattery(): Boolean {
-        if (Build.VERSION.SDK_INT < 23) return true
-        val pm = getSystemService(PowerManager::class.java) ?: return true
-        return pm.isIgnoringBatteryOptimizations(packageName)
-    }
-
-    private fun canExactAlarms(): Boolean {
-        if (Build.VERSION.SDK_INT < 31) return true
-        val am = getSystemService(AlarmManager::class.java) ?: return false
-        return am.canScheduleExactAlarms()
-    }
-
+    private fun isIgnoringBattery(): Boolean { if (Build.VERSION.SDK_INT < 23) return true; return getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(packageName) ?: true }
+    private fun canExactAlarms(): Boolean { if (Build.VERSION.SDK_INT < 31) return true; return getSystemService(AlarmManager::class.java)?.canScheduleExactAlarms() ?: false }
     private fun hasOemAutoStartScreen(): Boolean {
-        val maker = Build.MANUFACTURER.lowercase()
-        val brand = Build.BRAND.lowercase()
-        return listOf(
-            "xiaomi", "redmi", "poco", "blackshark", "huawei", "honor", "oppo", "realme",
-            "vivo", "iqoo", "oneplus", "letv", "asus", "transsion", "tecno", "infinix",
-            "itel", "meizu", "lenovo", "zte", "nubia", "samsung",
-        ).any { maker.contains(it) || brand.contains(it) }
+        val maker = Build.MANUFACTURER.lowercase(); val brand = Build.BRAND.lowercase()
+        return listOf("xiaomi", "redmi", "poco", "blackshark", "huawei", "honor", "oppo", "realme", "vivo", "iqoo", "oneplus", "letv", "asus", "transsion", "tecno", "infinix", "itel", "meizu", "lenovo", "zte", "nubia", "samsung").any { maker.contains(it) || brand.contains(it) }
     }
-
-    private fun requestBatteryExemption(result: MethodChannel.Result) {
-        if (isIgnoringBattery()) {
-            result.success(true)
-            return
-        }
-        val ask =
-            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                .setData(Uri.parse("package:$packageName"))
-        if (tryStart(result, REQ_BATTERY, ask)) return
-        startOrFail(result, REQ_BATTERY, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
-    }
-
-    private fun requestExactAlarm(result: MethodChannel.Result) {
-        if (canExactAlarms()) {
-            result.success(true)
-            return
-        }
-        if (Build.VERSION.SDK_INT < 31) {
-            result.success(true)
-            return
-        }
-        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).setData(Uri.parse("package:$packageName"))
-        startOrFail(result, REQ_EXACT, intent)
-    }
-
+    private fun requestBatteryExemption(result: MethodChannel.Result) { if (isIgnoringBattery()) { result.success(true); return }; val ask = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(Uri.parse("package:$packageName")); if (tryStart(result, REQ_BATTERY, ask)) return; startOrFail(result, REQ_BATTERY, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+    private fun requestExactAlarm(result: MethodChannel.Result) { if (canExactAlarms() || Build.VERSION.SDK_INT < 31) { result.success(true); return }; startOrFail(result, REQ_EXACT, Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).setData(Uri.parse("package:$packageName"))) }
     private fun openAutoStart(result: MethodChannel.Result) {
-        val tries =
-            listOf(
-                ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"),
-                ComponentName("com.miui.securitycenter", "com.miui.powercenter.PowerSettings"),
-                ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
-                ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"),
-                ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"),
-                ComponentName("com.hihonor.systemmanager", "com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity"),
-                ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"),
-                ComponentName("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity"),
-                ComponentName("com.coloros.oppoguardelf", "com.coloros.powermanager.fuelgaue.PowerUsageModelActivity"),
-                ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"),
-                ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"),
-                ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"),
-                ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"),
-                ComponentName("com.samsung.android.lool", "com.samsung.android.sm.battery.ui.BatteryActivity"),
-                ComponentName("com.samsung.android.sm", "com.samsung.android.sm.ui.battery.BatteryActivity"),
-                ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"),
-                ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity"),
-                ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.autostart.AutoStartActivity"),
-                ComponentName("com.transsion.phonemanager", "com.transsion.phonemanager.startup.StartupAppListActivity"),
-                ComponentName("com.transsion.phonemaster", "com.cyin.himgr.autostart.AutoStartActivity"),
-                ComponentName("com.evenwell.powersaving.g3", "com.evenwell.powersaving.g3.exception.PowerSaverExceptionActivity"),
-            )
-        for (c in tries) {
-            val intent = Intent().setComponent(c)
-            if (intent.resolveActivity(packageManager) == null) continue
-            if (tryStart(result, REQ_AUTOSTART, intent)) return
-        }
-        startOrFail(
-            result,
-            REQ_AUTOSTART,
-            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:$packageName")),
+        val tries = listOf(
+            ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"), ComponentName("com.miui.securitycenter", "com.miui.powercenter.PowerSettings"),
+            ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity"), ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity"), ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity"), ComponentName("com.hihonor.systemmanager", "com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity"), ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity"), ComponentName("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity"), ComponentName("com.coloros.oppoguardelf", "com.coloros.powermanager.fuelgaue.PowerUsageModelActivity"), ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity"), ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"), ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager"), ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"), ComponentName("com.samsung.android.lool", "com.samsung.android.sm.battery.ui.BatteryActivity"), ComponentName("com.samsung.android.sm", "com.samsung.android.sm.ui.battery.BatteryActivity"), ComponentName("com.oneplus.security", "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity"), ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity"), ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.autostart.AutoStartActivity"), ComponentName("com.transsion.phonemanager", "com.transsion.phonemanager.startup.StartupAppListActivity"), ComponentName("com.transsion.phonemaster", "com.cyin.himgr.autostart.AutoStartActivity"), ComponentName("com.evenwell.powersaving.g3", "com.evenwell.powersaving.g3.exception.PowerSaverExceptionActivity")
         )
+        for (c in tries) { val intent = Intent().setComponent(c); if (intent.resolveActivity(packageManager) == null) continue; if (tryStart(result, REQ_AUTOSTART, intent)) return }
+        startOrFail(result, REQ_AUTOSTART, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:$packageName")))
     }
+    private fun startOrFail(result: MethodChannel.Result, code: Int, intent: Intent) { if (!tryStart(result, code, intent)) result.success(false) }
+    private fun tryStart(result: MethodChannel.Result, code: Int, intent: Intent): Boolean = try { pending?.success(false); pending = result; pendingCode = code; @Suppress("DEPRECATION") startActivityForResult(intent, code); true } catch (_: Exception) { pending = null; pendingCode = 0; false }
 
-    private fun startOrFail(result: MethodChannel.Result, code: Int, intent: Intent) {
-        if (!tryStart(result, code, intent)) result.success(false)
-    }
-
-    /** Returns true if the activity was started and [result] will complete later. */
-    private fun tryStart(result: MethodChannel.Result, code: Int, intent: Intent): Boolean {
-        return try {
-            pending?.success(false)
-            pending = result
-            pendingCode = code
-            @Suppress("DEPRECATION")
-            startActivityForResult(intent, code)
-            true
-        } catch (_: Exception) {
-            pending = null
-            pendingCode = 0
-            false
-        }
-    }
-
-    companion object {
-        const val CHANNEL = "khmer.permissions"
-        private const val REQ_BATTERY = 7101
-        private const val REQ_BATTERY_LIST = 7102
-        private const val REQ_EXACT = 7103
-        private const val REQ_AUTOSTART = 7104
-        private const val REQ_SETTINGS = 7105
-        private const val REQ_LOCATION = 7106
-    }
+    companion object { const val CHANNEL = "khmer.permissions"; private const val REQ_BATTERY = 7101; private const val REQ_BATTERY_LIST = 7102; private const val REQ_EXACT = 7103; private const val REQ_AUTOSTART = 7104; private const val REQ_SETTINGS = 7105; private const val REQ_LOCATION = 7106 }
 }

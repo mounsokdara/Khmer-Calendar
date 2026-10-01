@@ -41,6 +41,17 @@
   </div>
   <script>
     (function () {
+      // Browser haptics bridge for Flutter web. Feature detection is required:
+      // unsupported browsers simply return false and do nothing.
+      window.__khmerHapticsTick = function () {
+        if (!('vibrate' in navigator)) return false;
+        try {
+          return navigator.vibrate(8);
+        } catch (_) {
+          return false;
+        }
+      };
+
       window.__khmerInstall = {
         deferred: null,
         isStandalone: function () {

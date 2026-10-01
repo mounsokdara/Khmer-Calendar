@@ -3,9 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../i18n.dart';
 import '../store.dart';
+import 'sheet_kit.dart';
 
-/// Rebuilds whenever [store] notifies. Overlay routes stay in the
-/// navigator stack and otherwise miss language / theme updates.
 class WatchStore extends StatelessWidget {
   const WatchStore({super.key, required this.store, required this.builder});
   final AppStore store;
@@ -20,12 +19,13 @@ class WatchStore extends StatelessWidget {
   }
 }
 
-/// Full-screen overlay with the original SubHead back arrow and swipe-right to close.
 class OverlayScaffold extends StatelessWidget {
   const OverlayScaffold({super.key, required this.title, required this.body, this.actions});
   final String title;
   final Widget body;
   final List<Widget>? actions;
+
+  static const _maxContentWidth = 680.0;
 
   void _back(BuildContext context) {
     if (context.canPop()) {
@@ -37,27 +37,26 @@ class OverlayScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragEnd: (d) {
-        final fling = MediaQuery.sizeOf(context).width;
-        if ((d.primaryVelocity ?? 0) > fling) _back(context);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-            onPressed: () => _back(context),
-          ),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(title, maxLines: 1),
-          ),
-          actions: actions,
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => _back(context),
         ),
-        body: body,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(title, maxLines: 1),
+        ),
+        actions: actions,
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+          child: body,
+        ),
       ),
     );
   }
@@ -69,6 +68,8 @@ class LangRadios extends StatelessWidget {
   final Lang uiLang;
   final VoidCallback? onPicked;
 
+  static const _maxWidth = 680.0;
+
   @override
   Widget build(BuildContext context) {
     final opts = [
@@ -76,20 +77,25 @@ class LangRadios extends StatelessWidget {
       ('km', 'ខ្មែរ', 'Khmer'),
       ('en', 'English', 'English'),
     ];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final o in opts)
-          ListTile(
-            leading: Icon(store.langPref == o.$1 ? Icons.radio_button_checked : Icons.radio_button_off),
-            title: Text(o.$2),
-            subtitle: Text(o.$3),
-            onTap: () {
-              store.setLang(o.$1);
-              onPicked?.call();
-            },
-          ),
-      ],
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _maxWidth),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final o in opts)
+              SheetOption(
+                title: o.$2,
+                subtitle: o.$3,
+                selected: store.langPref == o.$1,
+                onTap: () {
+                  store.setLang(o.$1);
+                  onPicked?.call();
+                },
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
