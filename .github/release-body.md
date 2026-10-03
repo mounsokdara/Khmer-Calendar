@@ -8,7 +8,7 @@ Calendar change log v1.0.2:
 - Added subtitle for inlist
 - Added scroll picker sound effects, including an iPhone-style wheel sound, my own made sounds, and a custom sound picker
 - Sounds and vibration options
-
+- Check for update button
 ## Improvement:
 - Better layout on day tabs
 - Improved bottom sheet: added title, icon, and description
