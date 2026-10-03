@@ -1,5 +1,6 @@
 Khmer Calendar app v1.0.3:
 - Fixed Lag issues:
+
     *⚠️ While running http get, the app just keep freezing*
     
     *⚠️ Changing settings also keep freezing*
