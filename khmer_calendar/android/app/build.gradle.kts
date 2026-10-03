@@ -29,7 +29,7 @@ android {
             if (ks != null && file(ks).exists()) {
                 storeFile = file(ks)
                 storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "khmer"
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "com.mounsokdara.khmercalendar"
                 keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
             }
         }
