@@ -1,20 +1,16 @@
-Calendar change log v1.0.2:
-## Fixed bug
-- Replaced weather image api due to missing images
-## Remvoed:
-- Swipe go back gesture
-## New features:
-- Added max width
-- Added subtitle for inlist
-- Added scroll picker sound effects, including an iPhone-style wheel sound, my own made sounds, and a custom sound picker
-- Sounds and vibration options
-- Check for update button
-## Improvement:
-- Better layout on day tabs
-- Improved bottom sheet: added title, icon, and description
-- Improved scroll picker titles instead of meaningless words: `Khmer calendar` -> `Change years and months`, `Custom` -> `Change event years`
-- Snackbar notification is no longer too wide
-- Day tab event label backgrounds now have low-alpha colors
-- Used a container for weather corners instead of rounding the image
-- Matched weather card swipe container corners
-- The selected item now uses two horizontal lines instead of the rounded/pill box in scroll picker
+Khmer Calendar app v1.0.3:
+- Fixed Lag issues:
+    ⚠️ While running http get, the app just keep freezing
+    
+    ⚠️ Changing settings also keep freezing
+    
+    ⚠️ Adding the reminder also keep freezing
+    
+    ⚠️ Anything that save data to the device will always having freeze issues
+   ? Why it's freeze? 
+   When the data get overwriting, the app try to recalculate the dates value costing your cpu overload
+- Added View grids button instead of expand button:
+    We have years, full screen months view, months view, weeks view.
+Pinch to (zoom in/out) to change view type without need to click a button.
+    A vertical scrolling years grids. click on exact months to travel to that months like iphone
+- Bypassed Computer Date limit
