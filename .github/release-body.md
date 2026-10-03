@@ -7,7 +7,8 @@ Khmer Calendar app v1.0.3:
     *⚠️ Adding the reminder also keep freezing*
     
     *⚠️ Anything that save data to the device will always having freeze issues*
-   ***? Why it's freeze?***
+
+  ***? Why it's freeze?***
 
   **✓ When the data get overwriting, the app try to recalculate the dates value costing your cpu overload**
 - Added View grids button instead of expand button:
