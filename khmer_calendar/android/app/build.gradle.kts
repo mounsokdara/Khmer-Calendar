@@ -39,7 +39,7 @@ android {
     buildTypes {
         release {
             val rel = signingConfigs.findByName("release")
-            signingConfig = if (rel?.storeFile?.exists() == true) rel else signingConfigs.getByName("debug")
+            signingConfig = if (rel?.storeFile?.exists() == true) rel else throw GradleException("Release keystore missing: refusing to sign a release build with the debug key")
         }
     }
 }

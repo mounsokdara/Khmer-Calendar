@@ -15,11 +15,16 @@ import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
     private var pending: MethodChannel.Result? = null
     private var pendingCode = 0
     private var channel: MethodChannel? = null
+
+    // Widget data, alarm scheduling and widget redraws are slow (big prefs commit, hundreds of
+    // AlarmManager calls, bitmap decoding). Keep them off the UI thread, one job at a time and in order.
+    private val worker = Executors.newSingleThreadExecutor()
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -44,11 +49,19 @@ class MainActivity : FlutterActivity() {
                 "openAppSettings" -> startOrFail(result, REQ_SETTINGS, Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:$packageName")))
                 "openLocationSettings" -> startOrFail(result, REQ_LOCATION, Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
                 "updateWidget" -> {
-                    saveWidget(call.arguments)
-                    TodayWidgetProvider.refreshAll(this)
-                    MonthWidgetProvider.refreshAll(this)
-                    WeatherWidgetProvider.refreshAll(this)
-                    result.success(true)
+                    val args = call.arguments
+                    worker.execute {
+                        try {
+                            saveWidget(args)
+                            TodayWidgetProvider.refreshAll(this)
+                            MonthWidgetProvider.refreshAll(this)
+                            WeatherWidgetProvider.refreshAll(this)
+                        } catch (_: Throwable) {
+                        }
+                        runOnUiThread {
+                            try { result.success(true) } catch (_: Throwable) {}
+                        }
+                    }
                 }
                 "pinWidget" -> result.success(pinWidget(call.argument<String>("kind")))
                 "getLaunch" -> result.success(launchMap(intent))
@@ -90,7 +103,14 @@ class MainActivity : FlutterActivity() {
         (map["notifyReligious"] as? Boolean)?.let { ed.putBoolean("notifyReligious", it) }
         (map["notifyTasks"] as? Boolean)?.let { ed.putBoolean("notifyTasks", it) }
         ed.commit()
-        NotifyKit.sync(this)
+        // Weather-only updates carry no notification data; rescheduling every alarm for them is wasted work.
+        val touchesNotify = map.containsKey("notify_items") || map.containsKey("notifyOn")
+        if (touchesNotify) NotifyKit.sync(this)
+    }
+
+    override fun onDestroy() {
+        worker.shutdown()
+        super.onDestroy()
     }
 
     private fun pinWidget(kind: String?): Boolean {
@@ -124,7 +144,7 @@ class MainActivity : FlutterActivity() {
         val maker = Build.MANUFACTURER.lowercase(); val brand = Build.BRAND.lowercase()
         return listOf("xiaomi", "redmi", "poco", "blackshark", "huawei", "honor", "oppo", "realme", "vivo", "iqoo", "oneplus", "letv", "asus", "transsion", "tecno", "infinix", "itel", "meizu", "lenovo", "zte", "nubia", "samsung").any { maker.contains(it) || brand.contains(it) }
     }
-    private fun requestBatteryExemption(result: MethodChannel.Result) { if (isIgnoringBattery()) { result.success(true); return }; val ask = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).setData(Uri.parse("package:$packageName")); if (tryStart(result, REQ_BATTERY, ask)) return; startOrFail(result, REQ_BATTERY, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+    private fun requestBatteryExemption(result: MethodChannel.Result) { if (isIgnoringBattery()) { result.success(true); return }; startOrFail(result, REQ_BATTERY, Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
     private fun requestExactAlarm(result: MethodChannel.Result) { if (canExactAlarms() || Build.VERSION.SDK_INT < 31) { result.success(true); return }; startOrFail(result, REQ_EXACT, Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).setData(Uri.parse("package:$packageName"))) }
     private fun openAutoStart(result: MethodChannel.Result) {
         val tries = listOf(

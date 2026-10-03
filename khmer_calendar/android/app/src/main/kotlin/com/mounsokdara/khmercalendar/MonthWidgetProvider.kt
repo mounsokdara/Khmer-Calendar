@@ -223,10 +223,10 @@ class MonthWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.month_prev, shiftPi(context, widgetId, "month", -1, 3))
             views.setOnClickPendingIntent(R.id.month_next, shiftPi(context, widgetId, "month", 1, 4))
             views.setOnClickPendingIntent(R.id.month_today, shiftPi(context, widgetId, "today", 0, 5))
-            val openMonths = WidgetStore.launch(context, "months")
-            views.setOnClickPendingIntent(R.id.month_root, openMonths)
-            views.setOnClickPendingIntent(R.id.month_year, openMonths)
-            views.setOnClickPendingIntent(R.id.month_name, openMonths)
+            val openCalendar = WidgetStore.launch(context, "calendar")
+            views.setOnClickPendingIntent(R.id.month_root, openCalendar)
+            views.setOnClickPendingIntent(R.id.month_year, openCalendar)
+            views.setOnClickPendingIntent(R.id.month_name, openCalendar)
             return views
         }
     }
