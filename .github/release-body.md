@@ -11,7 +11,7 @@ Khmer Calendar app v1.0.3:
 
   ***? Why it's freeze?***
 
-  **✓ When the data get overwriting, the app try to recalculate the dates value costing your cpu overload**
+  **✓ When the data get overwriting or being saved, the app try to recalculate the dates value costing your cpu overload**
 - Added View grids button instead of expand button:
     We have years, full screen months view, months view, weeks view.
 Pinch to (zoom in/out) to change view type without need to click a button.
