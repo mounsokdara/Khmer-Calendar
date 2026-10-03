@@ -270,7 +270,18 @@ class _CalendarPageState extends State<CalendarPage> {
                       },
                       icon: const Icon(Icons.today),
                     ),
-                  _viewMenu(lang, view),
+                  // Follows the pinch live: shows the level the view is nearest to, not only the
+                  // one that was committed when the fingers lift.
+                  ValueListenableBuilder<int?>(
+                    valueListenable: _zoom.liveStep,
+                    builder: (context, step, _) {
+                      final i = calViewIds.indexOf(view);
+                      final live = step == null || i < 0
+                          ? view
+                          : calViewIds[(i + step).clamp(0, calViewIds.length - 1).toInt()];
+                      return _viewMenu(lang, live);
+                    },
+                  ),
                   IconButton(
                     tooltip: t(lang, 'addTask'),
                     onPressed: () => showTaskSheet(context, store: store, date: store.selected),

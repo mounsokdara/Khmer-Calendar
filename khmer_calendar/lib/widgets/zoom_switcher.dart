@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/scheduler.dart';
 
 /// The view [steps] levels away from the current one (positive = more zoomed in, negative =
 /// more zoomed out): its key and its widget. Only called for steps inside
@@ -11,6 +12,11 @@ typedef ZoomPeek = ({String key, Widget child})? Function(int steps);
 /// Lets a pinch detector drive a [ZoomSwitcher] live.
 class ZoomController {
   _ZoomSwitcherState? _s;
+
+  /// While a pinch (or its settle animation) is running: the level the view is currently
+  /// nearest to, as an offset in levels from the view the pinch started on (+ in, - out).
+  /// `null` when no pinch is active. Lets UI such as the view menu follow the pinch live.
+  final ValueNotifier<int?> liveStep = ValueNotifier<int?>(null);
 
   /// A pinch began at [focal] (global position).
   void start(Offset focal) => _s?._start(focal);
@@ -129,6 +135,7 @@ class _ZoomSwitcherState extends State<ZoomSwitcher> with TickerProviderStateMix
   void initState() {
     super.initState();
     widget.controller?._s = this;
+    _z.addListener(_publishStep);
   }
 
   @override
@@ -159,10 +166,27 @@ class _ZoomSwitcherState extends State<ZoomSwitcher> with TickerProviderStateMix
 
   @override
   void dispose() {
+    _z.removeListener(_publishStep);
     if (widget.controller?._s == this) widget.controller?._s = null;
     _c.dispose();
     _z.dispose();
     super.dispose();
+  }
+
+  /// Tells the controller which level is nearest. Deferred when called while the framework is
+  /// building (e.g. from [didUpdateWidget]), since listeners may call setState.
+  void _publishStep() {
+    final c = widget.controller;
+    if (c == null) return;
+    final int? step = _live ? _z.value.round().clamp(-widget.levelsOut, widget.levelsIn).toInt() : null;
+    if (c.liveStep.value == step) return;
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted && widget.controller == c) c.liveStep.value = step;
+      });
+    } else {
+      c.liveStep.value = step;
+    }
   }
 
   void _resetLive() {
@@ -176,6 +200,7 @@ class _ZoomSwitcherState extends State<ZoomSwitcher> with TickerProviderStateMix
     _outgoing = null;
     _z.value = 0;
     _c.value = 1;
+    _publishStep();
   }
 
   ({String key, Widget child})? _peekAt(int step) {
@@ -218,6 +243,7 @@ class _ZoomSwitcherState extends State<ZoomSwitcher> with TickerProviderStateMix
       _focus = f;
       _z.value = _origin;
     });
+    _publishStep();
   }
 
   void _update(double scale) {
