@@ -38,17 +38,17 @@ jobs:
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > scripts/khmer-release.keystore
-          fi
-          test -f scripts/khmer-release.keystore
-          cp scripts/khmer-release.keystore khmer_calendar/android/app/khmer-release.keystore || true
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "ANDROID_KEYSTORE_BASE64 secret is missing"; exit 1; }
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/khmer-release.keystore"
       - run: flutter pub get
         working-directory: khmer_calendar
       - run: flutter build apk --release
         working-directory: khmer_calendar
         env:
-          ANDROID_KEYSTORE: ${{ github.workspace }}/scripts/khmer-release.keystore
+          ANDROID_KEYSTORE: ${{ runner.temp }}/khmer-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: android

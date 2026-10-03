@@ -32,3 +32,8 @@ khmer_calendar/.dart_tool/
 khmer_calendar/.flutter-plugins
 khmer_calendar/.flutter-plugins-dependencies
 khmer_calendar/.idea/
+
+# Signing keys live in the private vault repo, never here
+*.keystore
+*.jks
+key.properties
