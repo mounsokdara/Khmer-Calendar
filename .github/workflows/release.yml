@@ -105,6 +105,23 @@ jobs:
         working-directory: khmer_calendar
         env:
           CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
+      - name: Sign windows (Authenticode)
+        shell: pwsh
+        env:
+          PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
+          PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
+        run: |
+          if (-not $env:PFX_B64) { throw "DESKTOP_SIGN_PFX_BASE64 secret is missing" }
+          $pfx = Join-Path $env:RUNNER_TEMP "codesign.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:PFX_B64))
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($pfx, $env:PFX_PASS)
+          $files = Get-ChildItem khmer_calendar\build\windows\x64\runner\Release -Recurse -Include *.exe,*.dll
+          foreach ($f in $files) {
+            $r = Set-AuthenticodeSignature -FilePath $f.FullName -Certificate $cert -HashAlgorithm SHA256 -TimestampServer http://timestamp.digicert.com
+            if (-not $r.SignerCertificate) { throw "Signing failed: $($f.Name) $($r.StatusMessage)" }
+            Write-Host "signed $($f.Name)"
+          }
+          Remove-Item $pfx -Force
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
@@ -127,6 +144,28 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build macos --release
         working-directory: khmer_calendar
+      - name: Sign macOS app (codesign)
+        env:
+          PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
+          PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$PFX_B64" || { echo "DESKTOP_SIGN_PFX_BASE64 secret is missing"; exit 1; }
+          KC="$RUNNER_TEMP/sign.keychain-db"; KP="$(openssl rand -hex 12)"
+          echo "$PFX_B64" | base64 -d > "$RUNNER_TEMP/codesign.p12"
+          security create-keychain -p "$KP" "$KC"
+          security set-keychain-settings -lut 3600 "$KC"
+          security unlock-keychain -p "$KP" "$KC"
+          security import "$RUNNER_TEMP/codesign.p12" -k "$KC" -P "$PFX_PASS" -A -t cert -f pkcs12
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KP" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          HASH=$(security find-identity -p codesigning "$KC" | grep -m1 'Mounsok Dara' | awk '{print $2}')
+          test -n "$HASH" || { echo "signing identity not found"; exit 1; }
+          APP=$(find khmer_calendar/build/macos -name "*.app" | head -1)
+          codesign --force --deep --timestamp=none --sign "$HASH" "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -dv "$APP" 2>&1 | grep -E 'Authority|Signature|Identifier' || true
+          rm -f "$RUNNER_TEMP/codesign.p12"
       - name: Pack dmg
         run: |
           APP=$(find khmer_calendar/build/macos -name "*.app" | head -1)
