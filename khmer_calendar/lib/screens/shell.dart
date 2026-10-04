@@ -13,7 +13,7 @@ class AppShell extends StatelessWidget {
 
   static const tabs = [
     (TabId.today, '/day', Icons.today, 'navToday'),
-    (TabId.calendar, '/calendar', Icons.calendar_month, 'navCalendar'),
+    (TabId.months, '/months', Icons.calendar_month, 'navMonth'),
     (TabId.events, '/events', Icons.event_note, 'navEvents'),
     (TabId.weather, '/weather', Icons.wb_cloudy, 'navWeather'),
     (TabId.more, '/more', Icons.menu, 'navMore'),
