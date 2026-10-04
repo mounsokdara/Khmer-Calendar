@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'khmer-calendar-web-1791077006146';
+const CACHE = 'khmer-calendar-web-1791079576410';
 const PRECACHE = [
   "./_headers",
   "./_redirects",
@@ -8,25 +8,14 @@ const PRECACHE = [
   "./assets/AssetManifest.bin.json",
   "./assets/FontManifest.json",
   "./assets/NOTICES",
-  "./assets/assets/config/wheel_picker_audio.json",
   "./assets/assets/fonts/KantumruyPro.ttf",
+  "./assets/assets/icons/apple-touch-icon.png",
+  "./assets/assets/icons/icon-192.png",
   "./assets/assets/icons/icon-512.png",
   "./assets/assets/os/android.svg",
   "./assets/assets/os/linux.svg",
   "./assets/assets/os/macos.svg",
   "./assets/assets/os/windows.svg",
-  "./assets/assets/sounds/book_open.mp3",
-  "./assets/assets/sounds/ded.mp3",
-  "./assets/assets/sounds/dew.wav",
-  "./assets/assets/sounds/extended_effect.ogg",
-  "./assets/assets/sounds/high_pitch.mp3",
-  "./assets/assets/sounds/idk_what_to_call_ts.mp3",
-  "./assets/assets/sounds/iphone_wheel.mp3",
-  "./assets/assets/sounds/plastic_click.ogg",
-  "./assets/assets/sounds/pop.mp3",
-  "./assets/assets/sounds/table_knock.mp3",
-  "./assets/assets/sounds/wheel1.mp3",
-  "./assets/assets/sounds/wheel2.mp3",
   "./assets/assets/zodiac/dog.svg",
   "./assets/assets/zodiac/dragon.svg",
   "./assets/assets/zodiac/goat.svg",
