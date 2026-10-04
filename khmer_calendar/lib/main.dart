@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-import 'haptics.dart';
 import 'i18n.dart';
 import 'net.dart';
 import 'permissions.dart';
@@ -12,7 +11,6 @@ import 'screens/events.dart';
 import 'screens/licenses.dart';
 import 'screens/more.dart';
 import 'screens/months.dart';
-import 'screens/setup.dart';
 import 'screens/shell.dart';
 import 'screens/splash.dart';
 import 'screens/today.dart';
@@ -26,7 +24,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
   await NetStatus.start();
-  await Haptics.instance.init();
   runApp(KhmerCalendarApp(store: store));
   store.hydrate().then((_) => applyStoredPermissions(store));
 }
@@ -75,7 +72,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       },
       routes: [
         GoRoute(path: '/splash', builder: (_, _) => SplashPage(store: widget.store)),
-        GoRoute(path: '/get-started', builder: (_, _) => SetupPage(store: widget.store)),
+        GoRoute(path: '/get-started', builder: (_, _) => GetStartedPage(store: widget.store)),
         ShellRoute(
           builder: (ctx, state, child) => AppShell(store: widget.store, child: child),
           routes: [
@@ -89,7 +86,6 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         GoRoute(path: '/settings', builder: (_, _) => SettingsPage(store: widget.store)),
         GoRoute(path: '/settings/theme', builder: (_, _) => ThemePage(store: widget.store)),
         GoRoute(path: '/settings/notifications', builder: (_, _) => NotificationsPage(store: widget.store)),
-        GoRoute(path: '/settings/sounds', builder: (_, _) => SoundsPage(store: widget.store)),
         GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
         GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
         GoRoute(path: '/about', builder: (_, _) => AboutPage(store: widget.store)),
@@ -141,25 +137,6 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       highlightColor: s.highlightColor,
       highlightAlpha: s.highlightAlpha,
       dynamicScheme: s.dynamicColor ? dynamicScheme : null,
-    ).copyWith(
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          maximumSize: const Size(360, 48),
-          minimumSize: const Size(0, 48),
-        ),
-      ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          maximumSize: const Size(360, 48),
-          minimumSize: const Size(0, 48),
-        ),
-      ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          maximumSize: const Size(360, 48),
-          minimumSize: const Size(0, 48),
-        ),
-      ),
     );
   }
 

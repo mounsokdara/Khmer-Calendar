@@ -14,7 +14,6 @@ import 'notify/kinds.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
 import 'reminders.dart';
 import 'store.dart';
-import 'custom_components/slide_snackbar.dart';
 import 'widgets/dialog_actions.dart';
 
 const _channel = MethodChannel('khmer.permissions');
@@ -191,7 +190,7 @@ Future<void> _openSettingsFor(String kind) async {
   await wait;
 }
 
-
+/// If the OS still denies this permission, pause and send the user to settings.
 Future<bool> promptIfDenied(
   AppStore store, {
   BuildContext? context,
@@ -270,8 +269,8 @@ Future<bool> autoLaunchAllowed() async {
       return false;
     }
   }
-
-
+  // Android: RECEIVE_BOOT_COMPLETED is always registered. OEM auto-start
+  // (Xiaomi, Oppo, Vivo, Huawei) is not part of AOSP and cannot be read.
   if (_android) return true;
   return false;
 }
@@ -285,7 +284,7 @@ Future<bool> locationAllowed() async {
   }
 }
 
-
+/// Read the OS. Never trust a local flag.
 Future<OsPerms> readOsPermissions() async {
   final notify = await notificationsAllowed();
   final background = await backgroundAllowed();
@@ -304,7 +303,7 @@ Future<OsPerms> readOsPermissions() async {
   );
 }
 
-
+/// Turn flags off when the OS no longer allows them. Never turns flags on.
 Future<void> keepOnlyGranted(AppStore store) async {
   final os = await readOsPermissions();
   if (store.notifyOn && !os.notify) store.setNotifyOn(false);
@@ -315,7 +314,7 @@ Future<void> keepOnlyGranted(AppStore store) async {
   if (!store.notifyOn) await cancelAllReminders();
 }
 
-
+/// After Continue asked the OS, store only what is actually allowed.
 Future<void> writeGrantedFlags(AppStore store) async {
   final os = await readOsPermissions();
   store.setNotifyOn(os.notify);
@@ -330,7 +329,7 @@ Future<void> writeGrantedFlags(AppStore store) async {
   }
 }
 
-
+/// Ask the OS for notification permission, then re-read whether it is allowed.
 Future<bool> requestNotifications(AppStore store) async {
   try {
     if (kIsWeb) {
@@ -356,7 +355,7 @@ Future<bool> requestNotifications(AppStore store) async {
   return ok;
 }
 
-
+/// Ask battery / exact-alarm, then keep background on only if the OS allowed it.
 Future<bool> requestBackground(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
     store.setBackgroundOn(false);
@@ -396,8 +395,8 @@ Future<void> stopBackground(AppStore store) async {
   await _syncNativeFlags(store);
 }
 
-
-
+/// Open OEM auto-start / desktop login items. Android cannot report whether
+/// the manufacturer whitelist is on, so the user flag is the source of truth.
 Future<bool> requestAutoLaunch(AppStore store, {BuildContext? context}) async {
   if (kIsWeb) {
     store.setAutoLaunchOn(false);
@@ -464,8 +463,8 @@ Future<GpsResult> requestLocationPerm(AppStore store) async {
   return r;
 }
 
-
-
+/// Continue: ask every OS prompt. If one is not allowed, pause and open settings.
+/// Returns false when setup should stay on the permissions screen.
 Future<bool> requestAllPermissions(
   AppStore store, {
   BuildContext? context,
@@ -536,7 +535,7 @@ Future<bool> requestAllPermissions(
   return true;
 }
 
-
+/// Re-apply saved flags after boot / hydrate, but drop any the OS no longer allows.
 Future<void> applyStoredPermissions(AppStore store) async {
   await keepOnlyGranted(store);
   bindReminderSync(store);
@@ -580,5 +579,5 @@ String permSnack(Lang lang, String kind, bool ok) {
 
 void showPermSnack(BuildContext context, Lang lang, String kind, bool ok) {
   if (!context.mounted) return;
-  SlideSnackBar.show(context, message: permSnack(lang, kind, ok), behavior: SnackBarBehavior.floating);
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(permSnack(lang, kind, ok))));
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Material 3 segmented group: each row is its own surface, first/last
+/// corners are large, inner corners small, with a short gap. Same pattern
+/// as Booming's `SegmentedListItem` / the original `.set-group`.
 class SegmentedGroup extends StatelessWidget {
   const SegmentedGroup({
     super.key,
@@ -14,7 +17,6 @@ class SegmentedGroup extends StatelessWidget {
   static const _gap = 7.0;
   static const _big = 26.0;
   static const _small = 6.0;
-  static const _maxWidth = 560.0;
 
   static BorderRadius radiusFor(int index, int count) {
     if (count <= 1) return BorderRadius.circular(_big);
@@ -41,25 +43,20 @@ class SegmentedGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
     final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _maxWidth),
-        child: Padding(
-          padding: padding,
-          child: Column(
-            children: [
-              for (var i = 0; i < children.length; i++) ...[
-                if (i > 0) const SizedBox(height: _gap),
-                Material(
-                  color: filled ? cs.surfaceContainer : Colors.transparent,
-                  clipBehavior: Clip.antiAlias,
-                  shape: RoundedRectangleBorder(borderRadius: radiusFor(i, children.length)),
-                  child: children[i],
-                ),
-              ],
-            ],
-          ),
-        ),
+    return Padding(
+      padding: padding,
+      child: Column(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const SizedBox(height: _gap),
+            Material(
+              color: filled ? cs.surfaceContainer : Colors.transparent,
+              clipBehavior: Clip.antiAlias,
+              shape: RoundedRectangleBorder(borderRadius: radiusFor(i, children.length)),
+              child: children[i],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -91,10 +88,10 @@ class SegmentedTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final titleColor = (danger ? cs.error : cs.onSurface).withValues(alpha: dim ? 0.38 : 1);
-    final subColor = Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+    final subColor = (danger ? cs.error.withValues(alpha: 0.8) : cs.onSurfaceVariant).withValues(alpha: dim ? 0.38 : 1);
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-      minVerticalPadding: 8,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      minVerticalPadding: 12,
       leading: leading == null ? null : (dim ? Opacity(opacity: 0.45, child: leading!) : leading),
       selected: selected,
       title: Text(
@@ -127,7 +124,6 @@ class SegmentedSwitch extends StatelessWidget {
     this.subtitle,
     required this.value,
     required this.onChanged,
-    this.compact = false,
   });
 
   final IconData? icon;
@@ -137,35 +133,21 @@ class SegmentedSwitch extends StatelessWidget {
   final String? subtitle;
   final bool value;
   final ValueChanged<bool>? onChanged;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      dense: compact,
-      contentPadding: compact
-          ? const EdgeInsets.fromLTRB(16, 4, 12, 4)
-          : const EdgeInsets.fromLTRB(20, 8, 16, 8),
+      contentPadding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
       secondary: leading ?? (icon == null ? null : Icon(icon, size: 24, color: iconColor)),
       title: Text(
         title,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: compact ? 15 : 16,
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
       ),
       subtitle: subtitle == null
           ? null
-          : Text(
-              subtitle!,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-              ),
-            ),
+          : Text(subtitle!, maxLines: 3, overflow: TextOverflow.ellipsis),
       value: value,
       onChanged: onChanged,
     );

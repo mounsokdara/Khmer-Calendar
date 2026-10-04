@@ -5,10 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'custom_sound.dart';
 import 'dates.dart';
 import 'i18n.dart';
-import 'sounds.dart';
 import 'theme.dart';
 
 class CalendarEvent {
@@ -118,8 +116,6 @@ class AppStore extends ChangeNotifier {
   bool notifyPublic = true;
   bool notifyOthers = true;
   int weekStartsOn = 1;
-  String wheelSound = defaultWheelSoundId;
-  String? wheelSoundName;
   bool hydrated = false;
   String? pendingRoute;
   Timer? _persistDebounce;
@@ -177,19 +173,10 @@ class AppStore extends ChangeNotifier {
         notifyPublic = p['notifyPublic'] as bool? ?? oldHolidays;
         notifyOthers = p['notifyOthers'] as bool? ?? p['notifyReligious'] as bool? ?? oldHolidays;
         weekStartsOn = p['weekStartsOn'] as int? ?? 1;
-        final ws = p['wheelSound'] as String?;
-        if (ws != null) {
-          final config = await WheelConfig.load();
-          wheelSound = config.sound(ws) != null ? ws : defaultWheelSoundId;
-        } else {
-          wheelSound = defaultWheelSoundId;
-        }
-        wheelSoundName = p['wheelSoundName'] as String?;
       }
     } catch (_) {
-
+      /* first run */
     }
-    AppSounds.instance.setWheel(wheelSound);
     lang = resolveLang(langPref);
     IntlHelper.localeName = lang == Lang.km ? 'km' : 'en';
     final wait = 720 - DateTime.now().difference(started).inMilliseconds;
@@ -229,8 +216,6 @@ class AppStore extends ChangeNotifier {
         'notifyPublic': notifyPublic,
         'notifyOthers': notifyOthers,
         'weekStartsOn': weekStartsOn,
-        'wheelSound': wheelSound,
-        'wheelSoundName': wheelSoundName,
       }),
     );
   }
@@ -269,6 +254,11 @@ class AppStore extends ChangeNotifier {
 
   void setCursor(String iso) {
     cursor = iso;
+    _touch(save: false);
+  }
+
+  void setSelected(String iso) {
+    selected = iso;
     _touch(save: false);
   }
 
@@ -453,16 +443,6 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
-
-
-  void setWheelSound(String id, {String? customName}) {
-    final normalized = id.trim();
-    wheelSound = normalized.isEmpty ? wheelSoundNone : normalized;
-    if (customName != null) wheelSoundName = customName;
-    AppSounds.instance.setWheel(wheelSound);
-    _touch();
-  }
-
   void setInstalled(bool v) {
     installed = v;
     _touch();
@@ -506,10 +486,6 @@ class AppStore extends ChangeNotifier {
     notifyPublic = true;
     notifyOthers = true;
     weekStartsOn = 1;
-    wheelSound = defaultWheelSoundId;
-    wheelSoundName = null;
-    AppSounds.instance.setWheel(defaultWheelSoundId);
-    unawaited(clearCustomSound());
     _touch();
   }
 }

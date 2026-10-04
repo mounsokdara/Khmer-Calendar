@@ -1,11 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-
-
-
-
-
+/// Horizontal page carousel you can drop on any screen.
+///
+/// The page index is the date source. Callers map index -> month or day
+/// with [monthIndexOf] / [monthFromIndex] or [dayIndexOf] / [dayFromIndex].
+/// Do not rebuild prev/current/next pages and jump back to a center page.
 class CarouselSlider extends StatefulWidget {
   const CarouselSlider({
     super.key,
@@ -19,15 +19,15 @@ class CarouselSlider extends StatefulWidget {
 
   final int itemCount;
 
-
-
+  /// Visible page. Jump here when the value changes from outside (today
+  /// button, month wheel, goToDate).
   final int index;
 
   final IndexedWidgetBuilder itemBuilder;
   final ValueChanged<int>? onIndexChanged;
   final ScrollPhysics? physics;
 
-
+  /// Keep off. Building neighbors early makes month swipes heavier.
   final bool allowImplicitScrolling;
 
   @override

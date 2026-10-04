@@ -1,1 +1,0 @@
-Future<void> platformHapticTick() async {}
