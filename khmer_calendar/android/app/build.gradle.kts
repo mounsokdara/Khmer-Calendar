@@ -24,14 +24,13 @@ android {
 
     signingConfigs {
         create("release") {
+            // Credentials come from environment variables (GitHub Actions secrets or local shell). Never hardcode.
             val ks = System.getenv("ANDROID_KEYSTORE")
-                ?: "../../scripts/khmer-release.keystore"
-            val file = file(ks)
-            if (file.exists()) {
-                storeFile = file
-                storePassword = "khmercal"
-                keyAlias = "khmer"
-                keyPassword = "khmercal"
+            if (ks != null && file(ks).exists()) {
+                storeFile = file(ks)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "com.mounsokdara.khmercalendar"
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
             }
         }
     }
@@ -39,7 +38,7 @@ android {
     buildTypes {
         release {
             val rel = signingConfigs.findByName("release")
-            signingConfig = if (rel?.storeFile?.exists() == true) rel else signingConfigs.getByName("debug")
+            signingConfig = if (rel?.storeFile?.exists() == true) rel else throw GradleException("Release keystore missing: refusing to sign a release build with the debug key")
         }
     }
 }
@@ -56,4 +55,5 @@ flutter {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("androidx.startup:startup-runtime:1.2.0")
 }
