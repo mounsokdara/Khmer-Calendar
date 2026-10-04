@@ -1,11 +1,11 @@
-// Chinese civil lunar dates for 1900–2100.
-// Packed year table and decoder follow the widely used 寿星-style encoding
-// (same table as KhmerDates/chinese-calendar.js).
-//
-// Per year word:
-//   bit 16     leap month is 30 days (else 29)
-//   bits 4–15  month lengths, bit15 = month 1 … bit4 = month 12 (1 = 30d)
-//   bits 0–3   leap month number (0 = none)
+
+
+
+
+
+
+
+
 
 class ChineseLunar {
   const ChineseLunar({
@@ -64,7 +64,7 @@ int _yearDays(int year) {
   return sum + _leapDays(year);
 }
 
-/// Gregorian civil date → Chinese lunar date, or null outside 1900–2100.
+
 ChineseLunar? solarToChineseLunar(int year, int month, int day) {
   if (year < 1900 || year > 2100) return null;
   var offset = DateTime.utc(year, month, day).difference(DateTime.utc(1900, 1, 31)).inDays;

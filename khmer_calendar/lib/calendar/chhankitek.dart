@@ -1,4 +1,4 @@
-// Khmer Chhankitek lunar engine, ported from the original APK calculator.
+
 
 import 'chinese_lunar.dart';
 
@@ -141,19 +141,6 @@ const sak = [
   'នព្វស័ក',
   'សំរឹទ្ធិស័ក',
 ];
-
-const sakEn = {
-  'ឯកស័ក': 'Aekasak',
-  'ទោស័ក': 'Tosak',
-  'ត្រីស័ក': 'Treisak',
-  'ចត្វាស័ក': 'Chatvasak',
-  'បញ្ចស័ក': 'Panchasak',
-  'ឆស័ក': 'Chhasak',
-  'សប្តស័ក': 'Saptasak',
-  'អដ្ឋស័ក': 'Atthasak',
-  'នព្វស័ក': 'Navasak',
-  'សំរឹទ្ធិស័ក': 'Samriddhisak',
-};
 
 const _waxing = 'កើត';
 const _waning = 'រោច';
@@ -810,5 +797,3 @@ List<String> animalPair(LunarDay e) {
   final t = (e.moonDay + 10) % zodiac.length;
   return [zodiac[t], zodiac[(t + 6) % zodiac.length]];
 }
-
-bool silOf(LunarDay lunar) => lunar.isSilDay;

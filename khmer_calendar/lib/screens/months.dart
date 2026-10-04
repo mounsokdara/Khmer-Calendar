@@ -90,38 +90,50 @@ class _MonthsPageState extends State<MonthsPage> {
         children: [
           const SizedBox(width: 8),
           Expanded(
-            child: TextButton(
-              onPressed: () => showMonthWheel(context, store: store),
-              style: TextButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8)),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      formatMonthTitle(cursor, lang),
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: () => showMonthWheel(context, store: store),
+                style: TextButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        formatMonthTitle(cursor, lang),
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                     ),
-                  ),
-                  const Icon(Icons.expand_more),
-                ],
+                    const Icon(Icons.expand_more),
+                  ],
+                ),
               ),
             ),
           ),
-          if (!sameMonth(cursor, fromIso(today)))
-            IconButton(
-              tooltip: t(lang, 'today'),
-              onPressed: () => store.goToDate(today),
-              icon: const Icon(Icons.today),
-            ),
-          IconButton(
-            tooltip: _expanded ? t(lang, 'collapse') : t(lang, 'expand'),
-            onPressed: () => setState(() => _expanded = !_expanded),
-            icon: Icon(_expanded ? Icons.close_fullscreen : Icons.open_in_full),
-          ),
-          IconButton(
-            tooltip: t(lang, 'addTask'),
-            onPressed: () => showTaskSheet(context, store: store, date: store.selected),
-            icon: const Icon(Icons.add),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!sameMonth(cursor, fromIso(today)))
+                IconButton(
+                  tooltip: t(lang, 'today'),
+                  onPressed: () => store.goToDate(today),
+                  icon: const Icon(Icons.today),
+                ),
+              IconButton(
+                tooltip: _expanded ? t(lang, 'collapse') : t(lang, 'expand'),
+                onPressed: () => setState(() => _expanded = !_expanded),
+                icon: Icon(_expanded ? Icons.close_fullscreen : Icons.open_in_full),
+              ),
+              IconButton(
+                tooltip: t(lang, 'addTask'),
+                onPressed: () => showTaskSheet(context, store: store, date: store.selected),
+                icon: const Icon(Icons.add),
+              ),
+            ],
           ),
         ],
       ),
@@ -191,7 +203,6 @@ class _MonthsPageState extends State<MonthsPage> {
           store: store,
           interactive: true,
           expanded: _expanded,
-          fill: fill,
         );
       },
       onIndexChanged: (i) {
@@ -235,7 +246,6 @@ class _MonthsPageState extends State<MonthsPage> {
         track,
       ],
     );
-    if (fill) return body;
     return body;
   }
 
@@ -314,13 +324,11 @@ class _MonthGrid extends StatelessWidget {
     required this.store,
     required this.interactive,
     required this.expanded,
-    required this.fill,
   });
   final DateTime month;
   final AppStore store;
   final bool interactive;
   final bool expanded;
-  final bool fill;
 
   @override
   Widget build(BuildContext context) {
@@ -345,21 +353,13 @@ class _MonthGrid extends StatelessWidget {
     return Column(
       children: [
         for (var r = 0; r < 6; r++)
-          fill
-              ? Expanded(
-                  child: Row(
-                    children: [
-                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
-                    ],
-                  ),
-                )
-              : Expanded(
-                  child: Row(
-                    children: [
-                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
-                    ],
-                  ),
-                ),
+          Expanded(
+            child: Row(
+              children: [
+                for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
+              ],
+            ),
+          ),
       ],
     );
   }

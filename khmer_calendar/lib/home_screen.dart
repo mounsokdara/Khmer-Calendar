@@ -206,10 +206,6 @@ Future<void> syncWeatherWidget(AppStore store) async {
   await pushWeatherList(store, cache);
 }
 
-Future<void> pushWeather(AppStore store, City city, WeatherSnap snap) async {
-  await pushWeatherList(store, {city.id: snap}, selectId: city.id);
-}
-
 String encodeHourly(WeatherSnap snap) {
   final now = DateTime.now();
   return snap.hourly

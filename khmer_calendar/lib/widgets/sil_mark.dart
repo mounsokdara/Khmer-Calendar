@@ -12,7 +12,7 @@ const _silSvg = '''
 </svg>
 ''';
 
-/// Buddha sil mark. Always painted in the calendar yellow (`#d4920f`).
+
 class SilMark extends StatelessWidget {
   const SilMark({super.key, this.size = 14});
   final double size;
