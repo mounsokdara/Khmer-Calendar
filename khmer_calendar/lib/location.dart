@@ -5,7 +5,6 @@ import 'package:geolocator/geolocator.dart';
 import 'i18n.dart';
 import 'store.dart';
 import 'weather.dart';
-import 'custom_components/slide_snackbar.dart';
 
 enum GpsResult { added, already, denied, disabled, failed }
 
@@ -46,7 +45,7 @@ bool locationPermissionGranted(LocationPermission perm) {
   return perm == LocationPermission.always || perm == LocationPermission.whileInUse;
 }
 
-
+/// Always calls [Geolocator.requestPermission] so Continue never skips the OS dialog.
 Future<GpsResult> requestNearbyCity(AppStore store) async {
   try {
     final enabled = await Geolocator.isLocationServiceEnabled();
@@ -86,5 +85,5 @@ Future<GpsResult> requestNearbyCity(AppStore store) async {
 
 void showGpsSnack(BuildContext context, Lang lang, GpsResult result) {
   if (!context.mounted) return;
-  SlideSnackBar.show(context, message: gpsMessage(lang, result), behavior: SnackBarBehavior.floating);
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(gpsMessage(lang, result))));
 }

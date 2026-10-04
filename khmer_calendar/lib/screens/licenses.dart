@@ -33,22 +33,7 @@ const _apis = [
   ),
   _Credit('Device geolocation', 'Finds the nearest city for weather'),
   _Credit('System notifications', 'Event, holiday, and task reminders'),
-  _Credit(
-    'Windows Run key',
-    'Starts the desktop app at Windows sign-in. Also uses the Startup folder.',
-  ),
-  _Credit(
-    'macOS SMAppService',
-    'Registers the app as a login item on macOS 13 and later',
-  ),
-  _Credit(
-    'XDG Autostart',
-    'Writes a .desktop file so Linux desktops start the app at login',
-  ),
-  _Credit(
-    'Android App Startup',
-    'Re-arms reminders and widgets when the process starts after boot',
-  ),
+  _Credit('Launch at startup', 'Starts the app when the device boots'),
 ];
 
 const _libraries = [
@@ -61,10 +46,12 @@ const _libraries = [
   _Credit('geolocator', 'GPS location'),
   _Credit('intl', 'Dates and numbers'),
   _Credit('path_provider', 'App files on disk'),
+  _Credit('share_plus', 'Share a date or task'),
   _Credit('permission_handler', 'Asks the OS for permissions'),
   _Credit('flutter_local_notifications', 'Schedules reminders'),
   _Credit('flutter_timezone', 'Local time zone for alarms'),
   _Credit('timezone', 'Time zone database'),
+  _Credit('launch_at_startup', 'Desktop auto start'),
   _Credit('dynamic_color', 'Wallpaper colors on Material You devices'),
   _Credit('cupertino_icons', 'iOS-style icons'),
 ];
@@ -84,11 +71,6 @@ const _other = [
     url: 'https://www.wikipedia.org',
   ),
   _Credit('Zodiac artwork', 'Khmer animal-year marks'),
-  _Credit(
-    'Chinese lunar year table',
-    'Traditional festival dates for 1900–2100. Same packed civil-lunar encoding used by KhmerDates and other open lunar calendars.',
-    url: 'https://github.com/ksx9999/KhmerDates',
-  ),
 ];
 
 Future<Map<String, List<LicenseEntry>>>? _licenseCache;

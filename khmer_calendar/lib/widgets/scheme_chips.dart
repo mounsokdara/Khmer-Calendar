@@ -4,7 +4,6 @@ import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
 import 'dialog_actions.dart';
-import 'segmented_list.dart';
 
 const colorPresets = [
   '#F5C400',
@@ -28,38 +27,32 @@ class SchemeChipScroller extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = store.materialYou && !store.dynamicColor;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionLabel(store.lang == Lang.km ? 'ពណ៌ Material You' : 'Material You Color'),
-        Semantics(
-          label: t(store.lang, 'schemeAria'),
-          child: SizedBox(
-            height: 76,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-              scrollDirection: Axis.horizontal,
-              itemCount: schemes.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final s = schemes[i];
-                final selected = store.colorScheme == s.id;
-                return Opacity(
-                  opacity: store.dynamicColor || enabled ? 1 : 0.38,
-                  child: Tooltip(
-                    message: s.label,
-                    child: _SchemeChipButton(
-                      chip: s,
-                      selected: selected,
-                      onTap: enabled ? () => store.setColorScheme(s.id) : null,
-                    ),
-                  ),
-                );
-              },
+    return Semantics(
+      label: t(store.lang, 'schemeAria'),
+      child: SizedBox(
+        height: 88,
+        child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+        scrollDirection: Axis.horizontal,
+        itemCount: schemes.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (ctx, i) {
+          final s = schemes[i];
+          final selected = store.colorScheme == s.id;
+          return Opacity(
+            opacity: store.dynamicColor || enabled ? 1 : 0.38,
+            child: Tooltip(
+              message: s.label,
+              child: _SchemeChipButton(
+                chip: s,
+                selected: selected,
+                onTap: enabled ? () => store.setColorScheme(s.id) : null,
+              ),
             ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
+      ),
     );
   }
 }
@@ -79,11 +72,11 @@ class _SchemeChipButton extends StatelessWidget {
         customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.4)),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: 64,
-          height: 64,
+          width: 72,
+          height: 72,
           decoration: BoxDecoration(
             color: chip.top,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18.4),
             border: Border.all(color: selected ? chip.circle : Colors.transparent, width: 3),
           ),
           child: Stack(
@@ -91,14 +84,14 @@ class _SchemeChipButton extends StatelessWidget {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(13)),
-                  child: Container(height: 32, color: chip.bot),
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15.4)),
+                  child: Container(height: 36, color: chip.bot),
                 ),
               ),
               Center(
                 child: Container(
-                  width: 27,
-                  height: 27,
+                  width: 72 * 0.42,
+                  height: 72 * 0.42,
                   decoration: BoxDecoration(color: chip.circle, shape: BoxShape.circle),
                 ),
               ),
@@ -119,7 +112,6 @@ class ColorRow extends StatelessWidget {
     this.subtitle,
     this.icon,
     this.disabled = false,
-    this.compact = false,
   });
   final String title;
   final String? subtitle;
@@ -127,30 +119,24 @@ class ColorRow extends StatelessWidget {
   final VoidCallback onPick;
   final IconData? icon;
   final bool disabled;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Opacity(
       opacity: disabled ? 0.38 : 1,
       child: ListTile(
-        contentPadding: compact
-            ? const EdgeInsets.fromLTRB(16, 4, 12, 4)
-            : const EdgeInsets.fromLTRB(20, 8, 16, 8),
+        contentPadding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
         leading: icon == null ? null : Icon(icon, size: 24),
         title: Text(
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: compact ? 15 : 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         subtitle: subtitle == null ? null : Text(subtitle!, maxLines: 3, overflow: TextOverflow.ellipsis),
         trailing: Container(
-          width: compact ? 24 : 28,
-          height: compact ? 24 : 28,
+          width: 28,
+          height: 28,
           decoration: BoxDecoration(
             color: hexColor(value),
             shape: BoxShape.circle,

@@ -156,6 +156,14 @@ String wmoIconUrl(int code) {
   return 'https://openweathermap.org/img/wn/$icon@2x.png';
 }
 
+String wmoKind(int code) {
+  if (code <= 1) return 'clear';
+  if (code <= 3) return 'cloudy';
+  if (code <= 48) return 'fog';
+  if (code <= 86) return 'rain';
+  return 'storm';
+}
+
 const _wikiHeaders = {
   'User-Agent': 'KhmerCalendar/1.0 (https://khmercalendar.pages.dev)',
   'Accept': 'application/json',
@@ -163,137 +171,25 @@ const _wikiHeaders = {
 
 final _photoMem = <String, String?>{};
 
-
-
-const _photoOverrides = <String, String>{};
-
-
-
-final _badPhotoName = RegExp(
-  r'(sign|welcome|logo|map|flag|seal|stamp|coat[ _]of|banner|poster|diagram|chart|billboard|screenshot|locator'
-  r'|monument|memorial|statue|temple|pagoda|wat[ _]|angkor|palace|museum|church|mosque|shrine|stupa|building'
-  r'|hotel|resort|school|university|stadium|airport|station|office|hall|gate|crab|portrait|people|food|market|logo)',
-  caseSensitive: false,
-);
-
-
-final _goodPhotoName = RegExp(
-  r'(landscape|scenery|view|rice|paddy|field|river|mekong|lake|beach|coast|sea|island|mountain|hill|forest|jungle|'
-  r'waterfall|sunset|sunrise|sky|farm|countryside|bay|mangrove|plantation)',
-  caseSensitive: false,
-);
-
-Uri _commonsUri(Map<String, String> q) => Uri.https('commons.wikimedia.org', '/w/api.php', {
-      'action': 'query',
-      'format': 'json',
-      'origin': '*',
-      'prop': 'imageinfo',
-      'iiprop': 'url|size|mime',
-      'iiurlwidth': '1200',
-      ...q,
-    });
-
-Future<Map<String, dynamic>?> _getJson(Uri url) async {
-  final res = await http.get(url, headers: _wikiHeaders).timeout(const Duration(seconds: 8));
-  if (res.statusCode != 200) return null;
-  return jsonDecode(res.body) as Map<String, dynamic>;
-}
-
-
-String? _bestCommonsPhoto(Map<String, dynamic>? j) {
-  final pages = (j?['query']?['pages'] as Map<String, dynamic>?)?.values.toList();
-  if (pages == null || pages.isEmpty) return null;
-  String? best;
-  var bestScore = -1;
-  for (final p in pages) {
-    final title = (p['title'] ?? '') as String;
-    final info = (p['imageinfo'] as List?)?.firstOrNull as Map<String, dynamic>?;
-    if (info == null || _badPhotoName.hasMatch(title)) continue;
-    if (info['mime'] != 'image/jpeg') continue;
-    final w = (info['width'] ?? 0) as num;
-    final h = (info['height'] ?? 0) as num;
-    if (w < 1600 || h <= 0) continue;
-    final ratio = w / h;
-    if (ratio < 1.2 || ratio > 2.2) continue;
-    final url = (info['thumburl'] ?? info['url']) as String?;
-    if (url == null || url.isEmpty) continue;
-
-    final score = (_goodPhotoName.hasMatch(title) ? 1000 : 0) - ((p['index'] ?? 0) as num).toInt();
-    if (score > bestScore) {
-      bestScore = score;
-      best = url;
-    }
-  }
-  return best;
-}
-
-
-
-Future<String?> _photoFromSearch(City city) async {
-  final queries = [
-    '${city.nameEn} Cambodia landscape',
-    '${city.nameEn} province Cambodia rice field river',
-    '${city.nameEn} Cambodia view',
-  ];
-  for (final q in queries) {
-    final j = await _getJson(_commonsUri({
-      'generator': 'search',
-      'gsrnamespace': '6',
-      'gsrsearch': '$q filetype:bitmap',
-      'gsrlimit': '40',
-    }));
-    final url = _bestCommonsPhoto(j);
-    if (url != null) return url;
-  }
-  return null;
-}
-
-Future<String?> _photoFromOverride(String fileTitle) async {
-  final j = await _getJson(_commonsUri({'titles': fileTitle}));
-  final pages = (j?['query']?['pages'] as Map<String, dynamic>?)?.values.toList();
-  final info = (pages?.firstOrNull?['imageinfo'] as List?)?.firstOrNull as Map<String, dynamic>?;
-  return (info?['thumburl'] ?? info?['url']) as String?;
-}
-
-
-
-Future<String?> _photoFromGeosearch(City city) async {
-  final j = await _getJson(_commonsUri({
-    'generator': 'geosearch',
-    'ggsnamespace': '6',
-    'ggscoord': '${city.latitude}|${city.longitude}',
-    'ggsradius': '10000',
-    'ggslimit': '50',
-  }));
-  return _bestCommonsPhoto(j);
-}
-
-Future<String?> _photoFromWikipedia(City city) async {
-  final j = await _getJson(Uri.parse(
-    'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(city.nameEn)}',
-  ));
-  final orig = j?['originalimage'] as Map<String, dynamic>?;
-  final src = (orig?['source'] ?? j?['thumbnail']?['source']) as String?;
-  if (src == null || _badPhotoName.hasMatch(Uri.decodeComponent(src))) return null;
-  final w = (orig?['width'] ?? 0) as num;
-  final h = (orig?['height'] ?? 0) as num;
-  if (h <= 0 || w / h < 1.2) return null;
-  return src;
-}
-
 Future<String?> cityPhotoUrl(City city) async {
-  final cached = _photoMem[city.id];
-  if (cached != null) return cached;
-  String? url;
+  if (_photoMem.containsKey(city.id)) return _photoMem[city.id];
   try {
-    final fixed = _photoOverrides[city.id];
-    if (fixed != null) url = await _photoFromOverride(fixed);
-    url ??= await _photoFromSearch(city);
-    url ??= await _photoFromGeosearch(city);
-    url ??= await _photoFromWikipedia(city);
-  } catch (_) {}
-  if (url != null) _photoMem[city.id] = url;
-  return url;
+    final url = Uri.parse(
+      'https://en.wikipedia.org/api/rest_v1/page/summary/${Uri.encodeComponent(city.nameEn)}',
+    );
+    final res = await http.get(url, headers: _wikiHeaders).timeout(const Duration(seconds: 6));
+    if (res.statusCode != 200) {
+      _photoMem[city.id] = null;
+      return null;
+    }
+    final j = jsonDecode(res.body) as Map<String, dynamic>;
+    final src = (j['thumbnail']?['source'] ?? j['originalimage']?['source']) as String?;
+    _photoMem[city.id] = src;
+    return src;
+  } catch (_) {
+    _photoMem[city.id] = null;
+    return null;
+  }
 }
 
 Future<WeatherSnap> fetchWeather(City city) async {

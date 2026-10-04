@@ -113,6 +113,8 @@ final schemes = <SchemeChip>[
 
 SchemeChip schemeOf(ColorSchemeId id) => schemes.firstWhere((s) => s.id == id, orElse: () => schemes.first);
 
+Color schemeColor(ColorSchemeId id) => schemeOf(id).circle;
+
 const _roseLight = <String, String>{
   'primary': '#9a3b38',
   'onPrimary': '#ffffff',
@@ -413,18 +415,15 @@ ThemeData buildTheme({
 }
 
 const silColor = Color(0xFFD4920F);
-const religiousColor = Color(0xFF1E88E5);
-const religiousColorOnDark = Color(0xFF90CAF9);
-const publicHolidayFill = Color(0xFFC62828);
-const otherHolidayFill = religiousColor;
 
 const wideBreak = 840.0;
 const mediumBreak = 720.0;
 const xlBreak = 1180.0;
 
-const appVersion = '1.0.2';
-const appBuildNumber = 3;
+const appVersion = '1.0.0';
+const appBuildNumber = 1;
 const appAuthor = 'Moun Sokdara';
+const appLicense = 'MIT License';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
 const appWebsiteUrl = 'https://khmercalendar.pages.dev';
 
@@ -450,6 +449,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''';
 
+bool isWide(BuildContext context) => MediaQuery.sizeOf(context).width >= wideBreak;
+bool isMedium(BuildContext context) => MediaQuery.sizeOf(context).width >= mediumBreak;
+bool isXl(BuildContext context) => MediaQuery.sizeOf(context).width >= xlBreak;
+
 Color todayFill(BuildContext context) {
   final cal = Theme.of(context).extension<CalColors>();
   final cs = Theme.of(context).colorScheme;
@@ -472,9 +475,9 @@ Color dayToneColor(BuildContext context, String tone) {
   final cs = Theme.of(context).colorScheme;
   switch (tone) {
     case 'sunday':
-      return publicHolidayFill;
+      return const Color(0xFFC62828);
     case 'holiday':
-      return Theme.of(context).brightness == Brightness.dark ? religiousColorOnDark : religiousColor;
+      return cs.primary;
     case 'sil':
       return silColor;
     case 'event':

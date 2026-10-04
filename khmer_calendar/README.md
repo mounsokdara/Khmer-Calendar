@@ -11,3 +11,5 @@ flutter pub get
 flutter test
 flutter run
 ```
+
+Release installers are published from GitHub Actions as v1.0.0.

@@ -11,12 +11,8 @@ object WidgetStore {
     const val PREFS = "khmer_home_widget"
     const val CHANNEL = "khmer_daily"
     const val CHANNEL_NAME = "Daily calendar"
-    const val SIL_CHANNEL = "khmer_sil"
-    const val SIL_CHANNEL_NAME = "Silas day"
     const val NOTIFY_ID = 1001
-    const val SIL_NOTIFY_ID = 1002
     const val ALARM_REQ = 41
-    const val SIL_ALARM_REQ = 42
 
     val WEEKDAYS_KM = arrayOf("អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហស្បតិ៍", "សុក្រ", "សៅរ៍")
     val WEEKDAYS_EN = arrayOf("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -75,9 +71,8 @@ object WidgetStore {
         return PendingIntent.getActivity(context, req, intent, flags)
     }
 
-    fun notificationsOn(context: Context) = masterNotifyOn(context)
-
-    fun osNotificationsOn(context: Context): Boolean {
+    fun notificationsOn(context: Context): Boolean {
+        if (!prefs(context).getBoolean("notifyOn", false)) return false
         if (Build.VERSION.SDK_INT >= 33) {
             val granted =
                 context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
@@ -86,50 +81,5 @@ object WidgetStore {
         }
         val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return false
         return if (Build.VERSION.SDK_INT >= 24) nm.areNotificationsEnabled() else true
-    }
-
-    fun masterNotifyOn(context: Context): Boolean {
-        return prefs(context).getBoolean("notifyOn", false) && osNotificationsOn(context)
-    }
-
-    fun kindOn(context: Context, key: String, default: Boolean = false): Boolean {
-        return masterNotifyOn(context) && prefs(context).getBoolean(key, default)
-    }
-
-    fun dailyOn(context: Context) = kindOn(context, "notifyDaily", false)
-
-    fun silOn(context: Context) = kindOn(context, "notifySil", true)
-
-    fun publicOn(context: Context) = kindOn(context, "notifyPublic", true)
-
-    fun othersOn(context: Context): Boolean {
-        val p = prefs(context)
-        val enabled =
-            if (p.contains("notifyOthers")) {
-                p.getBoolean("notifyOthers", true)
-            } else {
-                p.getBoolean("notifyReligious", true)
-            }
-        return masterNotifyOn(context) && enabled
-    }
-
-    fun religiousOn(context: Context) = othersOn(context)
-
-    fun dayDetail(context: Context, iso: String = todayIso()): String {
-        val p = dayPayload(context, iso) ?: return ""
-        return listOf(
-            listOf(p.optString("weekday"), p.optString("gregorian")).filter { it.isNotEmpty() }.joinToString(" · "),
-            p.optString("lunar"),
-            p.optString("be"),
-        ).filter { it.isNotEmpty() }.joinToString("\n")
-    }
-
-    fun isSilDay(context: Context, iso: String = todayIso()): Boolean {
-        return silIsoList(context).any { it == iso }
-    }
-
-    fun silIsoList(context: Context): List<String> {
-        val raw = prefs(context).getString("sil_days", "") ?: return emptyList()
-        return raw.split(",").map { it.trim() }.filter { it.length >= 10 }
     }
 }

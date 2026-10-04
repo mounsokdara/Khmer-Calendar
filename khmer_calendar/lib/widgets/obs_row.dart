@@ -5,7 +5,7 @@ import '../dates.dart';
 import '../i18n.dart';
 import '../theme.dart';
 
-
+/// Flat observance row: colored day number + title. No card, no avatar fill.
 class ObsRow extends StatelessWidget {
   const ObsRow({
     super.key,

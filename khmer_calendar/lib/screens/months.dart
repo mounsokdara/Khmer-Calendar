@@ -7,11 +7,11 @@ import '../dates.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
-import '../widgets/carousel_slider.dart';
 import '../widgets/holiday_info.dart';
 import '../widgets/obs_row.dart';
 import '../widgets/overlay_page.dart';
 import '../widgets/sil_mark.dart';
+import '../widgets/slide_track.dart';
 import '../widgets/task_sheet.dart';
 import '../widgets/wheel_picker.dart';
 
@@ -27,6 +27,11 @@ class _MonthsPageState extends State<MonthsPage> {
   bool _expanded = false;
 
   AppStore get store => widget.store;
+
+  void _shiftMonth(int dir) {
+    final cur = fromIso(store.cursor);
+    store.setCursor(isoOf(addMonths(cur, dir)));
+  }
 
   void _openObs(Observance item) {
     store.goToDate(item.date);
@@ -90,50 +95,38 @@ class _MonthsPageState extends State<MonthsPage> {
         children: [
           const SizedBox(width: 8),
           Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: () => showMonthWheel(context, store: store),
-                style: TextButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        formatMonthTitle(cursor, lang),
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
+            child: TextButton(
+              onPressed: () => showMonthWheel(context, store: store),
+              style: TextButton.styleFrom(alignment: Alignment.centerLeft, padding: const EdgeInsets.symmetric(horizontal: 8)),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      formatMonthTitle(cursor, lang),
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    const Icon(Icons.expand_more),
-                  ],
-                ),
+                  ),
+                  const Icon(Icons.expand_more),
+                ],
               ),
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!sameMonth(cursor, fromIso(today)))
-                IconButton(
-                  tooltip: t(lang, 'today'),
-                  onPressed: () => store.goToDate(today),
-                  icon: const Icon(Icons.today),
-                ),
-              IconButton(
-                tooltip: _expanded ? t(lang, 'collapse') : t(lang, 'expand'),
-                onPressed: () => setState(() => _expanded = !_expanded),
-                icon: Icon(_expanded ? Icons.close_fullscreen : Icons.open_in_full),
-              ),
-              IconButton(
-                tooltip: t(lang, 'addTask'),
-                onPressed: () => showTaskSheet(context, store: store, date: store.selected),
-                icon: const Icon(Icons.add),
-              ),
-            ],
+          if (!sameMonth(cursor, fromIso(today)))
+            IconButton(
+              tooltip: t(lang, 'today'),
+              onPressed: () => store.goToDate(today),
+              icon: const Icon(Icons.today),
+            ),
+          IconButton(
+            tooltip: _expanded ? t(lang, 'collapse') : t(lang, 'expand'),
+            onPressed: () => setState(() => _expanded = !_expanded),
+            icon: Icon(_expanded ? Icons.close_fullscreen : Icons.open_in_full),
+          ),
+          IconButton(
+            tooltip: t(lang, 'addTask'),
+            onPressed: () => showTaskSheet(context, store: store, date: store.selected),
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
@@ -193,23 +186,14 @@ class _MonthsPageState extends State<MonthsPage> {
   }
 
   Widget _slide(DateTime cursor, {required bool fill}) {
-    return CarouselSlider(
-      index: monthIndexOf(cursor),
-      itemCount: monthCount(),
-      itemBuilder: (context, i) {
-        final month = monthFromIndex(i);
-        return _MonthGrid(
-          month: month,
-          store: store,
-          interactive: true,
-          expanded: _expanded,
-        );
-      },
-      onIndexChanged: (i) {
-        final next = monthFromIndex(i);
-        final day = cursor.day.clamp(1, daysInMonth(next));
-        store.setCursor(isoOf(DateTime(next.year, next.month, day)));
-      },
+    final prev = addMonths(cursor, -1);
+    final next = addMonths(cursor, 1);
+    return SlideTrack(
+      pageId: isoOf(DateTime(cursor.year, cursor.month, 1)),
+      onShift: _shiftMonth,
+      previous: _MonthGrid(month: prev, store: store, interactive: false, expanded: _expanded, fill: fill),
+      current: _MonthGrid(month: cursor, store: store, interactive: true, expanded: _expanded, fill: fill),
+      next: _MonthGrid(month: next, store: store, interactive: false, expanded: _expanded, fill: fill),
     );
   }
 
@@ -246,6 +230,7 @@ class _MonthsPageState extends State<MonthsPage> {
         track,
       ],
     );
+    if (fill) return body;
     return body;
   }
 
@@ -324,11 +309,13 @@ class _MonthGrid extends StatelessWidget {
     required this.store,
     required this.interactive,
     required this.expanded,
+    required this.fill,
   });
   final DateTime month;
   final AppStore store;
   final bool interactive;
   final bool expanded;
+  final bool fill;
 
   @override
   Widget build(BuildContext context) {
@@ -353,13 +340,21 @@ class _MonthGrid extends StatelessWidget {
     return Column(
       children: [
         for (var r = 0; r < 6; r++)
-          Expanded(
-            child: Row(
-              children: [
-                for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
-              ],
-            ),
-          ),
+          fill
+              ? Expanded(
+                  child: Row(
+                    children: [
+                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
+                    ],
+                  ),
+                )
+              : Expanded(
+                  child: Row(
+                    children: [
+                      for (var c = 0; c < 7; c++) Expanded(child: cellAt(r * 7 + c)),
+                    ],
+                  ),
+                ),
       ],
     );
   }

@@ -204,8 +204,8 @@ class MonthWidgetProvider : AppWidgetProvider() {
                     when {
                         isToday -> COLOR_TODAY
                         !inMonth -> COLOR_DIM
-                        flags.contains('h') -> COLOR_OTHER
                         flags.contains('p') || sunday -> COLOR_PUBLIC
+                        flags.contains('h') -> COLOR_OTHER
                         else -> Color.WHITE
                     }
                 views.setTextColor(id, color)
@@ -223,10 +223,10 @@ class MonthWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.month_prev, shiftPi(context, widgetId, "month", -1, 3))
             views.setOnClickPendingIntent(R.id.month_next, shiftPi(context, widgetId, "month", 1, 4))
             views.setOnClickPendingIntent(R.id.month_today, shiftPi(context, widgetId, "today", 0, 5))
-            val openCalendar = WidgetStore.launch(context, "calendar")
-            views.setOnClickPendingIntent(R.id.month_root, openCalendar)
-            views.setOnClickPendingIntent(R.id.month_year, openCalendar)
-            views.setOnClickPendingIntent(R.id.month_name, openCalendar)
+            val openMonths = WidgetStore.launch(context, "months")
+            views.setOnClickPendingIntent(R.id.month_root, openMonths)
+            views.setOnClickPendingIntent(R.id.month_year, openMonths)
+            views.setOnClickPendingIntent(R.id.month_name, openMonths)
             return views
         }
     }
