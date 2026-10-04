@@ -1,14 +1,15 @@
 'use strict';
 
-const CACHE = 'khmer-calendar-web-1791080743618';
+const CACHE = 'khmer-calendar-web-1791081428445';
 const PRECACHE = [
-  "./_headers",
   "./_redirects",
   "./assets/AssetManifest.bin",
   "./assets/AssetManifest.bin.json",
   "./assets/FontManifest.json",
   "./assets/NOTICES",
   "./assets/assets/fonts/KantumruyPro.ttf",
+  "./assets/assets/icons/apple-touch-icon.png",
+  "./assets/assets/icons/icon-192.png",
   "./assets/assets/icons/icon-512.png",
   "./assets/assets/os/android.svg",
   "./assets/assets/os/linux.svg",
@@ -28,6 +29,7 @@ const PRECACHE = [
   "./assets/assets/zodiac/tiger.svg",
   "./assets/fonts/MaterialIcons-Regular.otf",
   "./assets/fonts/fallback/Roboto-Regular.ttf",
+  "./assets/packages/cupertino_icons/assets/CupertinoIcons.ttf",
   "./assets/shaders/ink_sparkle.frag",
   "./assets/shaders/stretch_effect.frag",
   "./canvaskit/canvaskit.js",
