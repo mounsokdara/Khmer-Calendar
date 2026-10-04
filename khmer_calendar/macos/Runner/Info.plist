@@ -30,6 +30,8 @@
 	<string>Used to show nearby Cambodia weather.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Used to remind you about tasks and holidays.</string>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Used to add Khmer Calendar to login items.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

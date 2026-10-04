@@ -1,8 +1,8 @@
 import 'calendar/chhankitek.dart';
 import 'i18n.dart';
 
-const calendarStartYear = 1900;
-const calendarEndYear = 2100;
+const calendarStartYear = 1;
+const calendarEndYear = 9999;
 
 int monthIndexOf(DateTime d) => (d.year - calendarStartYear) * 12 + (d.month - 1);
 
@@ -34,13 +34,6 @@ DateTime addDays(DateTime d, int n) => DateTime(d.year, d.month, d.day + n);
 
 int daysInMonth(DateTime d) => DateTime(d.year, d.month + 1, 0).day;
 
-DateTime addMonths(DateTime d, int n) {
-  final x = DateTime(d.year, d.month + n, 1);
-  final day = d.day.clamp(1, daysInMonth(x));
-  return DateTime(x.year, x.month, day);
-}
-
-bool sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 bool sameMonth(DateTime a, DateTime b) => a.year == b.year && a.month == b.month;
 
 List<DateTime> monthGrid(DateTime month, int weekStartsOn) {

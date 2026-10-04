@@ -7,7 +7,6 @@ class NetStatus {
   static final ValueNotifier<bool> online = ValueNotifier(true);
   static StreamSubscription<List<ConnectivityResult>>? _sub;
 
-  static bool get isOnline => online.value;
   static bool get isOffline => !online.value;
 
   static bool _up(List<ConnectivityResult> r) => r.any((x) => x != ConnectivityResult.none);

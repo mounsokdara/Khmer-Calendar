@@ -105,7 +105,23 @@ List<Observance> senKantongOf(int year) {
   return list;
 }
 
+// The store replaces `events` with a new list on every change (never mutates
+// it in place), so list identity is a cheap and safe cache key.
+List<CalendarEvent>? _eventObsSource;
+List<Observance> _eventObsCached = const [];
+List<CalendarEvent>? _monthObsSource;
+final _monthObsCache = <int, List<Observance>>{};
+
 List<Observance> _eventObservances(List<CalendarEvent> events) {
+  if (events.isEmpty) return const [];
+  if (!identical(events, _eventObsSource)) {
+    _eventObsSource = events;
+    _eventObsCached = _buildEventObservances(events);
+  }
+  return _eventObsCached;
+}
+
+List<Observance> _buildEventObservances(List<CalendarEvent> events) {
   final out = <Observance>[];
   for (final n in events) {
     if (n.date.isEmpty) {
@@ -152,6 +168,7 @@ int _kindRank(Kind k) => k == Kind.holiday ? 0 : k == Kind.sil ? 1 : 2;
 String holidayTypeLabel(HolidayType type, Lang lang) {
   if (type == HolidayType.public) return t(lang, 'holidayPublic');
   if (type == HolidayType.religious) return t(lang, 'holidayReligious');
+  if (type == HolidayType.international) return t(lang, 'holidayInternational');
   return t(lang, 'holidayTraditional');
 }
 
@@ -216,9 +233,16 @@ List<Observance> yearObservances(int year, [List<CalendarEvent> events = const [
     rangeObservances(DateTime(year, 1, 1), DateTime(year, 12, 31), events);
 
 List<Observance> monthObservances(DateTime month, List<CalendarEvent> events) {
-  final start = DateTime(month.year, month.month, 1);
-  final end = DateTime(month.year, month.month + 1, 0);
-  return rangeObservances(start, end, events);
+  if (!identical(events, _monthObsSource)) {
+    _monthObsSource = events;
+    _monthObsCache.clear();
+  }
+  final key = month.year * 12 + month.month - 1;
+  return _monthObsCache[key] ??= () {
+    final start = DateTime(month.year, month.month, 1);
+    final end = DateTime(month.year, month.month + 1, 0);
+    return List<Observance>.unmodifiable(rangeObservances(start, end, events));
+  }();
 }
 
 List<Observance> observancesOn(String iso, List<CalendarEvent> events) {
@@ -262,20 +286,41 @@ String lunarLabel(String iso, Lang lang) {
 String colorKind(Observance o) {
   if (o.kind == Kind.sil) return 'sil';
   if (o.kind == Kind.event) return 'event';
-  return o.holidayType == HolidayType.public ? 'sunday' : 'holiday';
+  if (o.holidayType == HolidayType.public) return 'sunday';
+  return 'holiday';
 }
 
 bool isPublicHoliday(String iso) => holidaysOn(iso).any((h) => h.type == HolidayType.public);
 
+bool isObservanceHoliday(String iso) {
+  if (holidaysOn(iso).any(
+    (h) =>
+        h.type == HolidayType.religious ||
+        h.type == HolidayType.traditional ||
+        h.type == HolidayType.international,
+  )) {
+    return true;
+  }
+  final y = fromIso(iso).year;
+  return kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso);
+}
+
 String dayTone(String iso, bool inMonth) {
   if (!inMonth) return 'muted';
   final d = fromIso(iso);
-  if (d.weekday % 7 == 0 || isPublicHoliday(iso)) return 'sunday';
-  final info = dayInfo(iso);
-  if ((info.holidays != null && info.holidays!.isNotEmpty) || holidaysOn(iso).isNotEmpty) return 'holiday';
-  final y = d.year;
-  if (kanBenOf(y).any((o) => o.date == iso) || senKantongOf(y).any((o) => o.date == iso)) return 'holiday';
+  if (isPublicHoliday(iso)) return 'sunday';
+  if (isObservanceHoliday(iso)) return 'holiday';
+  if (d.weekday % 7 == 0) return 'sunday';
   return 'default';
 }
 
-bool hasDayMark(String iso, List<CalendarEvent> events) => events.any((e) => e.date == iso);
+List<CalendarEvent>? _markSource;
+Set<String> _markDates = const {};
+
+bool hasDayMark(String iso, List<CalendarEvent> events) {
+  if (!identical(events, _markSource)) {
+    _markSource = events;
+    _markDates = {for (final e in events) e.date};
+  }
+  return _markDates.contains(iso);
+}

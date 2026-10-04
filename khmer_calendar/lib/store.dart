@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'custom_sound.dart';
 import 'dates.dart';
 import 'i18n.dart';
+import 'sounds.dart';
 import 'theme.dart';
 
 class CalendarEvent {
@@ -79,7 +81,14 @@ class CalendarEvent {
       );
 }
 
-enum TabId { today, months, events, weather, more }
+enum TabId { today, calendar, events, weather, more }
+
+/// Calendar zoom levels, from most zoomed-out to most zoomed-in.
+const calViewIds = ['years', 'month', 'monthFull', 'week'];
+
+class RouterTick extends ChangeNotifier {
+  void bump() => notifyListeners();
+}
 
 const _legacyDefaultCities = ['phnom-penh', 'banteay-meanchey', 'kampong-cham', 'kratie'];
 
@@ -98,21 +107,27 @@ class AppStore extends ChangeNotifier {
   String langPref = 'auto';
   Lang lang = deviceLang();
   bool setupDone = false;
-  TabId lastTab = TabId.months;
+  TabId lastTab = TabId.calendar;
   String lastEventsPane = 'holidays';
+  String calView = 'month';
   List<String> weatherCities = [];
   bool installed = false;
   bool notifyOn = false;
   bool backgroundOn = false;
   bool locationOn = false;
   bool autoLaunchOn = false;
-  bool notifyEvents = true;
-  bool notifyHolidays = true;
   bool notifyTasks = true;
+  bool notifyDaily = false;
+  bool notifySil = true;
+  bool notifyPublic = true;
+  bool notifyOthers = true;
   int weekStartsOn = 1;
+  String wheelSound = defaultWheelSoundId;
+  String? wheelSoundName;
   bool hydrated = false;
   String? pendingRoute;
   Timer? _persistDebounce;
+  final routerTick = RouterTick();
 
   Brightness get brightness {
     if (theme == 'light') return Brightness.light;
@@ -149,9 +164,11 @@ class AppStore extends ChangeNotifier {
         setupDone = p['setupDone'] as bool? ?? false;
         final tab = p['lastTab'] as String?;
         if (tab != null) {
-          lastTab = TabId.values.firstWhere((t) => t.name == tab, orElse: () => TabId.months);
+          lastTab = TabId.values.firstWhere((t) => t.name == tab, orElse: () => TabId.calendar);
         }
         lastEventsPane = p['lastEventsPane'] as String? ?? 'holidays';
+        final view = p['calView'] as String?;
+        calView = calViewIds.contains(view) ? view! : 'month';
         weatherCities = ((p['weatherCities'] as List?) ?? []).cast<String>();
         if (listEquals(weatherCities, _legacyDefaultCities)) weatherCities = [];
         installed = p['installed'] as bool? ?? false;
@@ -159,25 +176,39 @@ class AppStore extends ChangeNotifier {
         backgroundOn = p['backgroundOn'] as bool? ?? false;
         locationOn = p['locationOn'] as bool? ?? false;
         autoLaunchOn = p['autoLaunchOn'] as bool? ?? false;
-        notifyEvents = p['notifyEvents'] as bool? ?? true;
-        notifyHolidays = p['notifyHolidays'] as bool? ?? true;
         notifyTasks = p['notifyTasks'] as bool? ?? true;
+        notifyDaily = p['notifyDaily'] as bool? ?? false;
+        notifySil = p['notifySil'] as bool? ?? true;
+        final oldHolidays = p['notifyHolidays'] as bool? ?? true;
+        notifyPublic = p['notifyPublic'] as bool? ?? oldHolidays;
+        notifyOthers = p['notifyOthers'] as bool? ?? p['notifyReligious'] as bool? ?? oldHolidays;
         weekStartsOn = p['weekStartsOn'] as int? ?? 1;
+        final ws = p['wheelSound'] as String?;
+        if (ws != null) {
+          final config = await WheelConfig.load();
+          wheelSound = config.sound(ws) != null ? ws : defaultWheelSoundId;
+        } else {
+          wheelSound = defaultWheelSoundId;
+        }
+        wheelSoundName = p['wheelSoundName'] as String?;
       }
     } catch (_) {
-      /* first run */
+
     }
+    AppSounds.instance.setWheel(wheelSound);
     lang = resolveLang(langPref);
     IntlHelper.localeName = lang == Lang.km ? 'km' : 'en';
     final wait = 720 - DateTime.now().difference(started).inMilliseconds;
     if (wait > 0) await Future<void>.delayed(Duration(milliseconds: wait));
     hydrated = true;
     notifyListeners();
+    routerTick.bump();
   }
 
   Future<void> persist() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
       'khmer-calendar-v4',
       jsonEncode({
         'events': events.map((e) => e.toJson()).toList(),
@@ -193,18 +224,24 @@ class AppStore extends ChangeNotifier {
         'setupDone': setupDone,
         'lastTab': lastTab.name,
         'lastEventsPane': lastEventsPane,
+        'calView': calView,
         'weatherCities': weatherCities,
         'installed': installed,
         'notifyOn': notifyOn,
         'backgroundOn': backgroundOn,
         'locationOn': locationOn,
         'autoLaunchOn': autoLaunchOn,
-        'notifyEvents': notifyEvents,
-        'notifyHolidays': notifyHolidays,
         'notifyTasks': notifyTasks,
+        'notifyDaily': notifyDaily,
+        'notifySil': notifySil,
+        'notifyPublic': notifyPublic,
+        'notifyOthers': notifyOthers,
         'weekStartsOn': weekStartsOn,
+        'wheelSound': wheelSound,
+        'wheelSoundName': wheelSoundName,
       }),
-    );
+      );
+    } catch (_) {}
   }
 
   void _touch({bool save = true}) {
@@ -244,11 +281,6 @@ class AppStore extends ChangeNotifier {
     _touch(save: false);
   }
 
-  void setSelected(String iso) {
-    selected = iso;
-    _touch(save: false);
-  }
-
   void goToDate(String iso) {
     cursor = iso;
     selected = iso;
@@ -271,9 +303,9 @@ class AppStore extends ChangeNotifier {
       case 'day':
         lastTab = TabId.today;
         route = '/day';
-      case 'months':
-        lastTab = TabId.months;
-        route = '/months';
+      case 'calendar':
+        lastTab = TabId.calendar;
+        route = '/calendar';
       case 'events':
         lastTab = TabId.events;
         route = '/events';
@@ -291,6 +323,7 @@ class AppStore extends ChangeNotifier {
     }
     if (route != null) pendingRoute = route;
     _touch();
+    routerTick.bump();
   }
 
   void setTheme(String v) {
@@ -342,8 +375,10 @@ class AppStore extends ChangeNotifier {
   }
 
   void setSetupDone(bool v) {
+    if (setupDone == v) return;
     setupDone = v;
     _touch();
+    routerTick.bump();
   }
 
   void setLastTab(TabId v) {
@@ -353,6 +388,12 @@ class AppStore extends ChangeNotifier {
 
   void setLastEventsPane(String v) {
     lastEventsPane = v;
+    _touch();
+  }
+
+  void setCalView(String v) {
+    if (!calViewIds.contains(v) || calView == v) return;
+    calView = v;
     _touch();
   }
 
@@ -369,43 +410,71 @@ class AppStore extends ChangeNotifier {
   }
 
   void setNotifyOn(bool v) {
+    if (notifyOn == v) return;
     notifyOn = v;
-    notifyListeners();
-    persist();
+    _touch();
   }
 
   void setBackgroundOn(bool v) {
+    if (backgroundOn == v) return;
     backgroundOn = v;
     _touch();
   }
 
   void setLocationOn(bool v) {
+    if (locationOn == v) return;
     locationOn = v;
     _touch();
   }
 
   void setAutoLaunchOn(bool v) {
+    if (autoLaunchOn == v) return;
     autoLaunchOn = v;
     _touch();
   }
 
-  void setNotifyEvents(bool v) {
-    notifyEvents = v;
+  void setNotifyPublic(bool v) {
+    if (notifyPublic == v) return;
+    notifyPublic = v;
     _touch();
   }
 
-  void setNotifyHolidays(bool v) {
-    notifyHolidays = v;
+  void setNotifyOthers(bool v) {
+    if (notifyOthers == v) return;
+    notifyOthers = v;
     _touch();
   }
 
   void setNotifyTasks(bool v) {
+    if (notifyTasks == v) return;
     notifyTasks = v;
+    _touch();
+  }
+
+  void setNotifyDaily(bool v) {
+    if (notifyDaily == v) return;
+    notifyDaily = v;
+    _touch();
+  }
+
+  void setNotifySil(bool v) {
+    if (notifySil == v) return;
+    notifySil = v;
     _touch();
   }
 
   void setWeekStartsOn(int v) {
     weekStartsOn = v;
+    _touch();
+  }
+
+
+
+  void setWheelSound(String id, {String? customName}) {
+    final normalized = id.trim();
+    wheelSound = normalized.isEmpty ? wheelSoundNone : normalized;
+    if (customName != null) wheelSoundName = customName;
+    AppSounds.instance.setWheel(wheelSound);
     _touch();
   }
 
@@ -440,16 +509,23 @@ class AppStore extends ChangeNotifier {
     highlightColor = '#FF3B30';
     highlightAlpha = 0.22;
     lastEventsPane = 'holidays';
+    calView = 'month';
     weatherCities = [];
     installed = false;
     notifyOn = false;
     backgroundOn = false;
     locationOn = false;
     autoLaunchOn = false;
-    notifyEvents = true;
-    notifyHolidays = true;
     notifyTasks = true;
+    notifyDaily = false;
+    notifySil = true;
+    notifyPublic = true;
+    notifyOthers = true;
     weekStartsOn = 1;
+    wheelSound = defaultWheelSoundId;
+    wheelSoundName = null;
+    AppSounds.instance.setWheel(defaultWheelSoundId);
+    unawaited(clearCustomSound());
     _touch();
   }
 }

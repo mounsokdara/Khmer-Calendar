@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -6,10 +7,8 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
-import 'calendar/chhankitek.dart';
-import 'dates.dart';
-import 'i18n.dart';
 import 'notify_stub.dart' if (dart.library.html) 'notify_web.dart' as webnotify;
+import 'notify/kinds.dart';
 import 'store.dart';
 
 final _plugin = FlutterLocalNotificationsPlugin();
@@ -18,36 +17,81 @@ var _bound = false;
 Timer? _syncDebounce;
 Timer? _webTick;
 final _fired = <String>{};
-var _webShots = <_Shot>[];
+var _webShots = <ReminderShot>[];
 String _reminderSig = '';
 
-class _Shot {
-  const _Shot(this.key, this.title, this.body, this.when);
-  final String key;
-  final String title;
-  final String body;
-  final DateTime when;
-}
 
-const _details = NotificationDetails(
-  android: AndroidNotificationDetails(
-    'khmer_reminders',
-    'Reminders',
-    channelDescription: 'Task and holiday reminders',
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: 'ic_stat_notify',
-  ),
-  iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-  macOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-  linux: LinuxNotificationDetails(),
-);
+
+NotificationDetails _detailsFor(String channel) {
+  final android = switch (channel) {
+    'public' => const AndroidNotificationDetails(
+        'khmer_public',
+        'Public holidays',
+        channelDescription: 'Public holiday alerts',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'religious' || 'others' => const AndroidNotificationDetails(
+        'khmer_religious',
+        'Other holidays',
+        channelDescription: 'Alerts for other holidays',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+        color: Color(0xFF1E88E5),
+      ),
+    'tasks' => const AndroidNotificationDetails(
+        'khmer_tasks',
+        'Tasks',
+        channelDescription: 'Task reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'sil' => const AndroidNotificationDetails(
+        'khmer_sil',
+        'Silas days',
+        channelDescription: 'Silas day alerts',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+    'daily' => const AndroidNotificationDetails(
+        'khmer_daily',
+        'Daily reminder',
+        channelDescription: 'Morning calendar recap',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        icon: 'ic_stat_notify',
+      ),
+    _ => const AndroidNotificationDetails(
+        'khmer_tasks',
+        'Tasks',
+        channelDescription: 'Task reminders',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: 'ic_stat_notify',
+      ),
+  };
+  return NotificationDetails(
+    android: android,
+    iOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+    macOS: const DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+    linux: const LinuxNotificationDetails(),
+  );
+}
 
 void bindReminderSync(AppStore store) {
   if (_bound) return;
   _bound = true;
   store.addListener(() {
-    if (!store.notifyOn) return;
+    final sig = _reminderSignature(store);
+    if (store.notifyOn) {
+      if (sig == _reminderSig) return;
+    } else if (_reminderSig.isEmpty) {
+      return;
+    }
     _syncDebounce?.cancel();
     _syncDebounce = Timer(const Duration(milliseconds: 400), () => syncReminders(store));
   });
@@ -151,64 +195,14 @@ Future<void> cancelAllReminders() async {
   } catch (_) {}
 }
 
-List<_Shot> _collect(AppStore store) {
+List<ReminderShot> _collect(AppStore store) {
   final now = DateTime.now();
-  final lang = store.lang;
-  final prefix = t(lang, 'reminderPrefix');
-  final out = <_Shot>[];
-
-  if (store.notifyTasks) {
-    for (final e in store.events) {
-      if (e.done == true) continue;
-      if ((e.reminderDate ?? '').isEmpty) continue;
-      final day = fromIso(e.reminderDate!);
-      var hour = 9;
-      var minute = 0;
-      final tm = e.reminderTime ?? '';
-      if (tm.contains(':')) {
-        final p = tm.split(':');
-        hour = int.tryParse(p[0]) ?? 9;
-        minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
-      }
-      final when = DateTime(day.year, day.month, day.day, hour, minute);
-      out.add(_Shot('task-${e.id}-$when', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, when));
-    }
-  }
-
-  if (store.notifyEvents) {
-    for (final e in store.events) {
-      if (e.done == true) continue;
-      if (e.date.isEmpty) continue;
-      if (store.notifyTasks && (e.reminderDate ?? '') == e.date) continue;
-      final day = fromIso(e.date);
-      var hour = 9;
-      var minute = 0;
-      final tm = e.startTime ?? '';
-      if (e.allDay != true && tm.contains(':')) {
-        final p = tm.split(':');
-        hour = int.tryParse(p[0]) ?? 9;
-        minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
-      }
-      final when = DateTime(day.year, day.month, day.day, hour, minute);
-      out.add(_Shot('event-${e.id}-$when', '$prefix: ${e.title}', (e.notes ?? '').isEmpty ? e.title : e.notes!, when));
-    }
-  }
-
-  if (store.notifyHolidays) {
-    for (final y in {now.year, now.year + 1}) {
-      List<Holiday> list;
-      try {
-        list = holidaysOfYear(y);
-      } catch (_) {
-        continue;
-      }
-      for (final h in list) {
-        final day = fromIso(h.date);
-        final title = lang == Lang.en ? h.nameEn : h.nameKm;
-        final when = DateTime(day.year, day.month, day.day, 8, 0);
-        out.add(_Shot('hol-${h.date}', '$prefix: $title', t(lang, 'kindHoliday'), when));
-      }
-    }
+  final skipNative = androidNativeAlarms;
+  final out = <ReminderShot>[];
+  for (final kind in reminderKinds) {
+    if (!kind.enabled(store)) continue;
+    if (skipNative && kind.nativeAndroid) continue;
+    out.addAll(kind.collect(store, now));
   }
   return out;
 }
@@ -216,28 +210,29 @@ List<_Shot> _collect(AppStore store) {
 void _fireWebDue() {
   if (!webnotify.isBrowserNotificationGranted()) return;
   final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day);
   for (final p in _webShots) {
     if (_fired.contains(p.key)) continue;
-    final late = now.difference(p.when);
-    if (late.isNegative && late.abs() > const Duration(seconds: 15)) continue;
-    if (late > const Duration(minutes: 2)) continue;
+    if (p.when.isAfter(now.add(const Duration(seconds: 20)))) continue;
+    if (p.when.isBefore(todayStart)) continue;
     _fired.add(p.key);
-    webnotify.showBrowserNotification(p.title, p.body, tag: p.key);
+    webnotify.showBrowserNotification(p.title, p.resolveBody(), tag: p.key);
   }
 }
 
-void _armWeb(List<_Shot> shots) {
+void _armWeb(List<ReminderShot> shots) {
   _webShots = shots;
   _webTick?.cancel();
   _webTick = Timer.periodic(const Duration(seconds: 15), (_) => _fireWebDue());
   _fireWebDue();
 }
 
-Future<void> _scheduleNative(_Shot shot, int id, bool exact) async {
+Future<void> _scheduleNative(ReminderShot shot, int id, bool exact) async {
   if (shot.when.isBefore(DateTime.now())) return;
   final when = tz.TZDateTime.from(shot.when, tz.local);
+  final body = shot.resolveBody();
   Future<void> run(AndroidScheduleMode mode) {
-    return _plugin.zonedSchedule(id, shot.title, shot.body, when, _details, androidScheduleMode: mode);
+    return _plugin.zonedSchedule(id, shot.title, body, when, _detailsFor(shot.channel), androidScheduleMode: mode);
   }
 
   try {
@@ -254,6 +249,18 @@ Future<void> _scheduleNative(_Shot shot, int id, bool exact) async {
   }
 }
 
+String _reminderSignature(AppStore store) =>
+    '${store.notifyOn}|${store.notifyDaily}|${store.notifySil}|${store.notifyPublic}|${store.notifyOthers}|${store.notifyTasks}|${store.backgroundOn}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.endDate}:${e.startTime}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+
+List<ReminderShot> _pluginPending(List<ReminderShot> shots) {
+  final now = DateTime.now();
+  final future = shots.where((s) => s.when.isAfter(now)).toList()..sort((a, b) => a.when.compareTo(b.when));
+  if (defaultTargetPlatform != TargetPlatform.iOS) return future;
+  const iosPendingCap = 60;
+  if (future.length <= iosPendingCap) return future;
+  return future.sublist(0, iosPendingCap);
+}
+
 Future<void> syncReminders(AppStore store) async {
   if (!_ready) {
     if (store.notifyOn) await initReminderEngine();
@@ -264,10 +271,10 @@ Future<void> syncReminders(AppStore store) async {
     await cancelAllReminders();
     return;
   }
-  final sig =
-      '${store.notifyEvents}|${store.notifyHolidays}|${store.notifyTasks}|${store.lang}|${store.events.map((e) => '${e.id}:${e.date}:${e.reminderDate}:${e.reminderTime}:${e.done}').join(',')}';
+  final sig = _reminderSignature(store);
   if (sig == _reminderSig) return;
   _reminderSig = sig;
+  if (!androidNativeAlarms) await ensureNotifyLists();
   final shots = _collect(store);
   if (kIsWeb) {
     _armWeb(shots);
@@ -277,7 +284,7 @@ Future<void> syncReminders(AppStore store) async {
     await _plugin.cancelAll();
   } catch (_) {}
   var id = 1;
-  for (final shot in shots) {
+  for (final shot in _pluginPending(shots)) {
     await _scheduleNative(shot, id++, store.backgroundOn);
   }
 }
