@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE = 'khmer-calendar-web-1791080253582';
+const CACHE = 'khmer-calendar-web-1791080743618';
 const PRECACHE = [
   "./_headers",
   "./_redirects",
@@ -9,8 +9,6 @@ const PRECACHE = [
   "./assets/FontManifest.json",
   "./assets/NOTICES",
   "./assets/assets/fonts/KantumruyPro.ttf",
-  "./assets/assets/icons/apple-touch-icon.png",
-  "./assets/assets/icons/icon-192.png",
   "./assets/assets/icons/icon-512.png",
   "./assets/assets/os/android.svg",
   "./assets/assets/os/linux.svg",
