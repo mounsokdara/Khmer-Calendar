@@ -108,6 +108,11 @@ jobs:
           cp dist/linux/KhmerCalendar-linux.tar.gz release-files/KhmerCalendar-linux.tar.gz
           cp dist/project/KhmerCalendar-project.zip release-files/KhmerCalendar-project.zip
           cp dist/web/KhmerCalendar-web.zip release-files/KhmerCalendar-web.zip
+          # Microsoft Store package (only built when the Store identity variables are set).
+          # Unsigned on purpose: it is for upload to Partner Center, not for double-click install.
+          if [ -f dist/windows-msix/KhmerCalendar.msix ]; then
+            cp dist/windows-msix/KhmerCalendar.msix release-files/KhmerCalendar-windows-store.msix
+          fi
           ls -lh release-files
       - name: Publish GitHub Release
         env:
@@ -120,12 +125,7 @@ jobs:
           echo "Publishing ${TAG}"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
-            release-files/KhmerCalendar.apk \
-            release-files/KhmerCalendar-windows.zip \
-            release-files/KhmerCalendar.dmg \
-            release-files/KhmerCalendar-linux.tar.gz \
-            release-files/KhmerCalendar-project.zip \
-            release-files/KhmerCalendar-web.zip \
+            release-files/* \
             --target "$GITHUB_SHA" \
             --title "Khmer Calendar $TAG" \
             --notes-file "$NOTES_FILE" \

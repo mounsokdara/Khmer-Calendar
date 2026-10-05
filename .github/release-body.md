@@ -21,3 +21,4 @@ Pinch to (zoom in/out) to change view type without need to click a button.
 - A lightweight Apk files
 - Fixed Windows app cant be open due to missing dll
 - Windows app now has the Khmer Calendar icon
+- Windows may show an "Unknown publisher" prompt. Click More info, then Run anyway
