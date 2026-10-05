@@ -75,9 +75,20 @@ class _ShellBody extends StatelessWidget {
       );
     }
 
+    // Local Overlay lives inside the Scaffold body so the bottom NavigationBar
+    // (a later sibling in Scaffold's stack) paints above snackbars.
     return Scaffold(
       body: SafeArea(
-        child: SnackBarAvoid(barKey: AppShell.navBarKey, child: child),
+        child: Overlay(
+          initialEntries: [
+            OverlayEntry(
+              builder: (context) => SnackBarAvoid(
+                barKey: AppShell.navBarKey,
+                child: child,
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: KeyedSubtree(
         key: AppShell.navBarKey,

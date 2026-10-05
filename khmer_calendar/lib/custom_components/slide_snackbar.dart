@@ -41,7 +41,11 @@ class SlideSnackBar {
   }) {
     hide();
 
-    final OverlayState overlay = Overlay.of(context, rootOverlay: true);
+    // Prefer the nearest Overlay (the shell body one) so the bottom nav bar,
+    // which is a later sibling in Scaffold's stack, stays above the snackbar.
+    // Fall back to the root overlay for routes outside the shell.
+    final bool inShell = SnackBarAvoid.maybeOf(context) != null;
+    final OverlayState overlay = Overlay.of(context, rootOverlay: !inShell);
     final double bottomInset = _barInset(context, overlay);
 
     late final OverlayEntry entry;
