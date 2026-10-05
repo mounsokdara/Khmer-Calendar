@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Wrap the content of a screen that has a bottom bar (e.g. the shell's
 /// NavigationBar). Snackbars shown from inside this subtree sit above that bar
@@ -70,17 +71,24 @@ class SlideSnackBar {
     overlay.insert(entry);
   }
 
-  /// Live height from the bottom of [host] up to the top of the bottom bar.
-  /// Recomputed whenever the snackbar rebuilds so resize / orientation change
-  /// cannot leave a stale inset that overlaps the nav.
-  static double barInset(GlobalKey? barKey, RenderObject? host) {
-    if (barKey == null || host is! RenderBox) return 0;
-    final RenderObject? bar = barKey.currentContext?.findRenderObject();
-    if (bar is! RenderBox) return 0;
-    if (!bar.attached || !bar.hasSize || !host.attached || !host.hasSize) return 0;
-    final double top = bar.localToGlobal(Offset.zero, ancestor: host).dy;
-    final double inset = host.size.height - top;
-    return inset > 0 ? inset : 0;
+  /// Distance from the bottom of the screen to the top of the nav bar.
+  /// Uses global coordinates so the overlay does not need to be an ancestor of
+  /// the bar (it never is). Returns 0 when the bar is missing or not laid out.
+  static double barInset(GlobalKey? barKey) {
+    if (barKey == null) return 0;
+    final RenderObject? barRO = barKey.currentContext?.findRenderObject();
+    if (barRO is! RenderBox || !barRO.attached || !barRO.hasSize) return 0;
+
+    final double barTop = barRO.localToGlobal(Offset.zero).dy;
+    final double screenBottom =
+        WidgetsBinding.instance.platformDispatcher.views.first.physicalSize.height /
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    // Prefer the view's logical height; fall back to bar bottom if needed.
+    final double inset = screenBottom - barTop;
+    if (inset.isFinite && inset > 0) return inset;
+
+    // Fallback: bar's own height when global math is unavailable.
+    return barRO.size.height;
   }
 }
 
@@ -146,20 +154,36 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
   Timer? _timer;
   bool _dismissing = false;
   bool _dragging = false;
+  double _navInset = 0;
 
   @override
   void initState() {
     super.initState();
     _controller.forward();
     _restartTimer();
+    // Measure after the first frame so the nav bar has a size, then again
+    // whenever the metrics change (rotate / window resize).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _remeasure());
+    WidgetsBinding.instance.addObserver(_metricsObserver);
   }
+
+  late final _MetricsObserver _metricsObserver = _MetricsObserver(_remeasure);
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(_metricsObserver);
     _timer?.cancel();
     _controller.dispose();
     _dragController.dispose();
     super.dispose();
+  }
+
+  void _remeasure() {
+    if (!mounted) return;
+    final double next = SlideSnackBar.barInset(widget.barKey);
+    if (next != _navInset) {
+      setState(() => _navInset = next);
+    }
   }
 
   void _restartTimer() {
@@ -241,10 +265,9 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
     final ColorScheme scheme = theme.colorScheme;
     final bool floating = widget.behavior == SnackBarBehavior.floating;
 
-    // Recompute on every build so window / orientation resize cannot leave a
-    // stale bottom padding that overlaps the navigation bar.
-    final RenderObject? host = context.findRenderObject();
-    final double navInset = SlideSnackBar.barInset(widget.barKey, host);
+    // Always re-read so a layout pass after resize picks up the new nav height.
+    final double measured = SlideSnackBar.barInset(widget.barKey);
+    final double navInset = measured > 0 ? measured : _navInset;
     final double safeBottom = MediaQuery.paddingOf(context).bottom;
     final double bottomPad =
         (floating ? 16.0 : 0.0) + (navInset > safeBottom ? navInset : safeBottom);
@@ -388,5 +411,17 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
         );
       },
     );
+  }
+}
+
+/// Listens for view metric changes (rotate, window resize) and remeasures.
+class _MetricsObserver with WidgetsBindingObserver {
+  _MetricsObserver(this.onChange);
+  final VoidCallback onChange;
+
+  @override
+  void didChangeMetrics() {
+    // Wait one frame so the nav bar has its new layout before measuring.
+    SchedulerBinding.instance.addPostFrameCallback((_) => onChange());
   }
 }
