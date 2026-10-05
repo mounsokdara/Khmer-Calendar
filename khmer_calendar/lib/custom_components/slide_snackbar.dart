@@ -2,6 +2,23 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+/// Wrap the content of a screen that has a bottom bar (e.g. the shell's
+/// NavigationBar). Snackbars shown from inside this subtree sit above that bar
+/// instead of covering it. Screens pushed on top of the shell are outside the
+/// subtree, so they are unaffected.
+class SnackBarAvoid extends InheritedWidget {
+  const SnackBarAvoid({super.key, required this.barKey, required super.child});
+
+  /// Key attached to the bottom bar widget.
+  final GlobalKey barKey;
+
+  static SnackBarAvoid? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<SnackBarAvoid>();
+
+  @override
+  bool updateShouldNotify(SnackBarAvoid oldWidget) => barKey != oldWidget.barKey;
+}
+
 class SlideSnackBar {
   SlideSnackBar._();
 
@@ -25,6 +42,7 @@ class SlideSnackBar {
     hide();
 
     final OverlayState overlay = Overlay.of(context, rootOverlay: true);
+    final double bottomInset = _barInset(context, overlay);
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
@@ -32,6 +50,7 @@ class SlideSnackBar {
         return _SlideSnackBar(
           message: message,
           behavior: behavior,
+          bottomInset: bottomInset,
           showCloseIcon: showCloseIcon,
           actionLabel: actionLabel,
           onActionPressed: onActionPressed,
@@ -50,12 +69,27 @@ class SlideSnackBar {
     _entry = entry;
     overlay.insert(entry);
   }
+
+  /// Height from the bottom of the screen up to the top of the bottom bar that
+  /// [SnackBarAvoid] points at (0 when there is none, e.g. wide layouts).
+  static double _barInset(BuildContext context, OverlayState overlay) {
+    final SnackBarAvoid? avoid = SnackBarAvoid.maybeOf(context);
+    if (avoid == null) return 0;
+    final RenderObject? bar = avoid.barKey.currentContext?.findRenderObject();
+    final RenderObject? host = overlay.context.findRenderObject();
+    if (bar is! RenderBox || host is! RenderBox) return 0;
+    if (!bar.attached || !bar.hasSize || !host.attached || !host.hasSize) return 0;
+    final double top = bar.localToGlobal(Offset.zero, ancestor: host).dy;
+    final double inset = host.size.height - top;
+    return inset > 0 ? inset : 0;
+  }
 }
 
 class _SlideSnackBar extends StatefulWidget {
   const _SlideSnackBar({
     required this.message,
     required this.behavior,
+    required this.bottomInset,
     required this.showCloseIcon,
     required this.actionLabel,
     required this.onActionPressed,
@@ -66,6 +100,7 @@ class _SlideSnackBar extends StatefulWidget {
 
   final String message;
   final SnackBarBehavior behavior;
+  final double bottomInset;
   final bool showCloseIcon;
   final String? actionLabel;
   final VoidCallback? onActionPressed;
@@ -285,7 +320,9 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
                 left: floating ? 16 : 0,
                 right: floating ? 16 : 0,
                 bottom: (floating ? 16 : 0) +
-                    MediaQuery.of(context).padding.bottom,
+                    (widget.bottomInset > MediaQuery.of(context).padding.bottom
+                        ? widget.bottomInset
+                        : MediaQuery.of(context).padding.bottom),
               ),
               child: floating
                   ? Align(

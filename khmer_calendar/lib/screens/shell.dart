@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../custom_components/slide_snackbar.dart';
 import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
@@ -10,6 +11,9 @@ class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.store, required this.child});
   final AppStore store;
   final Widget child;
+
+  /// Key on the bottom NavigationBar so snackbars can sit above it.
+  static final GlobalKey navBarKey = GlobalKey(debugLabel: 'shellNavBar');
 
   static const tabs = [
     (TabId.today, '/day', Icons.today, 'navToday'),
@@ -72,18 +76,23 @@ class _ShellBody extends StatelessWidget {
     }
 
     return Scaffold(
-      body: SafeArea(child: child),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: idx,
-        onDestinationSelected: go,
-        destinations: [
-          for (final tab in AppShell.tabs)
-            NavigationDestination(
-              icon: Icon(tab.$3),
-              selectedIcon: Icon(tab.$3),
-              label: t(store.lang, tab.$4),
-            ),
-        ],
+      body: SafeArea(
+        child: SnackBarAvoid(barKey: AppShell.navBarKey, child: child),
+      ),
+      bottomNavigationBar: KeyedSubtree(
+        key: AppShell.navBarKey,
+        child: NavigationBar(
+          selectedIndex: idx,
+          onDestinationSelected: go,
+          destinations: [
+            for (final tab in AppShell.tabs)
+              NavigationDestination(
+                icon: Icon(tab.$3),
+                selectedIcon: Icon(tab.$3),
+                label: t(store.lang, tab.$4),
+              ),
+          ],
+        ),
       ),
     );
   }
