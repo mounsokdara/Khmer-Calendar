@@ -19,3 +19,5 @@ Pinch to (zoom in/out) to change view type without need to click a button.
 - Bypassed Computer Date limit
 - Fixed stackbar padding & zindex to stay behind navagtion bar
 - A lightweight Apk files
+- Fixed Windows app cant be open due to missing dll
+- Windows app now has the Khmer Calendar icon
