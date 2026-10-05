@@ -64,7 +64,7 @@ class _ShellBodyState extends State<_ShellBody> {
     if (wide) {
       // Short windows (phone in landscape, resized desktop/web window) cannot fit
       // five 72dp rail items, so the rail used to overflow and get clipped.
-      // Drop the labels when short and let the rail scroll as a last resort.
+      // Show the titles beside the icons (extended rail, 56dp rows) when short, and let the rail scroll as a last resort.
       final short = MediaQuery.sizeOf(context).height < 520;
       return Scaffold(
         body: SafeArea(
@@ -78,6 +78,8 @@ class _ShellBodyState extends State<_ShellBody> {
                       child: NavigationRail(
                         selectedIndex: idx,
                         onDestinationSelected: go,
+                        extended: short,
+                        minExtendedWidth: 180,
                         labelType: short ? NavigationRailLabelType.none : NavigationRailLabelType.all,
                         destinations: [
                           for (final tab in AppShell.tabs)
