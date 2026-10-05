@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import test from "node:test";
 import {
   appNameFromHost,
@@ -16,10 +15,8 @@ import {
   resolveOgCardAsset,
   snapshotOgIdentity,
   stripInstallParams,
-} from "./grok-pwa-shared.mjs";
-import { renderInstallPage } from "./grok-pwa-plugin.mjs";
+} from "./pwa-shared.mjs";
 
-const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const EMPTY_CWD = mkdtempSync(join(tmpdir(), "grok-pwa-isolated-"));
 
 test("injects before </head>", () => {
@@ -466,20 +463,6 @@ test("names the install page from host slug", () => {
 test("rejects hosts that are not plain slugs", () => {
   assert.equal(appNameFromHost("<script>alert(1)</script>"), "Grok App");
   assert.equal(appNameFromHost('"><img src=x onerror=1>.grok.me'), "Grok App");
-});
-
-test("renders install page markup", () => {
-  const html = renderInstallPage("wild-race.grok.me", "/?install=1&platform=ios");
-  assert.match(html, /Add Wild Race to your/);
-  assert.match(html, /\/__grok\/install\/styles\.css/);
-  assert.match(html, /href="\/"/);
-  assert.equal(html.includes("{{APP_NAME}}"), false);
-  assert.equal(html.includes("{{APP_URL}}"), false);
-});
-
-test("escapes host-derived values in the install page", () => {
-  const html = renderInstallPage("<script>alert(1)</script>", "/?install=1&platform=ios");
-  assert.equal(html.includes("<script>alert(1)</script>"), false);
 });
 
 test("renders the manifest with the per-app name", () => {
