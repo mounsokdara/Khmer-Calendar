@@ -1,0 +1,41 @@
+# Windows: build, Authenticode-sign and zip the app.
+# Runs on its own (Actions tab > Run workflow) or is called by release.yml.
+name: Windows
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - run: flutter build windows --release
+        working-directory: khmer_calendar
+        env:
+          CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
+      - name: Sign windows (Authenticode)
+        shell: pwsh
+        env:
+          PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
+          PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
+        run: ./scripts/sign-windows.ps1 -Dir khmer_calendar\build\windows\x64\runner\Release
+      - name: Pack windows
+        shell: pwsh
+        run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: KhmerCalendar-windows.zip
