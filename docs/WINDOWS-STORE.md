@@ -26,7 +26,8 @@ the Store identity is configured.
 1. Push to `main`. The **Windows** job also uploads an artifact named **windows-msix**
    (`KhmerCalendar.msix`). It is unsigned on purpose; the Store signs it.
 2. Download it and upload it in Partner Center: **Packages** in a new submission.
-3. Fill in the Store listing (description, screenshots, age rating, privacy policy URL).
+3. Fill in the Store listing (description, screenshots, age rating). Privacy policy URL:
+   `https://github.com/mounsokdara/Khmer-Calendar/blob/main/PRIVACY.md`
 4. Submit for certification. After approval the Store gives users updates automatically.
 
 ## Notes

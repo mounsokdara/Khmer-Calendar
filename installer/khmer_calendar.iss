@@ -25,6 +25,7 @@ DefaultDirName={autopf}\Khmer Calendar
 DefaultGroupName=Khmer Calendar
 DisableProgramGroupPage=yes
 LicenseFile={#SourcePath}\..\LICENSE
+InfoBeforeFile={#SourcePath}\PRIVACY.txt
 SetupIconFile={#SourcePath}\..\khmer_calendar\windows\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\khmer_calendar.exe
 OutputDir={#OutDir}
@@ -49,7 +50,14 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 [Icons]
 Name: "{group}\Khmer Calendar"; Filename: "{app}\khmer_calendar.exe"
 Name: "{group}\{cm:UninstallProgram,Khmer Calendar}"; Filename: "{uninstallexe}"
+Name: "{group}\Privacy Policy"; Filename: "{app}\Privacy Policy.url"
 Name: "{autodesktop}\Khmer Calendar"; Filename: "{app}\khmer_calendar.exe"; Tasks: desktopicon
+
+[INI]
+Filename: "{app}\Privacy Policy.url"; Section: "InternetShortcut"; Key: "URL"; String: "https://github.com/mounsokdara/Khmer-Calendar/blob/main/PRIVACY.md"
+
+[UninstallDelete]
+Type: files; Name: "{app}\Privacy Policy.url"
 
 [Run]
 Filename: "{app}\khmer_calendar.exe"; Description: "{cm:LaunchProgram,Khmer Calendar}"; Flags: nowait postinstall skipifsilent

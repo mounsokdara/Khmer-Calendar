@@ -52,6 +52,13 @@ class AboutPage extends StatelessWidget {
                     onTap: () => context.push('/license'),
                   ),
                   SegmentedTile(
+                    leading: const Icon(Icons.privacy_tip_outlined),
+                    title: t(lang, 'privacyPolicy'),
+                    subtitle: t(lang, 'privacyPolicySub'),
+                    trailing: const Icon(Icons.open_in_new, size: 18),
+                    onTap: () => launchUrl(Uri.parse(appPrivacyUrl), mode: LaunchMode.externalApplication),
+                  ),
+                  SegmentedTile(
                     leading: const Icon(Icons.code),
                     title: t(lang, 'sourceCode'),
                     subtitle: appSourceUrl,

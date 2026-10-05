@@ -428,6 +428,7 @@ const appBuildNumber = 4;
 const appAuthor = 'Moun Sokdara';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
 const appWebsiteUrl = 'https://khmercalendar.pages.dev';
+const appPrivacyUrl = 'https://github.com/mounsokdara/Khmer-Calendar/blob/main/PRIVACY.md';
 
 const mitLicenseText = '''MIT License
 
