@@ -12,9 +12,6 @@ class AppShell extends StatelessWidget {
   final AppStore store;
   final Widget child;
 
-  /// Key on the bottom NavigationBar so snackbars can sit above it.
-  static final GlobalKey navBarKey = GlobalKey(debugLabel: 'shellNavBar');
-
   static const tabs = [
     (TabId.today, '/day', Icons.today, 'navToday'),
     (TabId.calendar, '/calendar', Icons.calendar_month, 'navCalendar'),
@@ -68,7 +65,7 @@ class _ShellBody extends StatelessWidget {
                 ],
               ),
               const VerticalDivider(width: 1),
-              Expanded(child: child),
+              Expanded(child: SlideSnackBarHost(child: child)),
             ],
           ),
         ),
@@ -77,22 +74,19 @@ class _ShellBody extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: SnackBarAvoid(barKey: AppShell.navBarKey, child: child),
+        child: SlideSnackBarHost(child: child),
       ),
-      bottomNavigationBar: KeyedSubtree(
-        key: AppShell.navBarKey,
-        child: NavigationBar(
-          selectedIndex: idx,
-          onDestinationSelected: go,
-          destinations: [
-            for (final tab in AppShell.tabs)
-              NavigationDestination(
-                icon: Icon(tab.$3),
-                selectedIcon: Icon(tab.$3),
-                label: t(store.lang, tab.$4),
-              ),
-          ],
-        ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: idx,
+        onDestinationSelected: go,
+        destinations: [
+          for (final tab in AppShell.tabs)
+            NavigationDestination(
+              icon: Icon(tab.$3),
+              selectedIcon: Icon(tab.$3),
+              label: t(store.lang, tab.$4),
+            ),
+        ],
       ),
     );
   }
