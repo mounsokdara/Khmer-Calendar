@@ -17,3 +17,4 @@ Khmer Calendar app v1.0.3:
 Pinch to (zoom in/out) to change view type without need to click a button.
     A vertical scrolling years grids. click on exact months to travel to that months like iphone
 - Bypassed Computer Date limit
+- Fixed stackbar padding & zindex to stay behind navagtion bar
