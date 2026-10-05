@@ -58,12 +58,12 @@ class SlideSnackBar {
       host._present((Key key, VoidCallback onDismissed) => build(key, EdgeInsets.zero, onDismissed));
       return;
     }
-    final EdgeInsets insets = _hostInsets(context);
-
     final OverlayState overlay = Overlay.of(context, rootOverlay: true);
     late final OverlayEntry entry;
     entry = OverlayEntry(
-      builder: (BuildContext context) => build(const ValueKey('snack'), insets, () {
+      // Recomputed on every build so the snackbar follows the host when the
+      // window is rotated or resized while it is showing.
+      builder: (BuildContext context) => build(const ValueKey('snack'), _hostInsets(context), () {
         if (_entry == entry) {
           _entry = null;
         }

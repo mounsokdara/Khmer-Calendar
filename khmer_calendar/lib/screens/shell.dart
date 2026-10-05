@@ -29,13 +29,28 @@ class AppShell extends StatelessWidget {
   }
 }
 
-class _ShellBody extends StatelessWidget {
+class _ShellBody extends StatefulWidget {
   const _ShellBody({required this.store, required this.child});
   final AppStore store;
   final Widget child;
 
   @override
+  State<_ShellBody> createState() => _ShellBodyState();
+}
+
+class _ShellBodyState extends State<_ShellBody> {
+  // The snackbar host and the page inside it sit in a different spot of the tree
+  // for the wide (rail) and narrow (bottom bar) layouts. A GlobalKey lets Flutter
+  // move the same state across a rotate/resize instead of recreating it, which
+  // used to wipe the visible snackbar (and reset the page) every time the window
+  // crossed the breakpoint.
+  final _hostKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
+    final store = widget.store;
+    final child = widget.child;
+    final host = SlideSnackBarHost(key: _hostKey, child: child);
     final loc = GoRouterState.of(context).uri.path;
     var idx = AppShell.tabs.indexWhere((t) => loc == t.$2 || loc.startsWith('${t.$2}/'));
     if (idx < 0) idx = 1;
@@ -78,7 +93,7 @@ class _ShellBody extends StatelessWidget {
                 ),
               ),
               const VerticalDivider(width: 1),
-              Expanded(child: SlideSnackBarHost(child: child)),
+              Expanded(child: host),
             ],
           ),
         ),
@@ -87,7 +102,7 @@ class _ShellBody extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: SlideSnackBarHost(child: child),
+        child: host,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: idx,
