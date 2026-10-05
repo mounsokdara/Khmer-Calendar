@@ -1,5 +1,5 @@
 # Windows: build, Authenticode-sign, bundle the Visual C++ runtime, then make the portable
-# zip (KhmerCalendar-windows.zip) and the setup wizard (KhmerCalendar-windows-setup.exe).
+# zip (Portable.zip) and the setup wizard (KhmerCalendar-windows-setup.exe).
 # Runs on its own (Actions tab > Run workflow) or is called by release.yml.
 name: Windows
 
@@ -39,10 +39,10 @@ jobs:
         run: ./scripts/bundle-vcruntime.ps1 -Dir khmer_calendar\build\windows\x64\runner\Release
       - name: Pack windows
         shell: pwsh
-        run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
+        run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath Portable.zip
       - name: Verify package (runtime DLLs + icon)
         shell: pwsh
-        run: ./scripts/verify-windows.ps1 -Zip KhmerCalendar-windows.zip
+        run: ./scripts/verify-windows.ps1 -Zip Portable.zip
       # Setup wizard (Inno Setup): same signed files + runtime as the portable zip.
       - name: Build setup wizard (installer)
         shell: pwsh
@@ -65,5 +65,5 @@ jobs:
         with:
           name: windows
           path: |
-            KhmerCalendar-windows.zip
+            Portable.zip
             KhmerCalendar-windows-setup.exe
