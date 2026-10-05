@@ -23,6 +23,8 @@ npm run dev
 
 ## Deploy (Cloudflare Pages, built from source)
 
+Full guide: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 The website is generated on Cloudflare from `khmer_calendar/` on every commit. No GitHub Actions deploy and no generated files in the repo.
 
 Dashboard: *Workers & Pages > khmercalendar > Settings > Builds*:
