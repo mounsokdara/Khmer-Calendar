@@ -11,11 +11,11 @@ flutter pub get
 flutter run
 ```
 
-To Build and do Web preview run this command:
+To run the web version:
 
 ```bash
-npm install
-npm run dev
+cd khmer_calendar
+flutter run -d chrome
 ```
 
 ## Download:
@@ -41,5 +41,4 @@ Environment variables (Production and Preview):
 
 | Variable | Value | Purpose |
 |---|---|---|
-| `SKIP_DEPENDENCY_INSTALL` | `1` *(optional)* | Skip the automatic `npm ci` to save a few seconds; the Flutter build does not use npm, and the deploy works without this variable. |
 | `FLUTTER_VERSION` | optional, e.g. `3.47.4` | Pin Flutter (default `3.47.4`, same as the Release workflow). |

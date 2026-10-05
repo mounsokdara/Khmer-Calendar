@@ -10,12 +10,9 @@ on:
 concurrency:
   group: release
   cancel-in-progress: true
-
 permissions:
   contents: write
 
-env:
-  KHMER_BUILD_PACKS: "1"
 
 jobs:
   android:
@@ -220,31 +217,31 @@ jobs:
           path: dist
       - name: Stage files
         run: |
-          mkdir -p public/native
-          cp dist/android/app-release.apk public/native/KhmerCalendar.apk
-          cp dist/windows/KhmerCalendar-windows.zip public/native/KhmerCalendar-windows.zip
-          cp dist/macos/KhmerCalendar.dmg public/native/KhmerCalendar.dmg
-          cp dist/linux/KhmerCalendar-linux.tar.gz public/native/KhmerCalendar-linux.tar.gz
-          cp dist/project/KhmerCalendar-project.zip public/native/KhmerCalendar-project.zip
-          cp dist/web/KhmerCalendar-web.zip public/native/KhmerCalendar-web.zip
-          ls -lh public/native
+          mkdir -p release-files
+          cp dist/android/app-release.apk release-files/KhmerCalendar.apk
+          cp dist/windows/KhmerCalendar-windows.zip release-files/KhmerCalendar-windows.zip
+          cp dist/macos/KhmerCalendar.dmg release-files/KhmerCalendar.dmg
+          cp dist/linux/KhmerCalendar-linux.tar.gz release-files/KhmerCalendar-linux.tar.gz
+          cp dist/project/KhmerCalendar-project.zip release-files/KhmerCalendar-project.zip
+          cp dist/web/KhmerCalendar-web.zip release-files/KhmerCalendar-web.zip
+          ls -lh release-files
       - name: Publish GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          VERSION=$(python3 -c 'import pathlib; t=pathlib.Path("khmer_calendar/pubspec.yaml").read_text().splitlines(); print(next(l.split(":",1)[1].strip().split("+")[0] for l in t if l.startswith("version:")))')
+          VERSION=$(grep -m1 '^version:' khmer_calendar/pubspec.yaml | sed 's/^version:[[:space:]]*//; s/+.*//')
           TAG="v${VERSION}"
           NOTES_FILE=".github/release-body.md"
           echo "Publishing ${TAG}"
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
-            public/native/KhmerCalendar.apk \
-            public/native/KhmerCalendar-windows.zip \
-            public/native/KhmerCalendar.dmg \
-            public/native/KhmerCalendar-linux.tar.gz \
-            public/native/KhmerCalendar-project.zip \
-            public/native/KhmerCalendar-web.zip \
+            release-files/KhmerCalendar.apk \
+            release-files/KhmerCalendar-windows.zip \
+            release-files/KhmerCalendar.dmg \
+            release-files/KhmerCalendar-linux.tar.gz \
+            release-files/KhmerCalendar-project.zip \
+            release-files/KhmerCalendar-web.zip \
             --target "$GITHUB_SHA" \
             --title "Khmer Calendar $TAG" \
             --notes-file "$NOTES_FILE" \

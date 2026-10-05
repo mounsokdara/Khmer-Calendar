@@ -1,42 +1,20 @@
-node_modules/
-.vercel/
-.tanstack/
-.grok/
-screenshots/
-test-results/
-artifacts/
-attachments/
-*.log
-.env
-.env.*
-.node_modules.lock
-.DS_Store
-public/assets/
-apk-spa/
-public/native/*
-!public/native/.gitkeep
-scripts/uber-apk-signer.jar
-scripts/uber-apk-signer.jar.tmp
-scripts/apktool.jar
-scripts/apktool.jar.tmp
-scripts/android-apk/assets/
-scripts/android-apk/build/
-__pycache__/
-scripts/__pycache__/
-AGENTS.md
-.project_id
-flutter-web/
-dist/
+# Flutter
 khmer_calendar/build/
 khmer_calendar/.dart_tool/
 khmer_calendar/.flutter-plugins
 khmer_calendar/.flutter-plugins-dependencies
 khmer_calendar/.idea/
 
-# Signing keys live in the private vault repo, never here
+# Release staging (made by the Release workflow)
+release-files/
+
+# Secrets and signing keys live in the private vault repo / GitHub secrets
+.env
+.env.*
 *.keystore
 *.jks
 key.properties
 
-# Generated on Cloudflare Pages from source; never commit
-website/
+.DS_Store
+*.log
+.wrangler/
