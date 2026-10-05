@@ -4,7 +4,7 @@ The website is the Flutter web build of `khmer_calendar/`. Cloudflare Pages buil
 
 - No GitHub Actions are used to deploy the site.
 - No generated files are committed (there is no `website/` folder; `khmer_calendar/build/` is gitignored).
-- No Vite. The root `package.json` / `vite.config.ts` are only preview-workspace tooling and are not part of the deploy.
+- No Vite anywhere. There is no `vite.config.ts`, and the root `package.json` has no Vite, Nitro or TanStack Start packages. Its few remaining dev dependencies are not used by the build, so Cloudflare's automatic `npm clean-install` is quick and cannot fail on a bundler.
 
 The **Release** workflow (`.github/workflows/release.yml`) is separate: it builds the Android / Windows / macOS / Linux installers and publishes the GitHub Release. It does not deploy the site.
 
@@ -57,7 +57,7 @@ Every push to `main` is a production deploy. Other branches and pull requests ge
 
 | Variable | Value | Purpose |
 |---|---|---|
-| `SKIP_DEPENDENCY_INSTALL` | `1` | Skips the automatic `npm clean-install`; the Flutter build does not use npm |
+| `SKIP_DEPENDENCY_INSTALL` | `1` *(optional)* | Skips the automatic `npm clean-install` entirely to save a few seconds; the Flutter build does not use npm. Not required for the deploy to work |
 | `FLUTTER_VERSION` | *(optional)* e.g. `3.47.4` | Pin Flutter. Default is `3.47.4`, the same version the Release workflow uses |
 
 5. Save and deploy.
@@ -102,6 +102,8 @@ bash tools/cf-build.sh
 
 Live preview while developing: `npm install && npm run dev` (rebuilds when Dart changes).
 
+Static preview of an existing build: `npm run build:web && npm run preview` serves `khmer_calendar/build/web` on http://127.0.0.1:8081 (plain Node server, no Vite).
+
 ---
 
 ## 5. Manual deploy (optional fallback)
@@ -127,7 +129,7 @@ npx wrangler@4 pages deploy khmer_calendar/build/web --project-name=khmercalenda
 | Symptom in the build log | Cause / fix |
 |---|---|
 | `bash: tools/cf-build.sh: No such file or directory` | Wrong repository or branch, or Root directory is set. Confirm the log shows `mounsokdara/Khmer-Calendar` on `main` and Root directory is empty. |
-| `npm clean-install` runs and installs Vite packages | Harmless, but set `SKIP_DEPENDENCY_INSTALL=1` to skip it. |
+| `npm clean-install` fails with `EUSAGE` / lockfile out of sync | `package.json` and `package-lock.json` disagree. Run `npm install --package-lock-only` and commit both files, or set `SKIP_DEPENDENCY_INSTALL=1`. |
 | Output directory not found / empty deploy | `wrangler.toml` must say `./khmer_calendar/build/web` and the build must have finished. Check the lines above the error. |
 | `git clone ... --branch 3.47.4` fails | The tag does not exist or GitHub was unreachable. Check the tag exists, or set `FLUTTER_VERSION` to a valid tag (e.g. a newer release) and retry. |
 | `pub get` / dependency errors | Dart SDK constraint in `khmer_calendar/pubspec.yaml` (`sdk: ^3.13.3`) must be satisfied by the pinned Flutter version. Bump `FLUTTER_VERSION` or relax the constraint. |

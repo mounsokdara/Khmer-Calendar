@@ -41,5 +41,5 @@ Environment variables (Production and Preview):
 
 | Variable | Value | Purpose |
 |---|---|---|
-| `SKIP_DEPENDENCY_INSTALL` | `1` | Skip the automatic `npm ci`; the Flutter build does not use npm. |
+| `SKIP_DEPENDENCY_INSTALL` | `1` *(optional)* | Skip the automatic `npm ci` to save a few seconds; the Flutter build does not use npm, and the deploy works without this variable. |
 | `FLUTTER_VERSION` | optional, e.g. `3.47.4` | Pin Flutter (default `3.47.4`, same as the Release workflow). |

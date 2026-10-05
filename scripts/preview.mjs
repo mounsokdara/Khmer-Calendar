@@ -317,8 +317,8 @@ async function restart() {
     const secs = Math.round(READY_TIMEOUT_MS / 1000);
     const why =
       failure ??
-      `nothing answered on ${PREVIEW_URL} within ${secs}s — check that vite.config.ts ` +
-        `still sets preview.port ${PREVIEW_PORT}`;
+      `nothing answered on ${PREVIEW_URL} within ${secs}s — check that scripts/flutter-preview.mjs ` +
+        `still listens on port ${PREVIEW_PORT} and khmer_calendar/build/web exists`;
     console.error(`[preview] ${why} — see ${LOG_FILE}`);
     // A server that binds a few seconds later would serve a build the agent has
     // already been told to distrust.
