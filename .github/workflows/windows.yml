@@ -39,6 +39,9 @@ jobs:
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
+      - name: Verify package (runtime DLLs + icon)
+        shell: pwsh
+        run: ./scripts/verify-windows.ps1 -Zip KhmerCalendar-windows.zip
       - uses: actions/upload-artifact@v4
         with:
           name: windows
