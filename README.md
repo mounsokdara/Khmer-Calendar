@@ -24,6 +24,9 @@ flutter run -d chrome
 ## Privacy
 [Privacy Policy](PRIVACY.md): no accounts, ads or analytics; your data stays on your device.
 
+## Code signing policy
+I have applied to the SignPath Foundation for free code signing of the Windows app; no release is signed by it yet, so Windows may show "Unknown publisher" until then. Roles, scope and how signing will work: [Code signing policy](docs/CODE-SIGNING-POLICY.md).
+
 ## Deploy (Cloudflare Pages, built from source)
 
 Full guide: [docs/DEPLOY.md](docs/DEPLOY.md).
