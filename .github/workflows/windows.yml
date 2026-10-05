@@ -59,12 +59,15 @@ jobs:
       - name: Test the installer (silent install, shortcut, uninstall)
         shell: pwsh
         run: ./scripts/test-installer.ps1 -Setup installer-out\KhmerCalendar-windows-setup.exe
+      - name: Put the installer next to the zip
+        shell: pwsh
+        run: Copy-Item installer-out\KhmerCalendar-windows-setup.exe .
       - uses: actions/upload-artifact@v4
         with:
           name: windows
           path: |
             KhmerCalendar-windows.zip
-            installer-out/KhmerCalendar-windows-setup.exe
+            KhmerCalendar-windows-setup.exe
       # Microsoft Store package. Needs the three values from Partner Center (Product >
       # Product identity) saved as repository variables: Settings > Secrets and variables >
       # Actions > Variables. Without them this step is skipped. See docs/WINDOWS-STORE.md.
