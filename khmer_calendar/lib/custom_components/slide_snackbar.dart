@@ -46,7 +46,7 @@ class SlideSnackBar {
     // Fall back to the root overlay for routes outside the shell.
     final bool inShell = SnackBarAvoid.maybeOf(context) != null;
     final OverlayState overlay = Overlay.of(context, rootOverlay: !inShell);
-    final double bottomInset = _barInset(context, overlay);
+    final GlobalKey? barKey = SnackBarAvoid.maybeOf(context)?.barKey;
 
     late final OverlayEntry entry;
     entry = OverlayEntry(
@@ -54,7 +54,7 @@ class SlideSnackBar {
         return _SlideSnackBar(
           message: message,
           behavior: behavior,
-          bottomInset: bottomInset,
+          barKey: barKey,
           showCloseIcon: showCloseIcon,
           actionLabel: actionLabel,
           onActionPressed: onActionPressed,
@@ -74,14 +74,13 @@ class SlideSnackBar {
     overlay.insert(entry);
   }
 
-  /// Height from the bottom of the screen up to the top of the bottom bar that
-  /// [SnackBarAvoid] points at (0 when there is none, e.g. wide layouts).
-  static double _barInset(BuildContext context, OverlayState overlay) {
-    final SnackBarAvoid? avoid = SnackBarAvoid.maybeOf(context);
-    if (avoid == null) return 0;
-    final RenderObject? bar = avoid.barKey.currentContext?.findRenderObject();
-    final RenderObject? host = overlay.context.findRenderObject();
-    if (bar is! RenderBox || host is! RenderBox) return 0;
+  /// Live height from the bottom of [host] up to the top of the bottom bar.
+  /// Recomputed whenever the snackbar rebuilds so resize / orientation change
+  /// cannot leave a stale inset that overlaps the nav.
+  static double barInset(GlobalKey? barKey, RenderObject? host) {
+    if (barKey == null || host is! RenderBox) return 0;
+    final RenderObject? bar = barKey.currentContext?.findRenderObject();
+    if (bar is! RenderBox) return 0;
     if (!bar.attached || !bar.hasSize || !host.attached || !host.hasSize) return 0;
     final double top = bar.localToGlobal(Offset.zero, ancestor: host).dy;
     final double inset = host.size.height - top;
@@ -93,7 +92,7 @@ class _SlideSnackBar extends StatefulWidget {
   const _SlideSnackBar({
     required this.message,
     required this.behavior,
-    required this.bottomInset,
+    required this.barKey,
     required this.showCloseIcon,
     required this.actionLabel,
     required this.onActionPressed,
@@ -104,7 +103,7 @@ class _SlideSnackBar extends StatefulWidget {
 
   final String message;
   final SnackBarBehavior behavior;
-  final double bottomInset;
+  final GlobalKey? barKey;
   final bool showCloseIcon;
   final String? actionLabel;
   final VoidCallback? onActionPressed;
@@ -246,6 +245,14 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
     final ColorScheme scheme = theme.colorScheme;
     final bool floating = widget.behavior == SnackBarBehavior.floating;
 
+    // Recompute on every build so window / orientation resize cannot leave a
+    // stale bottom padding that overlaps the navigation bar.
+    final RenderObject? host = context.findRenderObject();
+    final double navInset = SlideSnackBar.barInset(widget.barKey, host);
+    final double safeBottom = MediaQuery.paddingOf(context).bottom;
+    final double bottomPad =
+        (floating ? 16.0 : 0.0) + (navInset > safeBottom ? navInset : safeBottom);
+
     final Color backgroundColor =
         theme.snackBarTheme.backgroundColor ?? scheme.inverseSurface;
     final Color foregroundColor =
@@ -323,10 +330,7 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
               padding: EdgeInsets.only(
                 left: floating ? 16 : 0,
                 right: floating ? 16 : 0,
-                bottom: (floating ? 16 : 0) +
-                    (widget.bottomInset > MediaQuery.of(context).padding.bottom
-                        ? widget.bottomInset
-                        : MediaQuery.of(context).padding.bottom),
+                bottom: bottomPad,
               ),
               child: floating
                   ? Align(
