@@ -21,6 +21,9 @@ flutter run -d chrome
 ## Download:
 [In my GitHub Releases](https://github.com/mounsokdara/Khmer-Calendar/releases/latest)
 
+## Privacy
+[Privacy Policy](PRIVACY.md): no accounts, ads or analytics; your data stays on your device.
+
 ## Deploy (Cloudflare Pages, built from source)
 
 Full guide: [docs/DEPLOY.md](docs/DEPLOY.md).
