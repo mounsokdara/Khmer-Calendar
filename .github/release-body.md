@@ -21,4 +21,5 @@ Pinch to (zoom in/out) to change view type without need to click a button.
 - A lightweight Apk files
 - Fixed Windows app cant be open due to missing dll
 - Windows app now has the Khmer Calendar icon
+- Windows: added a setup wizard (KhmerCalendar-windows-setup.exe) that installs with a Start menu shortcut and an uninstaller. The portable zip (KhmerCalendar-windows.zip) needs no install: unzip and run
 - Windows may show an "Unknown publisher" prompt. Click More info, then Run anyway
