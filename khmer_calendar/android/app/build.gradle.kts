@@ -22,6 +22,15 @@ android {
         versionName = flutter.versionName
     }
 
+    packaging {
+        jniLibs {
+            // Store the native libraries (libflutter.so, libapp.so, ...) compressed
+            // inside the APK instead of raw. Same code, ~half the download size;
+            // Android extracts them at install time.
+            useLegacyPackaging = true
+        }
+    }
+
     signingConfigs {
         create("release") {
             // Credentials come from environment variables (GitHub Actions secrets or local shell). Never hardcode.
