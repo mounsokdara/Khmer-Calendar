@@ -20,3 +20,24 @@ npm run dev
 
 ## Download:
 [In my GitHub Releases](https://github.com/mounsokdara/Khmer-Calendar/releases/latest)
+
+## Deploy (Cloudflare Pages, built from source)
+
+The website is generated on Cloudflare from `khmer_calendar/` on every commit. No GitHub Actions deploy and no generated files in the repo.
+
+Dashboard: *Workers & Pages > khmercalendar > Settings > Builds*:
+
+| Setting | Value |
+|---|---|
+| Production branch | `main` |
+| Framework preset | None |
+| Build command | `bash tools/cf-build.sh` |
+| Build output directory | `khmer_calendar/build/web` (also set in `wrangler.toml`) |
+| Root directory | *(empty)* |
+
+Environment variables (Production and Preview):
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `SKIP_DEPENDENCY_INSTALL` | `1` | Skip the automatic `npm ci`; the Flutter build does not use npm. |
+| `FLUTTER_VERSION` | optional, e.g. `3.47.4` | Pin Flutter (default `3.47.4`, same as the Release workflow). |

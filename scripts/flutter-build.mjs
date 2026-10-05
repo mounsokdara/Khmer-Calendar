@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, cpSync, rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative, sep } from "node:path";
+import { existsSync, mkdirSync, cpSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { writeOfflineWorker as injectOfflineWorker } from "./offline-worker.mjs";
 
 const root = process.cwd();
 const app = join(root, "khmer_calendar");
-const website = join(root, "website");
 const candidates = [
   process.env.FLUTTER,
   process.env.FLUTTER_ROOT ? join(process.env.FLUTTER_ROOT, "bin/flutter") : null,
@@ -30,11 +30,6 @@ function flutterWorks(bin) {
   }
 }
 
-/** True only when this process is Cloudflare Pages CI — not when GHA has an account id secret. */
-function isCloudflareHost() {
-  return Boolean(process.env.CF_PAGES || process.env.CF_PAGES_BRANCH || process.env.WORKERS_CI);
-}
-
 function run(bin, args, cwd = app) {
   const r = spawnSync(bin, args, { cwd, stdio: "inherit", env: process.env });
   if (r.status !== 0) process.exit(r.status ?? 1);
@@ -51,57 +46,17 @@ function copyDir(src, dest) {
   cpSync(src, dest, { recursive: true });
 }
 
-function walkFiles(dir, base = dir, out = []) {
-  if (!existsSync(dir)) return out;
-  for (const name of readdirSync(dir)) {
-    if (name.startsWith(".")) continue;
-    const p = join(dir, name);
-    if (statSync(p).isDirectory()) {
-      walkFiles(p, base, out);
-      continue;
-    }
-    const rel = "./" + relative(base, p).split(sep).join("/");
-    if (rel.endsWith(".map")) continue;
-    if (rel.includes("/weather/")) continue;
-    out.push(rel);
-  }
-  return out;
-}
-
 function writeOfflineWorker(siteDir) {
-  const template = readFileSync(join(app, "web/offline.js"), "utf8");
-  const files = walkFiles(siteDir);
-  const stamp = Date.now();
-  const injected = template
-    .replace(/const CACHE = '[^']+';/, `const CACHE = 'khmer-calendar-web-${stamp}';`)
-    .replace(/const PRECACHE = \[[\s\S]*?\];/, `const PRECACHE = ${JSON.stringify(files, null, 2)};`);
-  writeFileSync(join(siteDir, "offline.js"), injected);
-  writeFileSync(join(siteDir, "flutter_service_worker.js"), injected);
-}
-
-function stageWebsite(src) {
-  writeOfflineWorker(src);
-  copyDir(src, join(root, "dist"));
-  copyDir(src, join(root, "flutter-web"));
-}
-
-function useCommittedWebsite() {
-  if (!isFlutterWebsite(website)) {
-    console.error("No Flutter SDK here, and website/ is missing the Flutter web app.");
-    console.error("The public site is the Flutter app. Do not fall back to the old HTML app.");
-    process.exit(1);
-  }
-  console.log("Using the committed Flutter website (same UI as the app preview).");
-  stageWebsite(website);
+  injectOfflineWorker(siteDir, app);
 }
 
 const watchMode = process.env.FLUTTER_WEB_WATCH === "1";
 const skipPubGet = watchMode || process.env.SKIP_PUB_GET === "1";
 
 const bin = flutterBin();
-if (isCloudflareHost() || !flutterWorks(bin)) {
-  useCommittedWebsite();
-  process.exit(0);
+if (!flutterWorks(bin)) {
+  console.error("Flutter SDK not found. The website is built from source (khmer_calendar/); nothing is committed.");
+  process.exit(1);
 }
 
 if (!skipPubGet) run(bin, ["pub", "get"]);
@@ -116,8 +71,7 @@ writeOfflineWorker(out);
 if (!watchMode) {
   copyDir(out, join(root, "dist"));
   copyDir(out, join(root, "flutter-web"));
-  copyDir(out, website);
-  console.log("Flutter website staged to dist/, flutter-web/, and website/ with local CanvasKit and offline worker");
+  console.log("Flutter website staged to dist/ and flutter-web/ with local CanvasKit and offline worker");
 } else {
   console.log("Flutter website rebuilt for preview");
 }

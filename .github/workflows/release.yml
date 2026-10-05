@@ -4,9 +4,7 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - "website/**"
       - "**/*.md"
-      - ".github/workflows/website.yml"
   workflow_dispatch:
 
 concurrency:

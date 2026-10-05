@@ -37,3 +37,6 @@ khmer_calendar/.idea/
 *.keystore
 *.jks
 key.properties
+
+# Generated on Cloudflare Pages from source; never commit
+website/
