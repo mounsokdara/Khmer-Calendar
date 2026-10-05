@@ -103,7 +103,6 @@ jobs:
         run: |
           mkdir -p release-files
           cp dist/android/app-release.apk release-files/KhmerCalendar.apk
-          cp dist/android/app-release.apk.idsig release-files/KhmerCalendar.apk.idsig
           cp dist/windows/KhmerCalendar-windows.zip release-files/KhmerCalendar-windows.zip
           cp dist/macos/KhmerCalendar.dmg release-files/KhmerCalendar.dmg
           cp dist/linux/KhmerCalendar-linux.tar.gz release-files/KhmerCalendar-linux.tar.gz
@@ -122,7 +121,6 @@ jobs:
           gh release delete "$TAG" --yes --cleanup-tag || true
           gh release create "$TAG" \
             release-files/KhmerCalendar.apk \
-            release-files/KhmerCalendar.apk.idsig \
             release-files/KhmerCalendar-windows.zip \
             release-files/KhmerCalendar.dmg \
             release-files/KhmerCalendar-linux.tar.gz \

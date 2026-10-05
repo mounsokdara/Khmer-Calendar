@@ -1,4 +1,5 @@
 # Android: build, align, sign (v1+v2+v3+v4) and verify the APK.
+# Only the APK is shipped; the detached v4 .idsig is verified but not uploaded.
 # Runs on its own (Actions tab > Run workflow) or is called by release.yml.
 name: Android
 
@@ -50,13 +51,10 @@ jobs:
           OUTDIR=khmer_calendar/build/app/outputs/flutter-apk
           KS_FILE="$RUNNER_TEMP/khmer-release.keystore" bash scripts/sign-apk.sh "$OUTDIR/app-release.apk" "$OUTDIR/app-release-signed.apk"
           mv -f "$OUTDIR/app-release-signed.apk" "$OUTDIR/app-release.apk"
-          mv -f "$OUTDIR/app-release-signed.apk.idsig" "$OUTDIR/app-release.apk.idsig"
       - uses: actions/upload-artifact@v4
         with:
           name: android
-          path: |
-            khmer_calendar/build/app/outputs/flutter-apk/app-release.apk
-            khmer_calendar/build/app/outputs/flutter-apk/app-release.apk.idsig
+          path: khmer_calendar/build/app/outputs/flutter-apk/app-release.apk
       - uses: actions/upload-artifact@v4
         with:
           name: android-symbols
