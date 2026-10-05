@@ -41,11 +41,7 @@ class SlideSnackBar {
   }) {
     hide();
 
-    // Prefer the nearest Overlay (the shell body one) so the bottom nav bar,
-    // which is a later sibling in Scaffold's stack, stays above the snackbar.
-    // Fall back to the root overlay for routes outside the shell.
-    final bool inShell = SnackBarAvoid.maybeOf(context) != null;
-    final OverlayState overlay = Overlay.of(context, rootOverlay: !inShell);
+    final OverlayState overlay = Overlay.of(context, rootOverlay: true);
     final GlobalKey? barKey = SnackBarAvoid.maybeOf(context)?.barKey;
 
     late final OverlayEntry entry;
@@ -145,7 +141,7 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
     curve: Curves.easeOut,
   );
 
-  final GlobalKey _barKey = GlobalKey();
+  final GlobalKey _snackKey = GlobalKey();
 
   Timer? _timer;
   bool _dismissing = false;
@@ -181,9 +177,9 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
     if (mounted) widget.onDismissed();
   }
 
-  double get _barHeight {
+  double get _snackHeight {
     final RenderObject? renderObject =
-        _barKey.currentContext?.findRenderObject();
+        _snackKey.currentContext?.findRenderObject();
     if (renderObject is RenderBox && renderObject.hasSize) {
       final double height = renderObject.size.height;
       if (height > 0) return height;
@@ -200,7 +196,7 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
 
   void _onDragUpdate(DragUpdateDetails details) {
     if (!_dragging || _dismissing) return;
-    final double delta = details.delta.dy / _barHeight;
+    final double delta = details.delta.dy / _snackHeight;
     final double next =
         (_dragController.value + delta).clamp(0.0, 1.0).toDouble();
     _dragController.value = next;
@@ -326,7 +322,7 @@ class _SlideSnackBarState extends State<_SlideSnackBar>
             onVerticalDragEnd: _onDragEnd,
             onVerticalDragCancel: _onDragCancel,
             child: Padding(
-              key: _barKey,
+              key: _snackKey,
               padding: EdgeInsets.only(
                 left: floating ? 16 : 0,
                 right: floating ? 16 : 0,
