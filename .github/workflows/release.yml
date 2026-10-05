@@ -104,6 +104,7 @@ jobs:
           mkdir -p release-files
           cp dist/android/app-release.apk release-files/KhmerCalendar.apk
           cp dist/windows/KhmerCalendar-windows.zip release-files/KhmerCalendar-windows.zip
+          cp dist/windows/KhmerCalendar-windows-setup.exe release-files/KhmerCalendar-windows-setup.exe
           cp dist/macos/KhmerCalendar.dmg release-files/KhmerCalendar.dmg
           cp dist/linux/KhmerCalendar-linux.tar.gz release-files/KhmerCalendar-linux.tar.gz
           cp dist/project/KhmerCalendar-project.zip release-files/KhmerCalendar-project.zip

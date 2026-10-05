@@ -1,4 +1,5 @@
-# Windows: build, Authenticode-sign, bundle the Visual C++ runtime and zip the app.
+# Windows: build, Authenticode-sign, bundle the Visual C++ runtime, then make the portable
+# zip (KhmerCalendar-windows.zip) and the setup wizard (KhmerCalendar-windows-setup.exe).
 # Also builds the Microsoft Store .msix when the Store identity variables are set.
 # Runs on its own (Actions tab > Run workflow) or is called by release.yml.
 name: Windows
@@ -43,10 +44,27 @@ jobs:
       - name: Verify package (runtime DLLs + icon)
         shell: pwsh
         run: ./scripts/verify-windows.ps1 -Zip KhmerCalendar-windows.zip
+      # Setup wizard (Inno Setup): same signed files + runtime as the portable zip.
+      - name: Build setup wizard (installer)
+        shell: pwsh
+        run: |
+          $v = ((Select-String -Path khmer_calendar\pubspec.yaml -Pattern '^version:\s*(\S+)').Matches[0].Groups[1].Value) -replace '\+.*$',''
+          ./scripts/build-installer.ps1 -SourceDir khmer_calendar\build\windows\x64\runner\Release -OutDir installer-out -Version $v
+      - name: Sign the installer (Authenticode)
+        shell: pwsh
+        env:
+          PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
+          PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
+        run: ./scripts/sign-windows.ps1 -Dir installer-out
+      - name: Test the installer (silent install, shortcut, uninstall)
+        shell: pwsh
+        run: ./scripts/test-installer.ps1 -Setup installer-out\KhmerCalendar-windows-setup.exe
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: KhmerCalendar-windows.zip
+          path: |
+            KhmerCalendar-windows.zip
+            installer-out/KhmerCalendar-windows-setup.exe
       # Microsoft Store package. Needs the three values from Partner Center (Product >
       # Product identity) saved as repository variables: Settings > Secrets and variables >
       # Actions > Variables. Without them this step is skipped. See docs/WINDOWS-STORE.md.
