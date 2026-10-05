@@ -47,22 +47,35 @@ class _ShellBody extends StatelessWidget {
     }
 
     if (wide) {
+      // Short windows (phone in landscape, resized desktop/web window) cannot fit
+      // five 72dp rail items, so the rail used to overflow and get clipped.
+      // Drop the labels when short and let the rail scroll as a last resort.
+      final short = MediaQuery.sizeOf(context).height < 520;
       return Scaffold(
         body: SafeArea(
           child: Row(
             children: [
-              NavigationRail(
-                selectedIndex: idx,
-                onDestinationSelected: go,
-                labelType: NavigationRailLabelType.all,
-                destinations: [
-                  for (final tab in AppShell.tabs)
-                    NavigationRailDestination(
-                      icon: Icon(tab.$3),
-                      selectedIcon: Icon(tab.$3),
-                      label: Text(t(store.lang, tab.$4)),
+              LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: NavigationRail(
+                        selectedIndex: idx,
+                        onDestinationSelected: go,
+                        labelType: short ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                        destinations: [
+                          for (final tab in AppShell.tabs)
+                            NavigationRailDestination(
+                              icon: Icon(tab.$3),
+                              selectedIcon: Icon(tab.$3),
+                              label: Text(t(store.lang, tab.$4)),
+                            ),
+                        ],
+                      ),
                     ),
-                ],
+                  ),
+                ),
               ),
               const VerticalDivider(width: 1),
               Expanded(child: SlideSnackBarHost(child: child)),
