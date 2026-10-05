@@ -25,7 +25,7 @@ flutter run -d chrome
 [Privacy Policy](PRIVACY.md): no accounts, ads or analytics; your data stays on your device.
 
 ## Windows: "Unknown publisher" warning
-The Windows zip is signed with the maintainer's own certificate, which Windows does not recognise, so SmartScreen may say "Windows protected your PC". Click **More info**, then **Run anyway**. A Microsoft Store version (no warning) is being prepared.
+The Windows zip is signed with the maintainer's own certificate, which Windows does not recognise, so SmartScreen may say "Windows protected your PC". Click **More info**, then **Run anyway**.
 
 ## Deploy (Cloudflare Pages, built from source)
 
