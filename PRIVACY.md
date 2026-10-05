@@ -75,8 +75,6 @@ Their own privacy policies apply to what they do with requests:
   may keep standard server logs (such as IP address and requested page). The web app saves
   your settings in your browser's local storage, and it may load Flutter engine files from
   Google's content delivery network.
-- **Microsoft Store:** if you install from the Store, Microsoft collects its own store and
-  diagnostic data under Microsoft's privacy statement. This app does not receive it.
 - **GitHub Releases:** downloads are served by GitHub under GitHub's policies.
 
 ## 6. Children

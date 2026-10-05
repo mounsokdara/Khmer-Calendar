@@ -1,6 +1,5 @@
 # Windows: build, Authenticode-sign, bundle the Visual C++ runtime, then make the portable
 # zip (KhmerCalendar-windows.zip) and the setup wizard (KhmerCalendar-windows-setup.exe).
-# Also builds the Microsoft Store .msix when the Store identity variables are set.
 # Runs on its own (Actions tab > Run workflow) or is called by release.yml.
 name: Windows
 
@@ -68,25 +67,3 @@ jobs:
           path: |
             KhmerCalendar-windows.zip
             KhmerCalendar-windows-setup.exe
-      # Microsoft Store package. Needs the three values from Partner Center (Product >
-      # Product identity) saved as repository variables: Settings > Secrets and variables >
-      # Actions > Variables. Without them this step is skipped. See docs/WINDOWS-STORE.md.
-      - name: Package for Microsoft Store (MSIX)
-        if: ${{ vars.MSIX_IDENTITY_NAME != '' && vars.MSIX_PUBLISHER != '' && vars.MSIX_PUBLISHER_DISPLAY_NAME != '' }}
-        shell: pwsh
-        working-directory: khmer_calendar
-        env:
-          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
-          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
-          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
-        run: ../scripts/package-msix.ps1 -IdentityName $env:MSIX_IDENTITY_NAME -Publisher $env:MSIX_PUBLISHER -PublisherDisplayName $env:MSIX_PUBLISHER_DISPLAY_NAME -OutDir ${{ runner.temp }}\msix
-      - name: MSIX skipped (no Store identity yet)
-        if: ${{ vars.MSIX_IDENTITY_NAME == '' || vars.MSIX_PUBLISHER == '' || vars.MSIX_PUBLISHER_DISPLAY_NAME == '' }}
-        shell: pwsh
-        run: Write-Host "::notice title=MSIX skipped::Set repository variables MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME (see docs/WINDOWS-STORE.md)"
-      - uses: actions/upload-artifact@v4
-        if: ${{ vars.MSIX_IDENTITY_NAME != '' && vars.MSIX_PUBLISHER != '' && vars.MSIX_PUBLISHER_DISPLAY_NAME != '' }}
-        with:
-          name: windows-msix
-          path: ${{ runner.temp }}\msix\*.msix
-          if-no-files-found: error
