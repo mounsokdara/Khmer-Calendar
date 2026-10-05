@@ -46,13 +46,15 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      - name: Verify APK signature (Gradle-signed, not re-signed)
+      - name: Sign (v1+v2+v3) + verify APK
         env:
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          KS_FILE="$RUNNER_TEMP/khmer-release.keystore" \
-            bash scripts/verify-apk.sh khmer_calendar/build/app/outputs/flutter-apk/app-release.apk
+          OUTDIR=khmer_calendar/build/app/outputs/flutter-apk
+          KS_FILE="$RUNNER_TEMP/khmer-release.keystore" bash scripts/sign-apk.sh "$OUTDIR/app-release.apk" "$OUTDIR/app-release-signed.apk"
+          mv -f "$OUTDIR/app-release-signed.apk" "$OUTDIR/app-release.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: android
