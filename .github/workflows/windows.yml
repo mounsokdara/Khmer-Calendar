@@ -1,4 +1,4 @@
-# Windows: build, Authenticode-sign and zip the app.
+# Windows: build, Authenticode-sign, bundle the Visual C++ runtime and zip the app.
 # Runs on its own (Actions tab > Run workflow) or is called by release.yml.
 name: Windows
 
@@ -32,6 +32,10 @@ jobs:
           PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
           PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
         run: ./scripts/sign-windows.ps1 -Dir khmer_calendar\build\windows\x64\runner\Release
+      # After signing on purpose: these are Microsoft-signed and must stay that way.
+      - name: Bundle Visual C++ runtime (so it runs without the redistributable installed)
+        shell: pwsh
+        run: ./scripts/bundle-vcruntime.ps1 -Dir khmer_calendar\build\windows\x64\runner\Release
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\x64\runner\Release\* -DestinationPath KhmerCalendar-windows.zip
