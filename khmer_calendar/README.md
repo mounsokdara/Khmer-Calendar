@@ -2,7 +2,7 @@
 
 Native Flutter app: Khmer lunar calendar, holidays, weather, and reminders.
 
-Package id: `com.mounsokdara.khmercalendar`
+Package Name: `com.mounsokdara.khmercalendar`
 
 Website: https://khmercalendar.pages.dev
 
