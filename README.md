@@ -26,7 +26,7 @@ flutter run -d chrome
 
 ## Windows: installer or portable
 - **Setup wizard:** `KhmerCalendar-windows-setup.exe` installs for the current user (no admin needed), adds a Start menu shortcut and an uninstaller.
-- **Portable:** `Portable.zip`, unzip anywhere and run `khmer_calendar.exe`. Nothing is installed.
+- **Portable:** `khmer-calendar-portable.zip`, unzip anywhere and run `khmer_calendar.exe`. Nothing is installed.
 
 ## Windows: "Unknown publisher" warning
 The Windows zip is signed with the maintainer's own certificate, which Windows does not recognise, so SmartScreen may say "Windows protected your PC". Click **More info**, then **Run anyway**.

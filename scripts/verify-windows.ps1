@@ -1,7 +1,7 @@
 # Check the finished Windows zip the way a clean PC would see it, and report it as
 # GitHub annotations (::notice::) + the job summary.
 #
-# Usage: ./verify-windows.ps1 -Zip Portable.zip -Exe khmer_calendar.exe
+# Usage: ./verify-windows.ps1 -Zip khmer-calendar-portable.zip -Exe khmer_calendar.exe
 #
 # Fails if: a Visual C++ runtime DLL is missing, or the exe still shows the default
 # Flutter icon (blue) instead of the app icon.

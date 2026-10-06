@@ -238,7 +238,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
                               for (final p in [
                                 ('android', 'KhmerCalendar.apk', 'exportApk', 'exportApkSub'),
                                 ('windows', 'KhmerCalendar-windows-setup.exe', 'exportWindowsSetup', 'exportWindowsSetupSub'),
-                                ('windows', 'Portable.zip', 'exportWindows', 'exportWindowsSub'),
+                                ('windows', 'khmer-calendar-portable.zip', 'exportWindows', 'exportWindowsSub'),
                                 ('macos', 'KhmerCalendar.dmg', 'exportMac', 'exportMacSub'),
                                 ('linux', 'KhmerCalendar-linux.tar.gz', 'exportLinux', 'exportLinuxSub'),
                               ])
