@@ -1,0 +1,51 @@
+# Builds the Android app the way F-Droid does (no keystore) and scans the APK for Google libraries.
+# Run it from Actions > F-Droid check > Run workflow, or it runs when the Android build files change.
+name: F-Droid check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "khmer_calendar/android/**"
+      - "khmer_calendar/pubspec.*"
+      - "khmer_calendar/third_party/**"
+      - "scripts/fdroid-scan.sh"
+      - ".github/workflows/fdroid-check.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fdroid-check
+  cancel-in-progress: true
+
+jobs:
+  fdroid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.4"
+          channel: stable
+          cache: true
+      - run: flutter pub get
+        working-directory: khmer_calendar
+      - name: Build like F-Droid (no keystore)
+        working-directory: khmer_calendar
+        run: |
+          export FDROID_BUILD=1
+          flutter build apk --release --dart-define=FDROID=true
+      - name: Check the APK
+        run: |
+          set +e
+          bash -x scripts/fdroid-scan.sh > /tmp/report.txt 2>&1
+          code=$?
+          cat /tmp/report.txt
+          exit $code
