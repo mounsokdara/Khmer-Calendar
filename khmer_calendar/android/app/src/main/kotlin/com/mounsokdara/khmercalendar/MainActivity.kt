@@ -10,6 +10,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -17,7 +20,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.util.concurrent.Executors
 
-class MainActivity : FlutterActivity() {
+open class MainActivity : FlutterActivity() {
     private var pending: MethodChannel.Result? = null
     private var pendingCode = 0
     private var channel: MethodChannel? = null
@@ -41,6 +44,10 @@ class MainActivity : FlutterActivity() {
                 }
                 "checkStatus" -> result.success(statusMap())
                 "isHapticFeedbackEnabled" -> result.success(isHapticFeedbackEnabled())
+                "vibrate" -> {
+                    vibrate(call.argument<Int>("duration") ?: 8, call.argument<Int>("amplitude") ?: 40)
+                    result.success(true)
+                }
                 "isIgnoringBattery" -> result.success(isIgnoringBattery())
                 "requestBatteryExemption" -> requestBatteryExemption(result)
                 "requestExactAlarm" -> requestExactAlarm(result)
@@ -63,6 +70,19 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "pinWidget" -> result.success(pinWidget(call.argument<String>("kind")))
+                "setWidgetMonth" -> {
+                    val id = call.argument<Int>("id") ?: AppWidgetManager.INVALID_APPWIDGET_ID
+                    val year = call.argument<Int>("year") ?: 0
+                    val month = call.argument<Int>("month") ?: 0
+                    if (year > 0 && month in 1..12) MonthWidgetProvider.setShown(this, id, year, month)
+                    result.success(true)
+                }
+                "getWidgetYears" -> {
+                    val mgr = AppWidgetManager.getInstance(this)
+                    val ids = mgr.getAppWidgetIds(ComponentName(this, MonthWidgetProvider::class.java))
+                    val years = ids.map { MonthWidgetProvider.shownOf(this, it).first }.distinct().sorted()
+                    result.success(years)
+                }
                 "getLaunch" -> result.success(launchMap(intent))
                 else -> result.notImplemented()
             }
@@ -73,6 +93,26 @@ class MainActivity : FlutterActivity() {
         Settings.System.getInt(contentResolver, Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0
     } catch (_: Settings.SettingNotFoundException) {
         false
+    }
+
+    private fun vibrate(duration: Int, amplitude: Int) {
+        try {
+            val v: Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
+                getSystemService(VibratorManager::class.java)?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (v == null || !v.hasVibrator()) return
+            if (Build.VERSION.SDK_INT >= 26) {
+                val amp = if (v.hasAmplitudeControl()) amplitude.coerceIn(1, 255) else VibrationEffect.DEFAULT_AMPLITUDE
+                v.vibrate(VibrationEffect.createOneShot(duration.toLong(), amp))
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(duration.toLong())
+            }
+        } catch (_: Throwable) {
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -91,7 +131,7 @@ class MainActivity : FlutterActivity() {
         val map = args as? Map<*, *> ?: return
         val ed = getSharedPreferences(WidgetStore.PREFS, Context.MODE_PRIVATE).edit()
         fun putStr(key: String) { (map[key] as? String)?.let { ed.putString(key, it) } }
-        listOf("iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang", "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list", "sil_days", "public_hols", "religious_hols", "notify_items").forEach { putStr(it) }
+        listOf("iso", "day", "weekday", "lunar", "holiday", "title", "days", "marks", "names", "lang", "wx_city", "wx_city_en", "wx_temp", "wx_high", "wx_low", "wx_label", "wx_label_en", "wx_list", "sil_days", "public_hols", "religious_hols", "notify_items", "gregorian", "hkind", "month_info", "wp_light", "wp_dark", "wp_mode").forEach { putStr(it) }
         (map["weekStartsOn"] as? Number)?.let { ed.putInt("weekStartsOn", it.toInt()) }
         (map["wx_index"] as? Number)?.let { ed.putInt("wx_index", it.toInt()) }
         (map["notifyOn"] as? Boolean)?.let { ed.putBoolean("notifyOn", it) }

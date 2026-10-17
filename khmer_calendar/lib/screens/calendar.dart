@@ -7,6 +7,7 @@ import '../dates.dart';
 import '../haptics.dart';
 import '../i18n.dart';
 import '../store.dart';
+import '../widgets/stroke_text.dart';
 import '../theme.dart';
 import '../widgets/carousel_slider.dart';
 import '../widgets/holiday_info.dart';
@@ -449,7 +450,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 count: holidays.length,
                 onTap: () {
                   store.setLastTab(TabId.events);
-                  store.setLastEventsPane('holidays');
+                  store.setLastEventsPane('all');
                   context.go('/events');
                 },
               ),
@@ -478,7 +479,7 @@ class _CalendarPageState extends State<CalendarPage> {
                 count: tasks.length,
                 onTap: () {
                   store.setLastTab(TabId.events);
-                  store.setLastEventsPane('tasks');
+                  store.setLastEventsPane('task');
                   context.go('/events');
                 },
               ),
@@ -584,8 +585,9 @@ class _DayCell extends StatelessWidget {
     final lunar = lunarOf(day);
     final cs = Theme.of(context).colorScheme;
     final color = dayToneColor(context, tone);
-    final fill = isToday ? todayFill(context) : Colors.transparent;
-    final onFill = isToday ? todayOnFill(context) : null;
+    final todayStyle = isToday ? todayColors(context, tone) : null;
+    final fill = todayStyle?.fill ?? Colors.transparent;
+    final onFill = todayStyle?.onFill;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -624,7 +626,7 @@ class _DayCell extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
+                          StrokeText(
                             lunar.moonDayKhmer,
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -633,7 +635,7 @@ class _DayCell extends StatelessWidget {
                               height: 1.1,
                             ),
                           ),
-                          Text(
+                          StrokeText(
                             '${day.day}',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -645,7 +647,7 @@ class _DayCell extends StatelessWidget {
                             ),
                           ),
                           if (!expanded)
-                            Text(
+                            StrokeText(
                               lunar.khmerMonth,
                               textAlign: TextAlign.center,
                               maxLines: 1,

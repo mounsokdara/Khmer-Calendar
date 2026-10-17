@@ -108,7 +108,7 @@ class AppStore extends ChangeNotifier {
   Lang lang = deviceLang();
   bool setupDone = false;
   TabId lastTab = TabId.calendar;
-  String lastEventsPane = 'holidays';
+  String lastEventsPane = 'all';
   String calView = 'month';
   List<String> weatherCities = [];
   bool installed = false;
@@ -117,6 +117,11 @@ class AppStore extends ChangeNotifier {
   bool locationOn = false;
   bool autoLaunchOn = false;
   bool notifyTasks = true;
+  bool notifyTomorrow = true;
+  bool textStroke = true;
+  bool tomorrowTasks = true;
+  bool tomorrowHolidays = true;
+  bool tomorrowLunar = true;
   bool notifyDaily = false;
   bool notifySil = true;
   bool notifyPublic = true;
@@ -166,7 +171,7 @@ class AppStore extends ChangeNotifier {
         if (tab != null) {
           lastTab = TabId.values.firstWhere((t) => t.name == tab, orElse: () => TabId.calendar);
         }
-        lastEventsPane = p['lastEventsPane'] as String? ?? 'holidays';
+        lastEventsPane = p['lastEventsPane'] as String? ?? 'all';
         final view = p['calView'] as String?;
         calView = calViewIds.contains(view) ? view! : 'month';
         weatherCities = ((p['weatherCities'] as List?) ?? []).cast<String>();
@@ -177,6 +182,11 @@ class AppStore extends ChangeNotifier {
         locationOn = p['locationOn'] as bool? ?? false;
         autoLaunchOn = p['autoLaunchOn'] as bool? ?? false;
         notifyTasks = p['notifyTasks'] as bool? ?? true;
+        notifyTomorrow = p['notifyTomorrow'] as bool? ?? true;
+        textStroke = p['textStroke'] as bool? ?? true;
+        tomorrowTasks = p['tomorrowTasks'] as bool? ?? true;
+        tomorrowHolidays = p['tomorrowHolidays'] as bool? ?? true;
+        tomorrowLunar = p['tomorrowLunar'] as bool? ?? true;
         notifyDaily = p['notifyDaily'] as bool? ?? false;
         notifySil = p['notifySil'] as bool? ?? true;
         final oldHolidays = p['notifyHolidays'] as bool? ?? true;
@@ -232,6 +242,11 @@ class AppStore extends ChangeNotifier {
         'locationOn': locationOn,
         'autoLaunchOn': autoLaunchOn,
         'notifyTasks': notifyTasks,
+        'notifyTomorrow': notifyTomorrow,
+        'textStroke': textStroke,
+        'tomorrowTasks': tomorrowTasks,
+        'tomorrowHolidays': tomorrowHolidays,
+        'tomorrowLunar': tomorrowLunar,
         'notifyDaily': notifyDaily,
         'notifySil': notifySil,
         'notifyPublic': notifyPublic,
@@ -445,6 +460,36 @@ class AppStore extends ChangeNotifier {
     _touch();
   }
 
+  void setTextStroke(bool v) {
+    if (textStroke == v) return;
+    textStroke = v;
+    _touch();
+  }
+
+  void setTomorrowTasks(bool v) {
+    if (tomorrowTasks == v) return;
+    tomorrowTasks = v;
+    _touch();
+  }
+
+  void setTomorrowHolidays(bool v) {
+    if (tomorrowHolidays == v) return;
+    tomorrowHolidays = v;
+    _touch();
+  }
+
+  void setTomorrowLunar(bool v) {
+    if (tomorrowLunar == v) return;
+    tomorrowLunar = v;
+    _touch();
+  }
+
+  void setNotifyTomorrow(bool v) {
+    if (notifyTomorrow == v) return;
+    notifyTomorrow = v;
+    _touch();
+  }
+
   void setNotifyTasks(bool v) {
     if (notifyTasks == v) return;
     notifyTasks = v;
@@ -508,7 +553,7 @@ class AppStore extends ChangeNotifier {
     accentColor = '#F5C400';
     highlightColor = '#FF3B30';
     highlightAlpha = 0.22;
-    lastEventsPane = 'holidays';
+    lastEventsPane = 'all';
     calView = 'month';
     weatherCities = [];
     installed = false;
@@ -517,6 +562,11 @@ class AppStore extends ChangeNotifier {
     locationOn = false;
     autoLaunchOn = false;
     notifyTasks = true;
+    notifyTomorrow = true;
+    textStroke = true;
+    tomorrowTasks = true;
+    tomorrowHolidays = true;
+    tomorrowLunar = true;
     notifyDaily = false;
     notifySil = true;
     notifyPublic = true;

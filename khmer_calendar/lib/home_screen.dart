@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show Color, ColorScheme;
 import 'package:flutter/services.dart';
 
 import 'calendar/chhankitek.dart';
@@ -11,6 +12,7 @@ import 'i18n.dart';
 import 'net.dart';
 import 'notify/kinds.dart';
 import 'store.dart';
+import 'theme.dart';
 import 'weather.dart';
 import 'wx_cache.dart';
 
@@ -59,6 +61,67 @@ void applyWidgetLaunch(AppStore store, Object? raw) {
   store.applyLaunch(tab: tab, date: date);
 }
 
+String _themeSig = '';
+
+/// Sends the app's Material 3 colours (both light and dark) plus the app's theme mode to the
+/// widgets, so they follow the app's colour scheme and light/dark setting.
+void syncWidgetTheme(AppStore store, ColorScheme light, ColorScheme dark) {
+  if (!canPinHomeWidget) return;
+  String hex(Color c) => '#${c.toARGB32().toRadixString(16).padLeft(8, '0')}';
+  String palette(ColorScheme cs, bool isDark) => jsonEncode({
+        'surface': hex(cs.surface),
+        'onSurface': hex(cs.onSurface),
+        'onVariant': hex(cs.onSurfaceVariant),
+        'primary': hex(cs.primary),
+        'onPrimary': hex(cs.onPrimary),
+        'container': hex(cs.primaryContainer),
+        'onContainer': hex(cs.onPrimaryContainer),
+        'public': hex(publicHolidayFill),
+        'holiday': hex(isDark ? religiousColorOnDark : religiousColor),
+      });
+  final mode = store.theme == 'light' ? 'light' : (store.theme == 'dark' ? 'dark' : 'system');
+  final lightJson = palette(light, false);
+  final darkJson = palette(dark, true);
+  final sig = '$mode|$lightJson|$darkJson';
+  if (sig == _themeSig) return;
+  _themeSig = sig;
+  _ch.invokeMethod<void>('updateWidget', {'wp_light': lightJson, 'wp_dark': darkJson, 'wp_mode': mode}).catchError((_) {});
+}
+
+/// "Year of the horse, era, B.E." line for the months of [years] only
+/// (middle of each month so it never straddles Khmer New Year).
+String _monthInfoJson(Lang lang, Iterable<int> years) {
+  final en = lang == Lang.en;
+  final out = <String, String>{};
+  for (final y in years) {
+    for (var m = 1; m <= 12; m++) {
+      try {
+        final lu = lunarOf(DateTime(y, m, 15));
+        out['${y.toString().padLeft(4, '0')}-${m.toString().padLeft(2, '0')}'] = en
+            ? '${zodiacEn[lu.animalYear] ?? lu.animalYear} year · B.E. ${lu.buddhistEraYear}'
+            : 'ឆ្នាំ${lu.animalYear} ${lu.sak} ព.ស. ${lu.buddhistEraYearKhmer}';
+      } catch (_) {}
+    }
+  }
+  return jsonEncode(out);
+}
+
+/// Years the month widgets are currently showing, plus this year.
+Future<List<int>> _widgetYearsToLoad() async {
+  final years = <int>{DateTime.now().year};
+  try {
+    final raw = await _ch.invokeMethod<dynamic>('getWidgetYears');
+    if (raw is List) {
+      for (final v in raw) {
+        final y = v is int ? v : int.tryParse('$v');
+        if (y != null && y >= calendarStartYear && y <= calendarEndYear) years.add(y);
+      }
+    }
+  } catch (_) {}
+  final list = years.toList()..sort();
+  return list;
+}
+
 bool _syncBusy = false;
 bool _syncQueued = false;
 
@@ -80,6 +143,18 @@ Future<void> syncHomeWidget(AppStore store) async {
   } finally {
     _syncBusy = false;
   }
+}
+
+/// Drop cached widget payloads so the next [syncHomeWidget] recomputes marks for the years
+/// the widgets are actually showing (e.g. after the month-widget year picker).
+void invalidateHomeWidgetCache() {
+  _displaySig = '';
+  _notifySig = '';
+  _displayPayload = null;
+  _static = null;
+  _staticKey = '';
+  _staticFuture = null;
+  _staticFutureKey = '';
 }
 
 Future<void> _syncHomeWidgetOnce(AppStore store) async {
@@ -130,9 +205,11 @@ Map<String, String> _dayNotifyFields(DateTime d, Lang lang, List<CalendarEvent> 
   };
 }
 
-/// Everything that does not depend on the user's events. It scans ~11 years of lunar days and
-/// holiday tables, so it must run in a background isolate (never on the UI thread).
-Map<String, Object> _staticWidgetIsolate(bool en) {
+/// Everything that does not depend on the user's events. Scans only the years in [args]
+/// ('years') for holiday and silday marks, so it stays cheap. Runs in a background isolate.
+Map<String, Object> _staticWidgetIsolate(Map<String, Object> args) {
+  final en = args['en'] == true;
+  final years = (args['years'] as List).cast<int>();
   final lang = en ? Lang.en : Lang.km;
   IntlHelper.localeName = en ? 'en' : 'km';
   final now = DateTime.now();
@@ -162,24 +239,16 @@ Map<String, Object> _staticWidgetIsolate(bool en) {
     if (!cur.contains(f)) marks[day] = '$cur$f';
   }
 
-  for (var y = now.year - 5; y <= now.year + 5; y++) {
-    List<Holiday> yearHols;
+  for (final y in years) {
+    List<Observance> yearHols;
     try {
-      yearHols = holidaysOfYear(y);
+      yearHols = holidayObservancesOfYear(y);
     } catch (_) {
       continue;
     }
     for (final h in yearHols) {
-      if (h.type == HolidayType.public) {
-        flag(h.date, 'p');
-      } else {
-        flag(h.date, 'h');
-      }
-      names.putIfAbsent(h.date, () => lang == Lang.en ? h.nameEn : h.nameKm);
-    }
-    for (final o in [...kanBenOf(y), ...senKantongOf(y)]) {
-      flag(o.date, 'h');
-      names.putIfAbsent(o.date, () => obsTitle(o, lang));
+      flag(h.date, h.holidayType == HolidayType.public ? 'p' : 'h');
+      names.putIfAbsent(h.date, () => obsTitle(h, lang));
     }
     var d = DateTime(y, 1, 1);
     final last = DateTime(y, 12, 31);
@@ -224,8 +293,11 @@ _StaticWidget? _static;
 Future<_StaticWidget>? _staticFuture;
 String _staticFutureKey = '';
 
-Future<_StaticWidget> _computeStatic(bool en, String key) async {
-  final raw = await compute<bool, Map<String, Object>>(_staticWidgetIsolate, en);
+Future<_StaticWidget> _computeStatic(bool en, List<int> years, String key) async {
+  final raw = await compute<Map<String, Object>, Map<String, Object>>(
+    _staticWidgetIsolate,
+    {'en': en, 'years': years},
+  );
   seedNotifyListsFrom(raw);
   final data = _StaticWidget(
     marks: Map<String, String>.from(raw['marks']! as Map),
@@ -240,14 +312,14 @@ Future<_StaticWidget> _computeStatic(bool en, String key) async {
   return data;
 }
 
-Future<_StaticWidget> _staticWidgetData(Lang lang) async {
-  final key = '${lang == Lang.en}|${todayIso()}';
+Future<_StaticWidget> _staticWidgetData(Lang lang, List<int> years) async {
+  final key = '${lang == Lang.en}|${todayIso()}|${years.join(',')}';
   final cached = _static;
   if (cached != null && _staticKey == key) return cached;
   var pending = _staticFuture;
   if (pending == null || _staticFutureKey != key) {
     _staticFutureKey = key;
-    pending = _computeStatic(lang == Lang.en, key);
+    pending = _computeStatic(lang == Lang.en, years, key);
     _staticFuture = pending;
   }
   try {
@@ -259,14 +331,17 @@ Future<_StaticWidget> _staticWidgetData(Lang lang) async {
 
 Future<Map<String, dynamic>> _buildWidgetDisplay(AppStore store) async {
   final lang = store.lang;
-  final data = await _staticWidgetData(lang);
+  final years = await _widgetYearsToLoad();
+  final data = await _staticWidgetData(lang, years);
   final now = DateTime.now();
   final iso = todayIso();
   final events = store.events;
   final lunar = lunarOf(now);
   final lunarText = lang == Lang.en ? lunarLabel(iso, lang) : lunar.lunarDateText;
   final hols = observancesOn(iso, events).where((e) => e.kind == Kind.holiday);
-  final holiday = hols.isEmpty ? '' : obsTitle(hols.first, lang);
+  final holiday = hols.isEmpty
+      ? ''
+      : obsTitle(hols.firstWhere((h) => h.holidayType == HolidayType.public, orElse: () => hols.first), lang);
 
   // Cheap per-event overlay on top of the cached static data.
   final marks = Map<String, String>.of(data.marks);
@@ -284,7 +359,12 @@ Future<Map<String, dynamic>> _buildWidgetDisplay(AppStore store) async {
     'weekday': weekdaysFull(lang)[now.weekday % 7],
     'lunar': lunarText,
     'holiday': holiday,
+    'hkind': hols.any((h) => h.holidayType == HolidayType.public) ? 'public' : (hols.isEmpty ? '' : 'other'),
+    'gregorian': lang == Lang.en
+        ? '${now.day} ${monthsEn[now.month - 1]} ${now.year} CE'
+        : '${lunar.gregorianDayText} ${lunar.gregorianMonthText} គ.ស ${lunar.gregorianYearText}',
     'title': t(lang, 'appName'),
+    'month_info': _monthInfoJson(lang, years),
     'days': data.daysJson,
     'marks': jsonEncode(marks),
     'names': jsonEncode(names),

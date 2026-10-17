@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 enum ColorSchemeId {
   rose,
@@ -352,6 +353,7 @@ ThemeData buildTheme({
   }
   return ThemeData(
     useMaterial3: true,
+    splashFactory: InkSparkle.splashFactory,
     colorScheme: color,
     brightness: brightness,
     fontFamily: 'KantumruyPro',
@@ -423,12 +425,11 @@ const mediumBreak = 720.0;
 const xlBreak = 1180.0;
 
 // Keep in sync with `version:` in pubspec.yaml (test/version_sync_test.dart enforces it).
-const appVersion = '1.0.3';
-const appBuildNumber = 4;
+const appVersion = '1.0.4';
+const appBuildNumber = 5;
 const appAuthor = 'Moun Sokdara';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
 const appWebsiteUrl = 'https://khmercalendar.pages.dev';
-const appPrivacyUrl = 'https://github.com/mounsokdara/Khmer-Calendar/blob/main/PRIVACY.md';
 
 const mitLicenseText = '''MIT License
 
@@ -470,6 +471,16 @@ Color todayOnFill(BuildContext context) {
   return cs.onPrimaryContainer;
 }
 
+/// Today's highlight keeps its own fill colour; the date number keeps its red (public holiday /
+/// Sunday) or blue (other observance) colour instead of switching to the highlight text colour.
+({Color fill, Color onFill}) todayColors(BuildContext context, String tone) {
+  final fill = todayFill(context);
+  if (tone == 'sunday' || tone == 'holiday') {
+    return (fill: fill, onFill: dayToneColor(context, tone));
+  }
+  return (fill: fill, onFill: todayOnFill(context));
+}
+
 Color dayToneColor(BuildContext context, String tone) {
   final cs = Theme.of(context).colorScheme;
   switch (tone) {
@@ -486,4 +497,18 @@ Color dayToneColor(BuildContext context, String tone) {
     default:
       return cs.onSurface;
   }
+}
+
+SystemUiOverlayStyle systemBarStyle(ThemeData theme, Color navColor) {
+  final dark = theme.brightness == Brightness.dark;
+  final icons = dark ? Brightness.light : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+    systemNavigationBarColor: navColor,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: icons,
+    systemNavigationBarContrastEnforced: false,
+  );
 }

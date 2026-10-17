@@ -47,8 +47,6 @@ class WheelConfig {
   }
 
   int get minGapMs => (wheel['min_gap_ms'] as num?)?.toInt() ?? 45;
-  int get maxLivePlayers => (wheel['max_live_players'] as num?)?.toInt() ?? 3;
-  int get maxLifetimeMs => (wheel['max_lifetime_ms'] as num?)?.toInt() ?? 3000;
   int get customMaxBytes => (wheel['custom_max_bytes'] as num?)?.toInt() ?? 1024 * 1024;
   Map<String, dynamic>? sound(String id) {
     final sounds = raw['sounds'];
@@ -60,6 +58,7 @@ class WheelConfig {
   }
 
   String? soundAsset(String id) => sound(id)?['asset']?.toString();
+  int soundStartMs(String id) => (sound(id)?['start_ms'] as num?)?.toInt() ?? 0;
   String soundLabel(String id, {required bool khmer}) =>
       sound(id)?[khmer ? 'km' : 'en']?.toString() ?? id;
 }
@@ -96,7 +95,8 @@ class AppSounds {
   String _wheel = wheelSoundNone;
   int _gen = 0;
   Future<Source?>? _custom;
-  final Set<AudioPlayer> _live = {};
+  AudioPlayer? _player;
+  bool _configured = false;
   DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
   WheelConfig? _config;
 
@@ -107,6 +107,8 @@ class AppSounds {
     _wheel = normalized.isEmpty ? wheelSoundNone : normalized;
     _gen++;
     _custom = null;
+    // Do not stop here — the sound picker calls setWheel then playWheel immediately;
+    // an async stop would race and mute the preview.
     unawaited(_loadConfig());
   }
 
@@ -114,6 +116,8 @@ class AppSounds {
     _config ??= await WheelConfig.load();
   }
 
+  /// Scroll-wheel / picker click. One shared player; stop then play so rapid
+  /// taps never stack sessions, but sound still actually plays.
   void playWheel() {
     Haptics.instance.tick();
     if (_wheel == wheelSoundNone) return;
@@ -122,44 +126,39 @@ class AppSounds {
 
   Future<void> _play(String id, int gen) async {
     final config = _config ??= await WheelConfig.load();
-    final minGap = Duration(milliseconds: config.minGapMs);
+    // Keep ticks audible while scrolling, but not so dense the device chokes.
+    final gapMs = config.minGapMs < 25 ? 25 : config.minGapMs;
     final now = DateTime.now();
-    if (now.difference(_last) < minGap) return;
-    if (_live.length >= config.maxLivePlayers) return;
+    if (now.difference(_last) < Duration(milliseconds: gapMs)) return;
     _last = now;
+    if (gen != _gen) return;
 
-    final player = AudioPlayer();
-    _live.add(player);
-    StreamSubscription<void>? sub;
-    Timer? guard;
-    var destroyed = false;
+    final source = await _sourceFor(id, config);
+    if (source == null || gen != _gen) return;
 
-    Future<void> destroy() async {
-      if (destroyed) return;
-      destroyed = true;
-      guard?.cancel();
-      _live.remove(player);
+    final player = _player ??= AudioPlayer();
+    if (!_configured) {
       try {
-        await sub?.cancel();
-        await player.dispose();
+        final ctx = _context();
+        if (ctx != null) await player.setAudioContext(ctx);
+        await player.setReleaseMode(ReleaseMode.stop);
       } catch (_) {}
+      _configured = true;
     }
 
-    guard = Timer(Duration(milliseconds: config.maxLifetimeMs), destroy);
-    sub = player.onPlayerComplete.listen((_) => destroy());
-
     try {
-      final source = await _sourceFor(id, config);
-      if (source == null || gen != _gen) {
-        await destroy();
-        return;
-      }
-      final ctx = _context();
-      if (ctx != null) await player.setAudioContext(ctx);
-      await player.play(source);
+      // stop + play is the reliable path on audioplayers; seek/resume often stays silent.
+      try {
+        await player.stop();
+      } catch (_) {}
+      if (gen != _gen) return;
+      final startMs = config.soundStartMs(id);
+      await player.play(
+        source,
+        position: startMs > 0 ? Duration(milliseconds: startMs) : Duration.zero,
+      );
     } catch (e) {
       debugPrint('wheel sound failed: $e');
-      await destroy();
     }
   }
 

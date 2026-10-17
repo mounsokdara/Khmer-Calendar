@@ -1,29 +1,36 @@
+import 'dart:ui' show PlatformDispatcher;
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'haptics.dart';
+import 'home_screen.dart';
 import 'i18n.dart';
 import 'net.dart';
 import 'permissions.dart';
 import 'screens/events.dart';
 import 'screens/licenses.dart';
 import 'screens/more.dart';
+import 'screens/more/privacy_policy_page.dart';
 import 'screens/calendar.dart';
 import 'screens/setup.dart';
 import 'screens/shell.dart';
 import 'screens/splash.dart';
 import 'screens/today.dart';
 import 'screens/weather_page.dart';
+import 'screens/widget_pick.dart';
 import 'store.dart';
+import 'widgets/stroke_text.dart';
 import 'theme.dart';
 
 final store = AppStore();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
   await Future.wait([NetStatus.start(), Haptics.instance.init()]);
   runApp(KhmerCalendarApp(store: store));
@@ -46,10 +53,17 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
   void initState() {
     super.initState();
     widget.store.addListener(_onStore);
+    StrokeText.enabled = widget.store.textStroke;
+    final launchRoute = PlatformDispatcher.instance.defaultRouteName;
+    final floatingPick = launchRoute.startsWith('/widget-pick');
+    if (!floatingPick && launchRoute.startsWith('/') && launchRoute != '/' && launchRoute != '/splash') {
+      widget.store.pendingRoute = launchRoute;
+    }
     router = GoRouter(
       refreshListenable: widget.store.routerTick,
-      initialLocation: '/splash',
+      initialLocation: floatingPick ? launchRoute : '/splash',
       redirect: (ctx, state) {
+        if (state.uri.path == '/widget-pick') return null;
         if (!widget.store.hydrated) return '/splash';
         if (!widget.store.setupDone && state.uri.path != '/get-started') return '/get-started';
         if (widget.store.setupDone) {
@@ -85,6 +99,15 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
             GoRoute(path: '/more', builder: (_, _) => MorePage(store: widget.store)),
           ],
         ),
+        GoRoute(
+          path: '/widget-pick',
+          builder: (_, state) => WidgetPickPage(
+            store: widget.store,
+            widgetId: int.tryParse(state.uri.queryParameters['id'] ?? '') ?? 0,
+            year: int.tryParse(state.uri.queryParameters['y'] ?? '') ?? DateTime.now().year,
+            month: int.tryParse(state.uri.queryParameters['m'] ?? '') ?? DateTime.now().month,
+          ),
+        ),
         GoRoute(path: '/settings', builder: (_, _) => SettingsPage(store: widget.store)),
         GoRoute(path: '/settings/theme', builder: (_, _) => ThemePage(store: widget.store)),
         GoRoute(path: '/settings/notifications', builder: (_, _) => NotificationsPage(store: widget.store)),
@@ -92,6 +115,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
         GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
         GoRoute(path: '/about', builder: (_, _) => AboutPage(store: widget.store)),
+        GoRoute(path: '/privacy-policy', builder: (_, _) => PrivacyPolicyPage(store: widget.store)),
         GoRoute(
           path: '/license',
           builder: (_, _) => OssLicensePage(store: widget.store),
@@ -115,6 +139,7 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
 
   void _onStore() {
     final s = widget.store;
+    StrokeText.enabled = s.textStroke;
     final sig =
         '${s.theme}|${s.colorScheme}|${s.materialYou}|${s.dynamicColor}|${s.extraDark}|${s.accentColor}|${s.highlightColor}|${s.highlightAlpha}|${s.lang}|${s.hydrated}|${s.setupDone}';
     if (sig == _visualSig) return;
@@ -167,6 +192,9 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     final s = widget.store;
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
+        final lightTheme = _theme(Brightness.light, extraDark: false, dynamicScheme: lightDynamic);
+        final darkTheme = _theme(Brightness.dark, extraDark: s.extraDark, dynamicScheme: darkDynamic);
+        syncWidgetTheme(s, lightTheme.colorScheme, darkTheme.colorScheme);
         return MaterialApp.router(
           title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
           debugShowCheckedModeBanner: false,
@@ -178,10 +206,16 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: _theme(Brightness.light, extraDark: false, dynamicScheme: lightDynamic),
-          darkTheme: _theme(Brightness.dark, extraDark: s.extraDark, dynamicScheme: darkDynamic),
+          theme: lightTheme,
+          darkTheme: darkTheme,
           themeMode: s.theme == 'light' ? ThemeMode.light : s.theme == 'dark' ? ThemeMode.dark : ThemeMode.system,
           routerConfig: router,
+          builder: (context, child) {
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: systemBarStyle(Theme.of(context), Theme.of(context).colorScheme.surface),
+            child: child ?? const SizedBox.shrink(),
+          );
+          },
         );
       },
     );

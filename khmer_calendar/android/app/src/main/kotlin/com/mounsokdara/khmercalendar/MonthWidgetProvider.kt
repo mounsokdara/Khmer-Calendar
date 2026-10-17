@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.AbsoluteSizeSpan
@@ -51,15 +50,32 @@ class MonthWidgetProvider : AppWidgetProvider() {
         const val ACTION_SHIFT = "com.mounsokdara.khmercalendar.MONTH_SHIFT"
         const val EXTRA_UNIT = "unit"
         const val EXTRA_DIR = "dir"
-        private val COLOR_TODAY = Color.parseColor("#FFFFD54F")
-        private val COLOR_PUBLIC = Color.parseColor("#FFFF8A80")
-        private val COLOR_OTHER = Color.parseColor("#FF90CAF9")
-        private val COLOR_DIM = Color.parseColor("#66FFFFFF")
 
         fun refreshAll(context: Context) {
             val mgr = AppWidgetManager.getInstance(context)
             val ids = mgr.getAppWidgetIds(ComponentName(context, MonthWidgetProvider::class.java))
             for (id in ids) mgr.updateAppWidget(id, build(context, id))
+        }
+
+        fun shownOf(context: Context, widgetId: Int): Pair<Int, Int> = shown(context, widgetId)
+
+        /** Used by [MonthPickActivity]: jump this widget to [year]/[month] and redraw it. */
+        fun setShown(context: Context, widgetId: Int, year: Int, month: Int) {
+            if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+            WidgetStore.prefs(context).edit()
+                .putInt("month_y_$widgetId", year)
+                .putInt("month_m_$widgetId", month)
+                .apply()
+            AppWidgetManager.getInstance(context).updateAppWidget(widgetId, build(context, widgetId))
+        }
+
+        private fun pickPi(context: Context, widgetId: Int): PendingIntent {
+            val intent =
+                Intent(context, MonthPickActivity::class.java)
+                    .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            return PendingIntent.getActivity(context, 7 + widgetId * 10, intent, flags)
         }
 
         private fun shown(context: Context, widgetId: Int): Pair<Int, Int> {
@@ -157,8 +173,23 @@ class MonthWidgetProvider : AppWidgetProvider() {
             return context.resources.getIdentifier("head_$i", "id", context.packageName)
         }
 
-        private fun cellLabel(day: Int, name: String): CharSequence {
-            val num = day.toString()
+        private fun ringId(context: Context, i: Int): Int {
+            return context.resources.getIdentifier("ring_$i", "id", context.packageName)
+        }
+
+        private val HEAD_KM = arrayOf("អាទិត្យ", "ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ.", "សុក្រ", "សៅរ៍")
+        private val HEAD_EN = arrayOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+
+        private fun monthSub(context: Context, year: Int, month: Int): String {
+            val raw = WidgetStore.prefs(context).getString("month_info", null) ?: return ""
+            return try {
+                JSONObject(raw).optString("%04d-%02d".format(year, month), "")
+            } catch (_: Exception) {
+                ""
+            }
+        }
+
+        private fun cellLabel(num: String, name: String): CharSequence {
             if (name.isEmpty()) return num
             val s = SpannableString("$num\n$name")
             s.setSpan(AbsoluteSizeSpan(8, true), num.length + 1, s.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -171,11 +202,20 @@ class MonthWidgetProvider : AppWidgetProvider() {
             val weekStart = WidgetStore.weekStartsOn(context)
             val (year, month) = shown(context, widgetId)
             val months = if (lang == "en") WidgetStore.MONTHS_EN else WidgetStore.MONTHS_KM
-            val short = if (lang == "en") WidgetStore.WEEK_SHORT_EN else WidgetStore.WEEK_SHORT_KM
+            val short = if (lang == "en") HEAD_EN else HEAD_KM
             val markMap = marks(context)
             val nameMap = names(context)
-            views.setTextViewText(R.id.month_year, year.toString())
-            views.setTextViewText(R.id.month_name, months[(month - 1).coerceIn(0, 11)])
+            val pal = WidgetTheme.load(context)
+            WidgetTheme.tint(context, views, pal, R.id.month_bg) { it.surface }
+            WidgetTheme.text(context, views, pal, R.id.month_today) { it.primary }
+            WidgetTheme.text(context, views, pal, R.id.month_name) { it.onSurface }
+            WidgetTheme.text(context, views, pal, R.id.month_sub) { it.onVariant }
+            val monthName = months[(month - 1).coerceIn(0, 11)]
+            views.setTextViewText(
+                R.id.month_name,
+                if (lang == "en") "$monthName $year" else "$monthName គ.ស ${WidgetTheme.khmerNum(year)}",
+            )
+            views.setTextViewText(R.id.month_sub, monthSub(context, year, month))
             views.setTextViewText(R.id.month_today, if (lang == "en") "Today" else "ថ្ងៃនេះ")
             val today = Calendar.getInstance()
             val onThisMonth =
@@ -184,6 +224,7 @@ class MonthWidgetProvider : AppWidgetProvider() {
             for (i in 0 until 7) {
                 val idx = (weekStart + i) % 7
                 views.setTextViewText(headId(context, i), short[idx])
+                WidgetTheme.text(context, views, pal, headId(context, i)) { it.onVariant }
             }
             val start = gridStart(year, month, weekStart)
             for (i in 0 until 42) {
@@ -197,18 +238,21 @@ class MonthWidgetProvider : AppWidgetProvider() {
                 val flags = markMap.optString(isoOf(d), "")
                 val sunday = d.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
                 val id = cellId(context, i)
+                val dayNum = d.get(Calendar.DAY_OF_MONTH)
                 val name = if (inMonth) nameMap.optString(isoOf(d), "") else ""
-                views.setTextViewText(id, cellLabel(d.get(Calendar.DAY_OF_MONTH), name))
+                views.setTextViewText(id, cellLabel(if (lang == "en") dayNum.toString() else WidgetTheme.khmerNum(dayNum), name))
                 views.setInt(id, "setMaxLines", 3)
-                val color =
+                val ring = ringId(context, i)
+                views.setViewVisibility(ring, if (isToday) View.VISIBLE else View.GONE)
+                if (isToday) WidgetTheme.tint(context, views, pal, ring) { it.primary }
+                val pick: (WidgetTheme.Tones) -> Int =
                     when {
-                        isToday -> COLOR_TODAY
-                        !inMonth -> COLOR_DIM
-                        flags.contains('h') -> COLOR_OTHER
-                        flags.contains('p') || sunday -> COLOR_PUBLIC
-                        else -> Color.WHITE
+                        !inMonth -> { t -> t.dim() }
+                        flags.contains('p') || sunday -> { t -> t.publicDay }
+                        flags.contains('h') -> { t -> t.holiday }
+                        else -> { t -> t.onSurface }
                     }
-                views.setTextColor(id, color)
+                WidgetTheme.text(context, views, pal, id, pick)
                 views.setViewVisibility(
                     silId(context, i),
                     if (inMonth && flags.contains('s')) View.VISIBLE else View.GONE,
@@ -218,15 +262,12 @@ class MonthWidgetProvider : AppWidgetProvider() {
                     WidgetStore.launch(context, "today", isoOf(d)),
                 )
             }
-            views.setOnClickPendingIntent(R.id.year_prev, shiftPi(context, widgetId, "year", -1, 1))
-            views.setOnClickPendingIntent(R.id.year_next, shiftPi(context, widgetId, "year", 1, 2))
-            views.setOnClickPendingIntent(R.id.month_prev, shiftPi(context, widgetId, "month", -1, 3))
-            views.setOnClickPendingIntent(R.id.month_next, shiftPi(context, widgetId, "month", 1, 4))
             views.setOnClickPendingIntent(R.id.month_today, shiftPi(context, widgetId, "today", 0, 5))
             val openCalendar = WidgetStore.launch(context, "calendar")
             views.setOnClickPendingIntent(R.id.month_root, openCalendar)
-            views.setOnClickPendingIntent(R.id.month_year, openCalendar)
-            views.setOnClickPendingIntent(R.id.month_name, openCalendar)
+            val pick = pickPi(context, widgetId)
+            views.setOnClickPendingIntent(R.id.month_name, pick)
+            views.setOnClickPendingIntent(R.id.month_sub, pick)
             return views
         }
     }

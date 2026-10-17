@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../home_screen.dart';
 import '../../i18n.dart';
@@ -8,7 +7,6 @@ import '../../location.dart';
 import '../../permissions.dart';
 import '../../reminders.dart';
 import '../../store.dart';
-import '../../theme.dart';
 import '../../custom_components/slide_snackbar.dart';
 import '../../widgets/overlay_page.dart';
 import '../../widgets/segmented_list.dart';
@@ -142,18 +140,6 @@ class _PrivacyPageState extends State<PrivacyPage> {
                       }
                       if (context.mounted) showGpsSnack(context, store.lang, store.locationOn ? r : GpsResult.denied);
                     },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              SegmentedGroup(
-                children: [
-                  SegmentedTile(
-                    leading: const Icon(Icons.privacy_tip_outlined),
-                    title: t(lang, 'privacyPolicy'),
-                    subtitle: t(lang, 'privacyPolicySub'),
-                    trailing: const Icon(Icons.open_in_new, size: 18),
-                    onTap: () => launchUrl(Uri.parse(appPrivacyUrl), mode: LaunchMode.externalApplication),
                   ),
                 ],
               ),
