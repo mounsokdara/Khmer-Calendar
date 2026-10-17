@@ -96,10 +96,9 @@ class AppSounds {
   String _wheel = wheelSoundNone;
   int _gen = 0;
   Future<Source?>? _custom;
-  final List<AudioPlayer> _pool = [];
+  final Set<AudioPlayer> _live = {};
   DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
   WheelConfig? _config;
-  int _next = 0;
 
   String get wheel => _wheel;
 
@@ -108,12 +107,6 @@ class AppSounds {
     _wheel = normalized.isEmpty ? wheelSoundNone : normalized;
     _gen++;
     _custom = null;
-    // Clear pool so next play reloads the new source
-    for (final p in _pool) {
-      unawaited(p.dispose());
-    }
-    _pool.clear();
-    _next = 0;
     unawaited(_loadConfig());
   }
 
@@ -132,31 +125,41 @@ class AppSounds {
     final minGap = Duration(milliseconds: config.minGapMs);
     final now = DateTime.now();
     if (now.difference(_last) < minGap) return;
+    if (_live.length >= config.maxLivePlayers) return;
     _last = now;
 
-    final source = await _sourceFor(id, config);
-    if (source == null || gen != _gen) return;
+    final player = AudioPlayer();
+    _live.add(player);
+    StreamSubscription<void>? sub;
+    Timer? guard;
+    var destroyed = false;
 
-    // Reuse / grow a small fixed pool instead of creating+disposing every time
-    final maxPlayers = config.maxLivePlayers.clamp(1, 8);
-    while (_pool.length < maxPlayers) {
-      final p = AudioPlayer();
-      final ctx = _context();
-      if (ctx != null) await p.setAudioContext(ctx);
-      _pool.add(p);
+    Future<void> destroy() async {
+      if (destroyed) return;
+      destroyed = true;
+      guard?.cancel();
+      _live.remove(player);
+      try {
+        await sub?.cancel();
+        await player.dispose();
+      } catch (_) {}
     }
 
-    final player = _pool[_next % _pool.length];
-    _next++;
+    guard = Timer(Duration(milliseconds: config.maxLifetimeMs), destroy);
+    sub = player.onPlayerComplete.listen((_) => destroy());
 
     try {
-      // Replay: stop → set source → seek 0 → resume
-      await player.stop();
-      await player.setSource(source);
-      await player.seek(Duration.zero);
-      await player.resume();
+      final source = await _sourceFor(id, config);
+      if (source == null || gen != _gen) {
+        await destroy();
+        return;
+      }
+      final ctx = _context();
+      if (ctx != null) await player.setAudioContext(ctx);
+      await player.play(source);
     } catch (e) {
       debugPrint('wheel sound failed: $e');
+      await destroy();
     }
   }
 
