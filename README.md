@@ -27,9 +27,9 @@ flutter run -d chrome
 ## Packages (one file per architecture)
 Every release has standalone files, each with its architecture in the name. Pick the one for your device:
 - **Android:** `KhmerCalendar-arm64.apk` (almost every phone), `-arm32.apk` (old 32-bit phones), `-x64.apk` (emulators, Intel Chromebooks), `-arm32_64.apk` (arm + arm64 in one file) or `-universal.apk` (arm, arm64 and x64 in one file).
-- **Windows:** `KhmerCalendar-windows-x64.zip`, `KhmerCalendar-windows-arm64.zip`, plus the x64 setup wizard below.
+- **Windows:** `KhmerCalendar-windows-x64.zip`, `KhmerCalendar-windows-arm64.zip` or `KhmerCalendar-windows-universal.zip` (both in one zip, start it with `KhmerCalendar.cmd`), plus the x64 setup wizard below.
 - **macOS:** `KhmerCalendar-macos-arm64.dmg` (Apple Silicon), `-x86_64.dmg` (Intel) or `-universal.dmg` (both).
-- **Linux:** `KhmerCalendar-linux-x64.tar.gz` or `KhmerCalendar-linux-arm64.tar.gz`.
+- **Linux:** `KhmerCalendar-linux-x64.tar.gz`, `KhmerCalendar-linux-arm64.tar.gz` or `KhmerCalendar-linux-universal.tar.gz` (both in one archive, start it with `khmer-calendar.sh`).
 
 Flutter cannot build 32-bit x86 or ARMv5/v6 (`armeabi`), so there are no such packages.
 
