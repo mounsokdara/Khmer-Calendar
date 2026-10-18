@@ -24,9 +24,18 @@ flutter run -d chrome
 ## Privacy
 [Privacy Policy](PRIVACY.md): no accounts, ads or analytics; your data stays on your device.
 
+## Packages (one file per architecture)
+Every release has standalone files, each with its architecture in the name. Pick the one for your device:
+- **Android:** `KhmerCalendar-arm64.apk` (almost every phone), `-arm32.apk` (old 32-bit phones), `-x64.apk` (emulators, Intel Chromebooks), `-arm32_64.apk` (arm + arm64 in one file) or `-universal.apk` (arm, arm64 and x64 in one file).
+- **Windows:** `KhmerCalendar-windows-x64.zip`, `KhmerCalendar-windows-arm64.zip`, plus the x64 setup wizard below.
+- **macOS:** `KhmerCalendar-macos-arm64.dmg` (Apple Silicon), `-x86_64.dmg` (Intel) or `-universal.dmg` (both).
+- **Linux:** `KhmerCalendar-linux-x64.tar.gz` or `KhmerCalendar-linux-arm64.tar.gz`.
+
+Flutter cannot build 32-bit x86 or ARMv5/v6 (`armeabi`), so there are no such packages.
+
 ## Windows: installer or portable
 - **Setup wizard:** `KhmerCalendar-windows-setup.exe` installs for the current user (no admin needed), adds a Start menu shortcut and an uninstaller.
-- **Portable:** `khmer-calendar-portable.zip`, unzip anywhere and run `khmer_calendar.exe`. Nothing is installed.
+- **Portable:** `KhmerCalendar-windows-x64.zip` (Intel/AMD) or `KhmerCalendar-windows-arm64.zip` (ARM PCs), unzip anywhere and run `khmer_calendar.exe`. Nothing is installed.
 
 ## Windows: "Unknown publisher" warning
 The Windows zip is signed with the maintainer's own certificate, which Windows does not recognise, so SmartScreen may say "Windows protected your PC". Click **More info**, then **Run anyway**.

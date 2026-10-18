@@ -21,15 +21,33 @@ jobs:
     secrets: inherit
 
   linux:
-    runs-on: ubuntu-latest
+    name: linux-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    # The arm64 job is best-effort so it can never block the x64 release.
+    continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, runner: ubuntu-latest, experimental: false }
+          - { arch: arm64, runner: ubuntu-24.04-arm, experimental: true }
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
+        if: matrix.arch == 'x64'
         with:
           flutter-version: "3.47.4"
           channel: stable
           cache: true
+      # No Linux arm64 SDK archive is published, so the arm64 job installs Flutter from git
+      # (the tool downloads the native arm64 Dart SDK itself).
+      - name: Flutter SDK 3.47.4 from git (arm64)
+        if: matrix.arch == 'arm64'
+        run: |
+          git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/flutter/bin/flutter" --version
       - name: Linux toolchain
         run: |
           sudo apt-get update
@@ -40,11 +58,11 @@ jobs:
         working-directory: khmer_calendar
       - name: Pack linux
         run: |
-          tar -C khmer_calendar/build/linux/x64/release/bundle -czf KhmerCalendar-linux.tar.gz .
+          tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
-          name: linux
-          path: KhmerCalendar-linux.tar.gz
+          name: linux-${{ matrix.arch }}
+          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -102,13 +120,8 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          cp dist/android/app-release.apk release-files/KhmerCalendar.apk
-          cp dist/windows/khmer-calendar-portable.zip release-files/khmer-calendar-portable.zip
-          cp dist/windows/KhmerCalendar-windows-setup.exe release-files/KhmerCalendar-windows-setup.exe
-          cp dist/macos/KhmerCalendar.dmg release-files/KhmerCalendar.dmg
-          cp dist/linux/KhmerCalendar-linux.tar.gz release-files/KhmerCalendar-linux.tar.gz
-          cp dist/project/KhmerCalendar-project.zip release-files/KhmerCalendar-project.zip
-          cp dist/web/KhmerCalendar-web.zip release-files/KhmerCalendar-web.zip
+          # Every package job uploads its own file named KhmerCalendar-<os/arch>.<ext>; publish them as separate assets.
+          find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
           ls -lh release-files
       - name: Publish GitHub Release
         env:

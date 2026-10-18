@@ -14,8 +14,8 @@ const _release = 'https://github.com/mounsokdara/Khmer-Calendar/releases/latest/
 
 /// Flip to true when the Release workflow publishes one standalone file per architecture
 /// (KhmerCalendar-arm64.apk, KhmerCalendar-windows-x64.zip, KhmerCalendar-macos-arm64.dmg, ...).
-/// While false, the download pages keep using the old single-file names.
-const splitReleaseAssets = false;
+/// While false, the download pages keep using the old single-file names. The Windows setup wizard stays x64 only.
+const splitReleaseAssets = true;
 
 /// Picks the file for this device when the row is for the OS the app runs on, otherwise a safe default.
 String _packFile(String file) {
@@ -26,6 +26,7 @@ String _packFile(String file) {
     case 'KhmerCalendar.apk':
       return 'KhmerCalendar-${on(TargetPlatform.android) && arch != null ? arch : 'universal'}.apk';
     case 'KhmerCalendar-windows.zip':
+    case 'khmer-calendar-portable.zip':
       return 'KhmerCalendar-windows-${on(TargetPlatform.windows) && arch == 'arm64' ? 'arm64' : 'x64'}.zip';
     case 'KhmerCalendar.dmg':
       final mac = on(TargetPlatform.macOS) ? (arch == 'x64' ? 'x86_64' : 'arm64') : 'universal';
