@@ -1,5 +1,5 @@
 # Silent install -> check files and shortcut -> silent uninstall -> check removal.
-# Usage: ./test-installer.ps1 -Setup <KhmerCalendar-windows-setup.exe>
+# Usage: ./test-installer.ps1 -Setup <KhmerCalendar-windows-x64-setup.exe | -universal-setup.exe>
 param([Parameter(Mandatory = $true)][string]$Setup)
 $ErrorActionPreference = 'Stop'
 $dir = Join-Path $env:RUNNER_TEMP 'kc-install-test'
