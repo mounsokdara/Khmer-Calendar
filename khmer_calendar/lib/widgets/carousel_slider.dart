@@ -149,37 +149,27 @@ class _CarouselSliderState extends State<CarouselSlider> {
     //               cannot scroll further (or there is none).
     //
     double? delta;
-    var claim = false;
 
     if (alt) {
       if (dy.abs() >= _wheelThreshold || dx.abs() >= _wheelThreshold) {
         delta = dy.abs() >= dx.abs() ? dy : dx;
-        claim = true; // block vertical while Alt is held
       }
     } else if (dx.abs() > dy.abs() && dx.abs() >= _wheelThreshold) {
       delta = dx;
-      claim = true;
     } else if (dy.abs() >= _wheelThreshold && !_verticalParentCanScroll(dy)) {
       delta = dy;
-      claim = true;
     }
 
     if (delta == null) return;
 
-    // Claim exclusive handling so Scrollable ancestors do not also apply the delta.
-    if (claim) {
-      GestureBinding.instance.pointerSignalResolver.register(event, (resolved) {
-        if (resolved is PointerScrollEvent) {
-          final d = resolved.scrollDelta.dy.abs() >= resolved.scrollDelta.dx.abs()
-              ? resolved.scrollDelta.dy
-              : resolved.scrollDelta.dx;
-          // Re-read Alt in case keys changed mid-dispatch; still page with resolved delta.
-          _pageBy(alt ? (dy.abs() >= dx.abs() ? dy : dx) : d);
-        }
-      });
-    } else {
-      _pageBy(delta);
-    }
+    final useDelta = delta;
+
+    // Claim exclusive handling so Scrollable ancestors do not also apply the
+    // delta. Required when Alt is held (block vertical) and when we steal a
+    // vertical wheel that the parent cannot use.
+    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
+      _pageBy(useDelta);
+    });
   }
 
   @override
