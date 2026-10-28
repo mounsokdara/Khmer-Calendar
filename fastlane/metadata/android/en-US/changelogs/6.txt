@@ -1,0 +1,3 @@
+Khmer Calendar 1.0.5
+- Mouse / trackpad scroll wheel now changes months horizontally
+- Hold Alt while scrolling to reverse the scroll direction
