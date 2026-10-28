@@ -140,27 +140,46 @@ class _CarouselSliderState extends State<CarouselSlider> {
     final dy = event.scrollDelta.dy;
     final alt = _altHeld;
 
-    // Axis policy:
+    // Decide whether this wheel event should drive horizontal month paging.
     //
-    //   Alt held  → always remap wheel to horizontal month paging (swap).
+    //   Alt held  → always claim the signal for horizontal paging and block
+    //               the parent vertical ListView (PointerSignalResolver).
     //   No Alt    → horizontal delta pages months;
     //               vertical delta pages months only when the vertical parent
-    //               cannot scroll further in that direction (or has no vertical parent).
+    //               cannot scroll further (or there is none).
     //
     double? delta;
+    var claim = false;
+
     if (alt) {
       if (dy.abs() >= _wheelThreshold || dx.abs() >= _wheelThreshold) {
         delta = dy.abs() >= dx.abs() ? dy : dx;
+        claim = true; // block vertical while Alt is held
       }
     } else if (dx.abs() > dy.abs() && dx.abs() >= _wheelThreshold) {
       delta = dx;
+      claim = true;
     } else if (dy.abs() >= _wheelThreshold && !_verticalParentCanScroll(dy)) {
-      // Vertical wheel free to use for horizontal paging.
       delta = dy;
+      claim = true;
     }
 
     if (delta == null) return;
-    _pageBy(delta);
+
+    // Claim exclusive handling so Scrollable ancestors do not also apply the delta.
+    if (claim) {
+      GestureBinding.instance.pointerSignalResolver.register(event, (resolved) {
+        if (resolved is PointerScrollEvent) {
+          final d = resolved.scrollDelta.dy.abs() >= resolved.scrollDelta.dx.abs()
+              ? resolved.scrollDelta.dy
+              : resolved.scrollDelta.dx;
+          // Re-read Alt in case keys changed mid-dispatch; still page with resolved delta.
+          _pageBy(alt ? (dy.abs() >= dx.abs() ? dy : dx) : d);
+        }
+      });
+    } else {
+      _pageBy(delta);
+    }
   }
 
   @override
