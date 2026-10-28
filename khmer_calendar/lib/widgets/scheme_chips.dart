@@ -1,4 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 import '../i18n.dart';
 import '../store.dart';
@@ -21,12 +24,106 @@ const colorPresets = [
   '#9A3B38',
 ];
 
-class SchemeChipScroller extends StatelessWidget {
+class SchemeChipScroller extends StatefulWidget {
   const SchemeChipScroller({super.key, required this.store});
   final AppStore store;
 
   @override
+  State<SchemeChipScroller> createState() => _SchemeChipScrollerState();
+}
+
+class _SchemeChipScrollerState extends State<SchemeChipScroller> {
+  final _ctrl = ScrollController();
+
+  static const double _wheelThreshold = 20;
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  bool get _altHeld {
+    final keys = HardwareKeyboard.instance.logicalKeysPressed;
+    return keys.contains(LogicalKeyboardKey.altLeft) ||
+        keys.contains(LogicalKeyboardKey.altRight);
+  }
+
+  /// True if a vertical scrollable ancestor can still move in the direction of [dy].
+  bool _verticalParentCanScroll(double dy) {
+    if (dy == 0) return false;
+
+    ScrollableState? vertical;
+    context.visitAncestorElements((element) {
+      if (element is StatefulElement && element.state is ScrollableState) {
+        final state = element.state as ScrollableState;
+        final dir = state.axisDirection;
+        if (dir == AxisDirection.down || dir == AxisDirection.up) {
+          vertical = state;
+          return false;
+        }
+      }
+      return true;
+    });
+
+    final pos = vertical?.position;
+    if (pos == null || !pos.hasPixels || !pos.hasContentDimensions) {
+      return false;
+    }
+
+    if (dy > 0) {
+      return pos.pixels < pos.maxScrollExtent - 0.5;
+    }
+    return pos.pixels > pos.minScrollExtent + 0.5;
+  }
+
+  void _scrollBy(double delta) {
+    if (!_ctrl.hasClients) return;
+    final pos = _ctrl.position;
+    if (!pos.hasPixels || !pos.hasContentDimensions) return;
+    final next = (pos.pixels + delta).clamp(
+      pos.minScrollExtent,
+      pos.maxScrollExtent,
+    );
+    if ((next - pos.pixels).abs() < 0.5) return;
+    _ctrl.jumpTo(next);
+  }
+
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is! PointerScrollEvent) return;
+    if (!_ctrl.hasClients) return;
+
+    final dx = event.scrollDelta.dx;
+    final dy = event.scrollDelta.dy;
+    final alt = _altHeld;
+
+    // Same axis policy as the month carousel:
+    //   Alt held  → claim wheel for horizontal chip scroll, block vertical page scroll
+    //   No Alt    → horizontal delta scrolls chips;
+    //               vertical delta scrolls chips only when parent cannot scroll further
+    double? delta;
+
+    if (alt) {
+      if (dy.abs() >= _wheelThreshold || dx.abs() >= _wheelThreshold) {
+        delta = dy.abs() >= dx.abs() ? dy : dx;
+      }
+    } else if (dx.abs() > dy.abs() && dx.abs() >= _wheelThreshold) {
+      delta = dx;
+    } else if (dy.abs() >= _wheelThreshold && !_verticalParentCanScroll(dy)) {
+      delta = dy;
+    }
+
+    if (delta == null) return;
+
+    final useDelta = delta;
+    GestureBinding.instance.pointerSignalResolver.register(event, (_) {
+      _scrollBy(useDelta);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final store = widget.store;
     final enabled = store.materialYou && !store.dynamicColor;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -36,26 +133,40 @@ class SchemeChipScroller extends StatelessWidget {
           label: t(store.lang, 'schemeAria'),
           child: SizedBox(
             height: 76,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-              scrollDirection: Axis.horizontal,
-              itemCount: schemes.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (ctx, i) {
-                final s = schemes[i];
-                final selected = store.colorScheme == s.id;
-                return Opacity(
-                  opacity: store.dynamicColor || enabled ? 1 : 0.38,
-                  child: Tooltip(
-                    message: s.label,
-                    child: _SchemeChipButton(
-                      chip: s,
-                      selected: selected,
-                      onTap: enabled ? () => store.setColorScheme(s.id) : null,
-                    ),
-                  ),
-                );
-              },
+            child: Listener(
+              onPointerSignal: _onPointerSignal,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                    PointerDeviceKind.stylus,
+                    PointerDeviceKind.trackpad,
+                  },
+                ),
+                child: ListView.separated(
+                  controller: _ctrl,
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: schemes.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (ctx, i) {
+                    final s = schemes[i];
+                    final selected = store.colorScheme == s.id;
+                    return Opacity(
+                      opacity: store.dynamicColor || enabled ? 1 : 0.38,
+                      child: Tooltip(
+                        message: s.label,
+                        child: _SchemeChipButton(
+                          chip: s,
+                          selected: selected,
+                          onTap: enabled ? () => store.setColorScheme(s.id) : null,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ),
