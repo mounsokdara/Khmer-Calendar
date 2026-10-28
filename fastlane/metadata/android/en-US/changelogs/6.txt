@@ -1,4 +1,4 @@
 Khmer Calendar 1.0.5
 - Mouse / trackpad: horizontal scroll changes months
-- Hold Alt + scroll wheel to change months with the vertical wheel (axes swapped)
-- Vertical and horizontal scroll no longer fight each other
+- Vertical wheel changes months when the page cannot scroll further
+- Hold Alt + scroll: change months and block vertical page scroll
