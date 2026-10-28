@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../i18n.dart';
@@ -35,7 +34,7 @@ class SchemeChipScroller extends StatefulWidget {
 class _SchemeChipScrollerState extends State<SchemeChipScroller> {
   final _ctrl = ScrollController();
 
-  static const double _wheelThreshold = 20;
+  static const double _wheelThreshold = 8;
 
   @override
   void dispose() {
@@ -47,34 +46,6 @@ class _SchemeChipScrollerState extends State<SchemeChipScroller> {
     final keys = HardwareKeyboard.instance.logicalKeysPressed;
     return keys.contains(LogicalKeyboardKey.altLeft) ||
         keys.contains(LogicalKeyboardKey.altRight);
-  }
-
-  /// True if a vertical scrollable ancestor can still move in the direction of [dy].
-  bool _verticalParentCanScroll(double dy) {
-    if (dy == 0) return false;
-
-    ScrollableState? vertical;
-    context.visitAncestorElements((element) {
-      if (element is StatefulElement && element.state is ScrollableState) {
-        final state = element.state as ScrollableState;
-        final dir = state.axisDirection;
-        if (dir == AxisDirection.down || dir == AxisDirection.up) {
-          vertical = state;
-          return false;
-        }
-      }
-      return true;
-    });
-
-    final pos = vertical?.position;
-    if (pos == null || !pos.hasPixels || !pos.hasContentDimensions) {
-      return false;
-    }
-
-    if (dy > 0) {
-      return pos.pixels < pos.maxScrollExtent - 0.5;
-    }
-    return pos.pixels > pos.minScrollExtent + 0.5;
   }
 
   void _scrollBy(double delta) {
@@ -95,29 +66,18 @@ class _SchemeChipScrollerState extends State<SchemeChipScroller> {
 
     final dx = event.scrollDelta.dx;
     final dy = event.scrollDelta.dy;
-    final alt = _altHeld;
 
-    // Same axis policy as the month carousel:
-    //   Alt held  → claim wheel for horizontal chip scroll, block vertical page scroll
-    //   No Alt    → horizontal delta scrolls chips;
-    //               vertical delta scrolls chips only when parent cannot scroll further
-    double? delta;
+    // Over the chip row: any meaningful wheel/trackpad delta scrolls chips
+    // horizontally. Claim the signal so the parent page does not also move
+    // (especially important while Alt is held).
+    final dominant = dy.abs() >= dx.abs() ? dy : dx;
+    if (dominant.abs() < _wheelThreshold) return;
 
-    if (alt) {
-      if (dy.abs() >= _wheelThreshold || dx.abs() >= _wheelThreshold) {
-        delta = dy.abs() >= dx.abs() ? dy : dx;
-      }
-    } else if (dx.abs() > dy.abs() && dx.abs() >= _wheelThreshold) {
-      delta = dx;
-    } else if (dy.abs() >= _wheelThreshold && !_verticalParentCanScroll(dy)) {
-      delta = dy;
-    }
+    // Alt reverses direction (same “change scroll action” idea as calendar).
+    final delta = _altHeld ? -dominant : dominant;
 
-    if (delta == null) return;
-
-    final useDelta = delta;
     GestureBinding.instance.pointerSignalResolver.register(event, (_) {
-      _scrollBy(useDelta);
+      _scrollBy(delta);
     });
   }
 
