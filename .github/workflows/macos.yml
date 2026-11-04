@@ -1,7 +1,5 @@
-# macOS: build once (Xcode makes a universal app), then standalone pack jobs make one signed .dmg each:
-# KhmerCalendar-macos-arm64.dmg (Apple Silicon), KhmerCalendar-macos-x86_64.dmg (Intel) and
-# KhmerCalendar-macos-universal.dmg (both in one file).
-# Runs on its own (Actions tab > Run workflow) or is called by release.yml.
+# macOS: build once (Xcode makes a universal app), then standalone pack jobs make one signed .dmg each.
+# Also uploads update-macos.sh for in-app updates.
 name: macOS
 
 on:
@@ -36,6 +34,14 @@ jobs:
           name: macos-app
           path: macos-app.tar
           retention-days: 1
+      - name: Upload macOS updater script
+        run: |
+          cp tools/updater/update-macos.sh update-macos.sh
+          chmod +x update-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: updater-macos
+          path: update-macos.sh
 
   pack:
     name: macos-${{ matrix.arch }}

@@ -15,7 +15,6 @@ permissions:
 
 
 jobs:
-  # Per-platform build + sign lives in its own file (also runnable on its own).
   android:
     uses: ./.github/workflows/android.yml
     secrets: inherit
@@ -23,7 +22,6 @@ jobs:
   linux:
     name: linux-${{ matrix.arch }}
     runs-on: ${{ matrix.runner }}
-    # The arm64 job is best-effort so it can never block the x64 release.
     continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 45
     strategy:
@@ -40,8 +38,6 @@ jobs:
           flutter-version: "3.47.4"
           channel: stable
           cache: true
-      # No Linux arm64 SDK archive is published, so the arm64 job installs Flutter from git
-      # (the tool downloads the native arm64 Dart SDK itself).
       - name: Flutter SDK 3.47.4 from git (arm64)
         if: matrix.arch == 'arm64'
         run: |
@@ -59,10 +55,14 @@ jobs:
       - name: Pack linux
         run: |
           tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
+      - name: Build the updater
+        run: dart compile exe tools/updater/update.dart -o update-linux-${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
-          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
+          path: |
+            KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
+            update-linux-${{ matrix.arch }}
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -120,10 +120,9 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          # Every package job uploads its own file named KhmerCalendar-<os/arch>.<ext>; publish them as separate assets.
           find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
-          # Universal packages: x64 + arm64 in one file, with a launcher that starts the build matching the CPU.
-          # (Windows and Linux have no fat binaries like macOS, so the two builds sit side by side.)
+          # In-app update helpers (Windows / Linux / macOS)
+          find dist -type f \( -name 'update-windows.exe' -o -name 'update-linux-*' -o -name 'update-macos.sh' \) -exec cp -t release-files {} +
           if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ] && [ -f dist/windows-arm64/KhmerCalendar-windows-arm64.zip ]; then
             mkdir -p u-win/x64 u-win/arm64
             unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win/x64
@@ -147,7 +146,6 @@ jobs:
             tar -xzf dist/linux-arm64/KhmerCalendar-linux-arm64.tar.gz -C u-linux/arm64
             cat > u-linux/khmer-calendar.sh <<'LAUNCHER'
           #!/bin/sh
-          # Starts the build that matches this CPU (x64 or arm64).
           here="$(cd "$(dirname "$0")" && pwd)"
           case "$(uname -m)" in
             aarch64|arm64) dir=arm64 ;;
