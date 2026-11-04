@@ -9,6 +9,7 @@
 - Hold Alt + scroll: change months and block vertical page scroll
 - Keyboard: Left / Right arrow keys go to the previous / next day, month or week (not while typing in a text field or when a dialog is open)
 - Desktop update helpers for Windows, Linux and macOS (uploaded with each release)
+- Changelog inside the app (About > Changelog): shows the release notes, works offline with a saved copy
 
 ## Bug fixes:
 - (none in this release)
@@ -16,3 +17,4 @@
 ## Improvements:
 - Month navigation with mouse and trackpad feels more natural on desktop
 - Clear Data is now more helpful
+- About page redesigned: same layout as my other projects (hero card, quick actions, author card, version and legal tiles)
