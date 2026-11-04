@@ -58,7 +58,6 @@ class WheelConfig {
   }
 
   String? soundAsset(String id) => sound(id)?['asset']?.toString();
-  int soundStartMs(String id) => (sound(id)?['start_ms'] as num?)?.toInt() ?? 0;
   String soundLabel(String id, {required bool khmer}) =>
       sound(id)?[khmer ? 'km' : 'en']?.toString() ?? id;
 }
@@ -107,8 +106,6 @@ class AppSounds {
     _wheel = normalized.isEmpty ? wheelSoundNone : normalized;
     _gen++;
     _custom = null;
-    // Do not stop here — the sound picker calls setWheel then playWheel immediately;
-    // an async stop would race and mute the preview.
     unawaited(_loadConfig());
   }
 
@@ -116,8 +113,6 @@ class AppSounds {
     _config ??= await WheelConfig.load();
   }
 
-  /// Scroll-wheel / picker click. One shared player; stop then play so rapid
-  /// taps never stack sessions, but sound still actually plays.
   void playWheel() {
     Haptics.instance.tick();
     if (_wheel == wheelSoundNone) return;
@@ -126,7 +121,6 @@ class AppSounds {
 
   Future<void> _play(String id, int gen) async {
     final config = _config ??= await WheelConfig.load();
-    // Keep ticks audible while scrolling, but not so dense the device chokes.
     final gapMs = config.minGapMs < 25 ? 25 : config.minGapMs;
     final now = DateTime.now();
     if (now.difference(_last) < Duration(milliseconds: gapMs)) return;
@@ -147,16 +141,11 @@ class AppSounds {
     }
 
     try {
-      // stop + play is the reliable path on audioplayers; seek/resume often stays silent.
       try {
         await player.stop();
       } catch (_) {}
       if (gen != _gen) return;
-      final startMs = config.soundStartMs(id);
-      await player.play(
-        source,
-        position: startMs > 0 ? Duration(milliseconds: startMs) : Duration.zero,
-      );
+      await player.play(source);
     } catch (e) {
       debugPrint('wheel sound failed: $e');
     }
