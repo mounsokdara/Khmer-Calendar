@@ -40,6 +40,8 @@ Future<void> _message(BuildContext context, Lang lang, String title, String body
   );
 }
 
+/// "Check for updates": finds the release tag that matches version.txt, downloads the package for this
+/// device inside the app and opens the system installer. No browser required.
 Future<void> runInAppUpdateCheck(BuildContext context, Lang lang) async {
   if (NetStatus.isOffline) {
     await _message(context, lang, _s(lang, 'ពិនិត្យកំណែថ្មី', 'Check for updates'), t(lang, 'downloadOffline'));
@@ -158,14 +160,14 @@ Future<void> _downloadAndInstall(BuildContext context, Lang lang, UpdateBuild bu
     );
   } on UpdateCancelled {
     progress.dispose();
-    return;
+    return; // the dialog was already closed by Cancel
   } catch (e) {
     error = e;
   }
   progress.dispose();
 
   if (cancelled) return;
-  if (context.mounted) Navigator.of(context).pop();
+  if (context.mounted) Navigator.of(context).pop(); // close the progress dialog
   if (!context.mounted) return;
 
   if (error != null || path == null) {
@@ -186,6 +188,7 @@ Future<void> _install(BuildContext context, Lang lang, String path, UpdateBuild 
   if (!context.mounted) return;
 
   if (result == UpdateInstallResult.started) {
+    // Desktop: the updater is waiting for this app to quit; it swaps the files and starts the new version.
     if (updateRestartsApp) {
       showDialog<void>(
         context: context,

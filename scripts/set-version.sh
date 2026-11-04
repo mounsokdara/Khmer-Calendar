@@ -6,6 +6,13 @@
 #   scripts/set-version.sh --check          # fail if anything drifts
 #   scripts/set-version.sh --tag            # create/move local tag v<versionName> at HEAD
 #   scripts/set-version.sh --tag-push       # same + force-push the tag to origin
+#   scripts/set-version.sh 1.0.6 7 --tag    # bump, then tag
+#
+# Files:
+#   version.txt                         versionName= / versionCode=
+#   khmer_calendar/pubspec.yaml         version: NAME+CODE
+#   khmer_calendar/lib/theme.dart       appVersion + appBuildNumber (About screen)
+#   fastlane/.../changelogs/CODE.txt    stub created if missing (only on bump)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -71,6 +78,7 @@ check() {
   echo "OK: all version files agree"
 }
 
+# Create (or move) local annotated tag v<versionName> at HEAD.
 tag_local() {
   read_txt
   TAG="v${TXT_NAME}"
@@ -83,6 +91,7 @@ tag_local() {
   echo "tagged $TAG at $(git rev-parse --short HEAD)"
 }
 
+# Force-push the tag so origin points at the same commit.
 tag_push() {
   read_txt
   TAG="v${TXT_NAME}"
@@ -104,27 +113,35 @@ done
 set -- "${ARGS[@]+"${ARGS[@]}"}"
 
 case "${1:-}" in
-  --check) check; exit $? ;;
+  --check)
+    check
+    exit $?
+    ;;
   --apply)
-    apply_from_txt; check
+    apply_from_txt
+    check
     if [ "$DO_TAG" = 1 ]; then tag_local; fi
     if [ "$DO_TAG_PUSH" = 1 ]; then tag_push; fi
     exit 0
     ;;
   "")
     if [ "$DO_TAG" = 1 ]; then
+      # tag only, from current version.txt
       check || true
       tag_local
       if [ "$DO_TAG_PUSH" = 1 ]; then tag_push; fi
       exit 0
     fi
     echo "usage: set-version.sh <versionName> <versionCode> [--tag] [--tag-push]" >&2
+    echo "       set-version.sh --apply [--tag] [--tag-push]" >&2
+    echo "       set-version.sh --check" >&2
+    echo "       set-version.sh --tag | --tag-push" >&2
     exit 1
     ;;
 esac
 
 NAME="$1"
-CODE="${2:?usage: set-version.sh <versionName> <versionCode>}"
+CODE="${2:?usage: set-version.sh <versionName> <versionCode> [--tag] [--tag-push]}"
 [[ "$NAME" =~ ^[0-9]+(\.[0-9]+){1,2}$ ]] || { echo "versionName must look like 1.2.3" >&2; exit 1; }
 [[ "$CODE" =~ ^[0-9]+$ ]] || { echo "versionCode must be a number" >&2; exit 1; }
 
