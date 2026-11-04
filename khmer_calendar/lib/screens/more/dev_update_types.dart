@@ -1,6 +1,6 @@
 /// Repo the in-app updater reads from (override with
 /// `--dart-define=UPDATE_REPO=owner/name` when testing a fork).
-const updateRepo = String.fromEnvironment('UPDATE_REPO', defaultValue: 'mounsokdara/Khmer-Calendar.Dev');
+const updateRepo = String.fromEnvironment('UPDATE_REPO', defaultValue: 'mounsokdara/Khmer-Calendar');
 
 /// version.txt in that repo is the single source of truth for the latest version name.
 const updateVersionFileUrl = 'https://raw.githubusercontent.com/$updateRepo/main/version.txt';
