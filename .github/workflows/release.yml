@@ -52,17 +52,17 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build linux --release
         working-directory: khmer_calendar
+      - name: Build updater into the package folder
+        run: |
+          dart compile exe tools/updater/update.dart -o khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
+          chmod +x khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
       - name: Pack linux
         run: |
           tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
-      - name: Build the updater
-        run: dart compile exe tools/updater/update.dart -o update-linux-${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
-          path: |
-            KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
-            update-linux-${{ matrix.arch }}
+          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -120,9 +120,8 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
+          # Packages only (updater binaries live inside the zip / tar.gz / dmg).
           find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
-          # In-app update helpers (Windows / Linux / macOS)
-          find dist -type f \( -name 'update-windows.exe' -o -name 'update-linux-*' -o -name 'update-macos.sh' \) -exec cp -t release-files {} +
           if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ] && [ -f dist/windows-arm64/KhmerCalendar-windows-arm64.zip ]; then
             mkdir -p u-win/x64 u-win/arm64
             unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win/x64

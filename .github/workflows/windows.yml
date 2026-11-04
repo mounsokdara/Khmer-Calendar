@@ -1,6 +1,6 @@
 # Windows: one standalone job per architecture (x64, arm64): build, Authenticode-sign, bundle the Visual C++ runtime,
-# then make the portable zip KhmerCalendar-windows-<arch>.zip. The "installers" job then builds the setup
-# wizards from those finished builds. Also builds update-windows.exe for in-app updates.
+# then make the portable zip KhmerCalendar-windows-<arch>.zip (includes update-windows.exe for in-app updates).
+# The "installers" job then builds the setup wizards from those finished builds.
 name: Windows
 
 on:
@@ -52,6 +52,10 @@ jobs:
       - name: Bundle Visual C++ runtime (so it runs without the redistributable installed)
         shell: pwsh
         run: ./scripts/bundle-vcruntime.ps1 -Dir khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release -Arch ${{ matrix.arch }}
+      - name: Build updater into the package folder
+        shell: pwsh
+        run: |
+          dart compile exe tools/updater/update.dart -o khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\* -DestinationPath KhmerCalendar-windows-${{ matrix.arch }}.zip
@@ -63,24 +67,6 @@ jobs:
           name: windows-${{ matrix.arch }}
           if-no-files-found: ignore
           path: KhmerCalendar-windows-${{ matrix.arch }}.zip
-
-  updater:
-    # One x64 updater serves x64 and arm64 Windows (arm64 runs it through emulation).
-    runs-on: windows-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.47.4"
-          channel: stable
-          cache: true
-          architecture: x64
-      - run: dart compile exe tools/updater/update.dart -o update-windows.exe
-      - uses: actions/upload-artifact@v4
-        with:
-          name: updater-windows
-          path: update-windows.exe
 
   installers:
     name: windows-installers

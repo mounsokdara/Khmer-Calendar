@@ -1,5 +1,5 @@
 # macOS: build once (Xcode makes a universal app), then standalone pack jobs make one signed .dmg each.
-# Also uploads update-macos.sh for in-app updates.
+# Each .dmg volume contains the .app and update-macos.sh (for in-app updates).
 name: macOS
 
 on:
@@ -34,14 +34,6 @@ jobs:
           name: macos-app
           path: macos-app.tar
           retention-days: 1
-      - name: Upload macOS updater script
-        run: |
-          cp tools/updater/update-macos.sh update-macos.sh
-          chmod +x update-macos.sh
-      - uses: actions/upload-artifact@v4
-        with:
-          name: updater-macos
-          path: update-macos.sh
 
   pack:
     name: macos-${{ matrix.arch }}
@@ -57,7 +49,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: macos-app
-      - name: Thin (if needed), sign and pack
+      - name: Thin (if needed), sign and pack (.app + update-macos.sh)
         env:
           PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
           PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
@@ -66,7 +58,11 @@ jobs:
           APP=$(find app -maxdepth 1 -name "*.app" | head -1)
           if [ "${{ matrix.arch }}" != "universal" ]; then bash scripts/thin-macos.sh "$APP" "${{ matrix.arch }}"; fi
           bash scripts/sign-macos.sh "$APP"
-          hdiutil create -volname "Khmer Calendar" -srcfolder "$APP" -ov -format UDZO "KhmerCalendar-macos-${{ matrix.arch }}.dmg"
+          mkdir dmgroot
+          mv "$APP" dmgroot/
+          cp tools/updater/update-macos.sh dmgroot/update-macos.sh
+          chmod +x dmgroot/update-macos.sh
+          hdiutil create -volname "Khmer Calendar" -srcfolder dmgroot -ov -format UDZO "KhmerCalendar-macos-${{ matrix.arch }}.dmg"
           ls -lh "KhmerCalendar-macos-${{ matrix.arch }}.dmg"
       - uses: actions/upload-artifact@v4
         with:
