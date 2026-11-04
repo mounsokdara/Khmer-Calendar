@@ -15,3 +15,4 @@
 
 ## Improvements:
 - Month navigation with mouse and trackpad feels more natural on desktop
+- Clear Data is now more helpful
