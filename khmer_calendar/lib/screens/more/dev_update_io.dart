@@ -11,14 +11,12 @@ import 'dev_update_types.dart';
 
 const _channel = MethodChannel('khmer.permissions');
 
-/// Android (not the F-Droid build, F-Droid updates the app itself) and the three desktop systems.
 final bool inAppUpdateSupported =
     (Platform.isAndroid && !const bool.fromEnvironment('FDROID')) ||
     Platform.isWindows ||
     Platform.isLinux ||
     Platform.isMacOS;
 
-/// Desktop: installing closes the app; the updater program swaps the files and starts it again.
 final bool updateRestartsApp = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
 const _packageByDigit = <int, String>{0: 'universal', 1: 'arm32', 2: 'arm64', 3: 'x64', 4: 'arm32_64'};
@@ -62,10 +60,8 @@ const _sslCertHint =
     'Check the date/time is correct, open https://github.com in a browser once, '
     'or turn off antivirus HTTPS scanning, then try again.';
 
-/// Join path segments without putting backslash escapes in string literals (avoids tab bugs).
 String _joinPath(List<String> parts) => parts.where((p) => p.isNotEmpty).join(Platform.pathSeparator);
 
-/// Windows System32 tool path without embedding backslash-t in a Dart string literal.
 String _winSystem32(String exeName) {
   final root = Platform.environment['SystemRoot'];
   final base = (root == null || root.isEmpty) ? _joinPath(['C:', 'Windows']) : root;
@@ -431,8 +427,10 @@ Future<void> _extractUpdaterFromPackage(String archivePath, String updaterName) 
       );
     }
   } else if (Platform.isLinux) {
-    final r = await Process.run('tar', ['-xzf', archivePath, '-C', dir, './$updaterName', updaterName]);
-    if (r.exitCode != 0 || !out.existsSync()) {
+    // Package stores ./update-linux-x64. Requesting the bare name makes tar exit 2
+    // even when the file was extracted successfully — only check existsSync.
+    await Process.run('tar', ['-xzf', archivePath, '-C', dir, './$updaterName']);
+    if (!out.existsSync()) {
       throw UpdateException('Package is missing the updater ($updaterName)');
     }
     await Process.run('chmod', ['+x', out.path]);
