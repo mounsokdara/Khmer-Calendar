@@ -52,17 +52,20 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build linux --release
         working-directory: khmer_calendar
-      - name: Build updater into the package folder
+      - name: Build updater (separate asset + copy into package)
         run: |
-          dart compile exe tools/updater/update.dart -o khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
-          chmod +x khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
+          dart compile exe tools/updater/update.dart -o update-linux-${{ matrix.arch }}
+          chmod +x update-linux-${{ matrix.arch }}
+          cp update-linux-${{ matrix.arch }} khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
       - name: Pack linux
         run: |
           tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
-          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
+          path: |
+            KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
+            update-linux-${{ matrix.arch }}
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -120,8 +123,8 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          # Packages only (updater binaries live inside the zip / tar.gz / dmg).
-          find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
+          # App packages + separate updater binaries for in-app update.
+          find dist -type f \( -name 'KhmerCalendar-*' -o -name 'update-windows-*.exe' -o -name 'update-linux-*' -o -name 'update-macos.sh' \) ! -name '*.idsig' -exec cp -t release-files {} +
           if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ] && [ -f dist/windows-arm64/KhmerCalendar-windows-arm64.zip ]; then
             mkdir -p u-win/x64 u-win/arm64
             unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win/x64
@@ -168,8 +171,6 @@ jobs:
           TAG="v${VERSION}"
           NOTES_FILE=".github/release-body.md"
           echo "Publishing ${TAG}"
-          # GitHub's API sometimes answers 5xx (e.g. "HTTP 502") on release calls.
-          # Retry each call with a growing delay instead of failing the whole job.
           retry() {
             local n=1 max=5
             until "$@"; do
@@ -182,7 +183,6 @@ jobs:
               n=$((n + 1))
             done
           }
-          # Remove leftover drafts for this tag (e.g. a create that returned 502 but succeeded).
           drop_drafts() {
             local ids id
             ids=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
@@ -202,8 +202,6 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             retry gh release delete "$TAG" --yes --cleanup-tag
           fi
-          # Draft first, then upload the files one by one, then publish. A flaky call can
-          # no longer leave a half-published release behind.
           retry create_draft
           for f in release-files/*; do
             retry gh release upload "$TAG" "$f" --clobber
