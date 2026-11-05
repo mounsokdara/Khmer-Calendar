@@ -560,6 +560,19 @@ Future<UpdateInstallResult> installUpdateBuild(String path, UpdateBuild build) a
 
 Future<void> finishUpdateInstall() async {
   if (!updateRestartsApp) return;
-  await Future<void>.delayed(const Duration(milliseconds: 1200));
+  // The updater is already running on its own. End this task the same way Task
+  // Manager does — exit() leaves the Windows window process running, so the
+  // updater cannot replace the exe.
+  await Future<void>.delayed(const Duration(milliseconds: 700));
+  if (Platform.isWindows) {
+    final taskkill = _winSystem32('taskkill.exe');
+    try {
+      await Process.run(taskkill, ['/F', '/PID', '$pid']);
+    } catch (_) {}
+  } else {
+    try {
+      Process.killPid(pid, ProcessSignal.sigkill);
+    } catch (_) {}
+  }
   exit(0);
 }

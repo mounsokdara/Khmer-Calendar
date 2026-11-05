@@ -34,47 +34,38 @@ Map<String, String> _parse(List<String> args) {
 Future<bool> _alive(int watchPid) async {
   if (watchPid <= 0 || watchPid == pid) return false;
   if (Platform.isWindows) {
-    final r = await Process.run('tasklist', ['/FI', 'PID eq $watchPid', '/NH', '/FO', 'CSV']);
-    final out = '${r.stdout}';
-    if (_tasklistUnreadable(out)) {
-      final ps = await Process.run('powershell', [
-        '-NoProfile',
-        '-Command',
-        'if (Get-Process -Id $watchPid -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }',
-      ]);
-      return ps.exitCode == 0;
-    }
-    // CSV lines look like: "khmer_calendar.exe","1234","Session Name",...
-    return RegExp('"$watchPid"').hasMatch(out);
+    // tasklist is the wrong tool here: its text is localized and often still
+    // lists a process that End Task already closed (or the reverse). Ask Windows.
+    final r = await Process.run(_powershell, [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      'if (Get-Process -Id $watchPid -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }',
+    ]);
+    return r.exitCode == 0;
   }
   return (await Process.run('kill', ['-0', '$watchPid'])).exitCode == 0;
 }
 
-bool _tasklistUnreadable(String out) {
-  final t = out.trim();
-  if (t.isEmpty) return true;
-  if (t.contains('"') || t.contains('INFO:') || t.toLowerCase().contains('no tasks')) return false;
-  return true;
+String get _systemRoot {
+  final root = Platform.environment['SystemRoot'];
+  if (root != null && root.isNotEmpty) return root;
+  return r'C:\Windows';
 }
+
+String get _powershell => '$_systemRoot\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+
+String get _taskkill => '$_systemRoot\\System32\\taskkill.exe';
 
 /// Every process whose image name is the app (not this updater).
 Future<List<int>> _programPids(String exe) async {
   final name = exe.split(_sep).last;
   if (Platform.isWindows) {
-    final image = name.toLowerCase().endsWith('.exe') ? name : '$name.exe';
-    final r = await Process.run('tasklist', ['/FI', 'IMAGENAME eq $image', '/FO', 'CSV', '/NH']);
-    final out = '${r.stdout}';
-    final found = <int>[
-      for (final m in RegExp(r'"[^"]*","(\d+)"').allMatches(out))
-        if (int.tryParse(m.group(1)!) != null) int.parse(m.group(1)!),
-    ];
-    if (found.isNotEmpty || !_tasklistUnreadable(out)) {
-      return found.where((p) => p != pid).toList();
-    }
-    final base = image.toLowerCase().endsWith('.exe') ? image.substring(0, image.length - 4) : image;
+    final base = name.toLowerCase().endsWith('.exe') ? name.substring(0, name.length - 4) : name;
     final safe = base.replaceAll("'", "''");
-    final ps = await Process.run('powershell', [
+    final ps = await Process.run(_powershell, [
       '-NoProfile',
+      '-NonInteractive',
       '-Command',
       "(Get-Process -Name '$safe' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id) -join ' '",
     ]);
@@ -96,48 +87,97 @@ Future<bool> _programStillRunning(int watchPid, String exe) async {
   return (await _programPids(exe)).isNotEmpty;
 }
 
-/// End the running app task. [force] is Task Manager "End task" (taskkill /F, kill -9).
-Future<void> _endRunningProgram(int watchPid, String exe, {required bool force}) async {
+/// Task Manager "End task" for one process.
+/// No `/T`: a tree kill also targets this updater when the app started it, and
+/// Windows then refuses the whole kill ("Access is denied"), so the app stays.
+Future<void> _endPid(int target) async {
+  if (target <= 0 || target == pid) return;
+  if (Platform.isWindows) {
+    final tk = await Process.run(_taskkill, ['/F', '/PID', '$target']);
+    _say('taskkill /F /PID $target -> ${tk.exitCode} ${'${tk.stdout}'.trim()} ${'${tk.stderr}'.trim()}'.trim());
+    if (await _alive(target)) {
+      final ps = await Process.run(_powershell, [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        'Stop-Process -Id $target -Force -ErrorAction SilentlyContinue',
+      ]);
+      _say('Stop-Process -Force $target -> ${ps.exitCode} ${'${ps.stderr}'.trim()}'.trim());
+    }
+  } else {
+    final r = await Process.run('kill', ['-9', '$target']);
+    _say('kill -9 $target -> ${r.exitCode} ${'${r.stderr}'.trim()}'.trim());
+  }
+}
+
+Future<void> _endRunningProgram(int watchPid, String exe) async {
   final targets = <int>{...await _programPids(exe)};
   if (await _alive(watchPid)) targets.add(watchPid);
   targets.remove(pid);
   targets.removeWhere((p) => p <= 0);
-  if (targets.isEmpty) return;
-  _say('${force ? 'force ' : ''}ending task: ${targets.join(', ')}');
-  if (Platform.isWindows) {
-    for (final p in targets) {
-      await Process.run('taskkill', ['/PID', '$p', '/T', if (force) '/F']);
-    }
-  } else {
-    await Process.run('kill', [if (force) '-9', ...targets.map((p) => '$p')]);
+  if (targets.isEmpty) {
+    _say('recheck: program is not running');
+    return;
+  }
+  _say('ending task: ${targets.join(', ')}');
+  for (final target in targets) {
+    await _endPid(target);
   }
 }
 
-/// Recheck the running program. Let it exit on its own, then end the task until it is gone.
+/// Leave the app's process tree before ending it. Otherwise End Task kills us too.
+Future<void> _ensureDetached(List<String> args) async {
+  if (args.contains('--spawned')) return;
+  final self = Platform.resolvedExecutable;
+  final forwarded = [...args, '--spawned', '1'];
+  _say('leaving the app process tree');
+  if (Platform.isWindows) {
+    String q(String s) => "'${s.replaceAll("'", "''")}'";
+    final argList = forwarded.map(q).join(', ');
+    final script = 'Start-Process -FilePath ${q(self)} -WindowStyle Hidden -ArgumentList $argList';
+    final r = await Process.run(_powershell, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script]);
+    if (r.exitCode != 0) {
+      _say('could not detach (${r.exitCode}): ${r.stderr}');
+      return; // still try the update from here
+    }
+    exit(0);
+  }
+  try {
+    await Process.start(self, forwarded, mode: ProcessStartMode.detached);
+    exit(0);
+  } catch (e) {
+    _say('could not detach: $e');
+  }
+}
+
+/// Recheck the running program, then End Task until it is actually gone.
 Future<void> _closeApp(int watchPid, String exe) async {
-  for (var i = 0; i < 15; i++) {
+  for (var i = 0; i < 8; i++) {
     if (!await _programStillRunning(watchPid, exe)) {
       _say('app already exited (pid $watchPid)');
       await Future<void>.delayed(const Duration(milliseconds: 400));
       return;
     }
-    await Future<void>.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 250));
   }
 
-  for (var round = 1; round <= 8; round++) {
+  for (var round = 1; round <= 6; round++) {
     if (!await _programStillRunning(watchPid, exe)) {
-      await Future<void>.delayed(const Duration(milliseconds: 600));
-      _say('app closed');
-      return;
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      // One more look: Task Manager can take a moment to drop the process.
+      if (!await _programStillRunning(watchPid, exe)) {
+        _say('app closed');
+        return;
+      }
     }
     _say('recheck $round: program still running');
-    await _endRunningProgram(watchPid, exe, force: round >= 3);
-    await Future<void>.delayed(Duration(milliseconds: round >= 3 ? 700 : 450));
+    await _endRunningProgram(watchPid, exe);
+    await Future<void>.delayed(const Duration(milliseconds: 600));
   }
   if (await _programStillRunning(watchPid, exe)) {
     throw 'The app (pid $watchPid) did not close in time';
   }
-  await Future<void>.delayed(const Duration(milliseconds: 600));
+  await Future<void>.delayed(const Duration(milliseconds: 500));
   _say('app closed');
 }
 
@@ -187,7 +227,7 @@ Future<void> _copyOver(
         if (attempt >= 30) rethrow; // files stay locked for a moment after a process ends (antivirus, indexer)
         if (attempt == 1 || attempt % 4 == 0) {
           _say('file locked ($rel), recheck running program');
-          await _endRunningProgram(watchPid, exe, force: true);
+          await _endRunningProgram(watchPid, exe);
         }
         await Future<void>.delayed(const Duration(milliseconds: 400));
       }
@@ -217,6 +257,7 @@ Future<void> main(List<String> args) async {
     exit(2);
   }
   _say('--- update start: $args');
+  await _ensureDetached(args);
   try {
     await _closeApp(watchPid, exe);
     final stage = await _unpack(archive);

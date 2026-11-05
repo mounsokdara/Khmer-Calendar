@@ -21,23 +21,25 @@ done
 [ -n "$PID" ] && [ -n "$APP" ] && [ -n "$ARCHIVE" ] || { say "missing arguments"; exit 2; }
 say "--- update start: pid=$PID app=$APP archive=$ARCHIVE"
 
+# Leave the app's process group first. Ending the app from inside it does not stick.
+if [ "${KHMER_UPDATE_SPAWNED:-}" != 1 ]; then
+  say "leaving the app process tree"
+  KHMER_UPDATE_SPAWNED=1 nohup /bin/bash "$0" "$@" >> "$LOG" 2>&1 &
+  exit 0
+fi
+
 MNT=""
 cleanup() { [ -n "$MNT" ] && hdiutil detach "$MNT" -quiet -force >/dev/null 2>&1; rm -rf "$APP.new"; }
 fail() { say "update FAILED: $*"; cleanup; open "$APP" >/dev/null 2>&1; exit 1; }
 
-for _ in $(seq 1 12); do kill -0 "$PID" 2>/dev/null || break; sleep 0.3; done
+for _ in $(seq 1 6); do kill -0 "$PID" 2>/dev/null || break; sleep 0.25; done
 
-# Auto-recheck: if the program is still running, end that task, then look again.
-for round in 1 2 3 4 5 6 7 8; do
+# Auto-recheck, then End Task (kill -9). A plain kill is ignored by the app.
+for round in 1 2 3 4 5 6; do
   kill -0 "$PID" 2>/dev/null || { say "app closed"; break; }
-  if [ "$round" -ge 3 ]; then
-    say "recheck $round: still running pid $PID — force end task"
-    kill -9 "$PID" 2>/dev/null || true
-  else
-    say "recheck $round: still running pid $PID — end task"
-    kill "$PID" 2>/dev/null || true
-  fi
-  sleep 0.5
+  say "recheck $round: still running pid $PID — end task"
+  kill -9 "$PID" 2>/dev/null || true
+  sleep 0.4
 done
 kill -0 "$PID" 2>/dev/null && fail "the app (pid $PID) did not quit in time"
 sleep 0.4
