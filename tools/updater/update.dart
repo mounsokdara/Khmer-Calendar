@@ -1,10 +1,10 @@
 // Khmer Calendar updater (Windows: update-windows.exe, Linux: update-linux-<arch>).
 //
 // Flow:
-//   1. app finishes download and starts this program
-//   2. this program closes the app (waits briefly, then force-closes if needed)
+//   1. app finishes download and starts this program (its own task)
+//   2. recheck whether the app is still running; if it is, end that task
 //   3. after the app is gone, unpack the package and replace files
-//   4. write the stamp file and start the new app
+//   4. write the stamp file, start the new app, then this task exits
 // If anything fails it logs why and still tries to restart the old app.
 // Log: <temp>/khmer_update.log
 //
@@ -31,54 +31,112 @@ Map<String, String> _parse(List<String> args) {
   return out;
 }
 
-Future<bool> _alive(int pid) async {
+Future<bool> _alive(int watchPid) async {
+  if (watchPid <= 0 || watchPid == pid) return false;
   if (Platform.isWindows) {
-    final r = await Process.run('tasklist', ['/FI', 'PID eq $pid', '/NH', '/FO', 'CSV']);
+    final r = await Process.run('tasklist', ['/FI', 'PID eq $watchPid', '/NH', '/FO', 'CSV']);
     final out = '${r.stdout}';
+    if (_tasklistUnreadable(out)) {
+      final ps = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        'if (Get-Process -Id $watchPid -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }',
+      ]);
+      return ps.exitCode == 0;
+    }
     // CSV lines look like: "khmer_calendar.exe","1234","Session Name",...
-    return RegExp('"$pid"').hasMatch(out);
+    return RegExp('"$watchPid"').hasMatch(out);
   }
-  return (await Process.run('kill', ['-0', '$pid'])).exitCode == 0;
+  return (await Process.run('kill', ['-0', '$watchPid'])).exitCode == 0;
 }
 
-Future<void> _waitUntilGone(int pid, {int attempts = 100}) async {
-  for (var i = 0; i < attempts; i++) {
-    if (!await _alive(pid)) return;
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-  }
-  throw 'The app (pid $pid) did not close in time';
+bool _tasklistUnreadable(String out) {
+  final t = out.trim();
+  if (t.isEmpty) return true;
+  if (t.contains('"') || t.contains('INFO:') || t.toLowerCase().contains('no tasks')) return false;
+  return true;
 }
 
-/// Close the running app so its files are unlocked, then wait until it is gone.
-Future<void> _closeApp(int pid) async {
-  // Brief window for the app to exit itself after launching us.
-  for (var i = 0; i < 25; i++) {
-    if (!await _alive(pid)) {
-      _say('app already exited (pid $pid)');
+/// Every process whose image name is the app (not this updater).
+Future<List<int>> _programPids(String exe) async {
+  final name = exe.split(_sep).last;
+  if (Platform.isWindows) {
+    final image = name.toLowerCase().endsWith('.exe') ? name : '$name.exe';
+    final r = await Process.run('tasklist', ['/FI', 'IMAGENAME eq $image', '/FO', 'CSV', '/NH']);
+    final out = '${r.stdout}';
+    final found = <int>[
+      for (final m in RegExp(r'"[^"]*","(\d+)"').allMatches(out))
+        if (int.tryParse(m.group(1)!) != null) int.parse(m.group(1)!),
+    ];
+    if (found.isNotEmpty || !_tasklistUnreadable(out)) {
+      return found.where((p) => p != pid).toList();
+    }
+    final base = image.toLowerCase().endsWith('.exe') ? image.substring(0, image.length - 4) : image;
+    final safe = base.replaceAll("'", "''");
+    final ps = await Process.run('powershell', [
+      '-NoProfile',
+      '-Command',
+      "(Get-Process -Name '$safe' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id) -join ' '",
+    ]);
+    return [
+      for (final part in '${ps.stdout}'.split(RegExp(r'\s+')))
+        if (int.tryParse(part) != null && int.parse(part) != pid) int.parse(part),
+    ];
+  }
+  final r = await Process.run('ps', ['-C', name, '-o', 'pid=']);
+  if (r.exitCode != 0) return const [];
+  return [
+    for (final part in '${r.stdout}'.split(RegExp(r'\s+')))
+      if (int.tryParse(part) != null && int.parse(part) != pid) int.parse(part),
+  ];
+}
+
+Future<bool> _programStillRunning(int watchPid, String exe) async {
+  if (await _alive(watchPid)) return true;
+  return (await _programPids(exe)).isNotEmpty;
+}
+
+/// End the running app task. [force] is Task Manager "End task" (taskkill /F, kill -9).
+Future<void> _endRunningProgram(int watchPid, String exe, {required bool force}) async {
+  final targets = <int>{...await _programPids(exe)};
+  if (await _alive(watchPid)) targets.add(watchPid);
+  targets.remove(pid);
+  targets.removeWhere((p) => p <= 0);
+  if (targets.isEmpty) return;
+  _say('${force ? 'force ' : ''}ending task: ${targets.join(', ')}');
+  if (Platform.isWindows) {
+    for (final p in targets) {
+      await Process.run('taskkill', ['/PID', '$p', '/T', if (force) '/F']);
+    }
+  } else {
+    await Process.run('kill', [if (force) '-9', ...targets.map((p) => '$p')]);
+  }
+}
+
+/// Recheck the running program. Let it exit on its own, then end the task until it is gone.
+Future<void> _closeApp(int watchPid, String exe) async {
+  for (var i = 0; i < 15; i++) {
+    if (!await _programStillRunning(watchPid, exe)) {
+      _say('app already exited (pid $watchPid)');
+      await Future<void>.delayed(const Duration(milliseconds: 400));
       return;
     }
     await Future<void>.delayed(const Duration(milliseconds: 200));
   }
 
-  _say('closing app pid $pid');
-  if (Platform.isWindows) {
-    await Process.run('taskkill', ['/PID', '$pid', '/T']);
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    if (await _alive(pid)) {
-      _say('force closing app pid $pid');
-      await Process.run('taskkill', ['/PID', '$pid', '/T', '/F']);
+  for (var round = 1; round <= 8; round++) {
+    if (!await _programStillRunning(watchPid, exe)) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      _say('app closed');
+      return;
     }
-  } else {
-    await Process.run('kill', ['$pid']);
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    if (await _alive(pid)) {
-      _say('force closing app pid $pid');
-      await Process.run('kill', ['-9', '$pid']);
-    }
+    _say('recheck $round: program still running');
+    await _endRunningProgram(watchPid, exe, force: round >= 3);
+    await Future<void>.delayed(Duration(milliseconds: round >= 3 ? 700 : 450));
   }
-
-  await _waitUntilGone(pid);
-  // Extra settle time so antivirus / Explorer release file locks.
+  if (await _programStillRunning(watchPid, exe)) {
+    throw 'The app (pid $watchPid) did not close in time';
+  }
   await Future<void>.delayed(const Duration(milliseconds: 600));
   _say('app closed');
 }
@@ -104,7 +162,12 @@ Directory _packageRoot(Directory stage, String exe) {
   throw 'The package does not contain $exe';
 }
 
-Future<void> _copyOver(Directory from, Directory to, String exe) async {
+Future<void> _copyOver(
+  Directory from,
+  Directory to,
+  String exe,
+  int watchPid,
+) async {
   final files = from.listSync(recursive: true, followLinks: false).whereType<File>().toList()
     // The main executable goes last: if copying breaks half way, the old app still starts.
     ..sort((a, b) {
@@ -122,6 +185,10 @@ Future<void> _copyOver(Directory from, Directory to, String exe) async {
         break;
       } on FileSystemException {
         if (attempt >= 30) rethrow; // files stay locked for a moment after a process ends (antivirus, indexer)
+        if (attempt == 1 || attempt % 4 == 0) {
+          _say('file locked ($rel), recheck running program');
+          await _endRunningProgram(watchPid, exe, force: true);
+        }
         await Future<void>.delayed(const Duration(milliseconds: 400));
       }
     }
@@ -132,13 +199,8 @@ Future<void> _copyOver(Directory from, Directory to, String exe) async {
 Future<void> _start(String appDir, String exe) async {
   final path = '$appDir$_sep$exe';
   if (Platform.isWindows) {
-    // Fully detach so restart is not tied to this updater process.
-    await Process.start(
-      'cmd',
-      ['/c', 'start', '', '/B', path],
-      workingDirectory: appDir,
-      mode: ProcessStartMode.detached,
-    );
+    // New console, not /B: the restarted app must outlive this updater task.
+    await Process.run('cmd', ['/c', 'start', '', path], workingDirectory: appDir);
   } else {
     await Process.start(path, const [], workingDirectory: appDir, mode: ProcessStartMode.detached);
   }
@@ -146,20 +208,20 @@ Future<void> _start(String appDir, String exe) async {
 
 Future<void> main(List<String> args) async {
   final a = _parse(args);
-  final pid = int.tryParse(a['pid'] ?? '');
+  final watchPid = int.tryParse(a['pid'] ?? '');
   final appDir = a['app-dir'];
   final exe = a['exe'];
   final archive = a['archive'];
-  if (pid == null || appDir == null || exe == null || archive == null) {
+  if (watchPid == null || appDir == null || exe == null || archive == null) {
     _say('Missing arguments: $args');
     exit(2);
   }
   _say('--- update start: $args');
   try {
-    await _closeApp(pid);
+    await _closeApp(watchPid, exe);
     final stage = await _unpack(archive);
     final root = _packageRoot(stage, exe);
-    await _copyOver(root, Directory(appDir), exe);
+    await _copyOver(root, Directory(appDir), exe, watchPid);
     final stamp = a['stamp'];
     if (stamp != null && stamp.isNotEmpty) {
       final f = File(stamp)..parent.createSync(recursive: true);
@@ -184,4 +246,6 @@ Future<void> main(List<String> args) async {
     _say('could not restart: $e');
     exit(1);
   }
+  _say('updater task ended');
+  exit(0);
 }

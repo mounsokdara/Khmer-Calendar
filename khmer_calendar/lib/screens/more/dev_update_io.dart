@@ -526,11 +526,15 @@ Future<UpdateInstallResult> installUpdateBuild(String path, UpdateBuild build) a
     ];
 
     if (Platform.isWindows) {
-      final args = ['/c', 'start', '', '/B', updater, '--exe', exeName, ...common];
+      // Start-Process breaks away from the app's job object. `start /B` stayed in
+      // the same task, so closing the app killed the updater before it could finish.
+      String psQuote(String s) => "'${s.replaceAll("'", "''")}'";
+      final argList = ['--exe', exeName, ...common].map(psQuote).join(', ');
+      final script =
+          'Start-Process -FilePath ${psQuote(updater)} -WorkingDirectory ${psQuote(File(updater).parent.path)} -WindowStyle Hidden -ArgumentList $argList';
       await Process.start(
-        'cmd',
-        args,
-        workingDirectory: File(updater).parent.path,
+        'powershell',
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-Command', script],
         mode: ProcessStartMode.detached,
       );
     } else if (Platform.isMacOS) {

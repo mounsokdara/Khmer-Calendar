@@ -4,7 +4,7 @@
 #   update-macos.sh --pid 123 --app-dir "/Applications/Khmer Calendar.app" --archive KhmerCalendar-macos-arm64.dmg \
 #                   [--stamp <file> --built-at <iso time> --sha <commit>]
 #
-# Waits for the app to quit, replaces the .app bundle, writes the stamp file, opens the new app.
+# Rechecks the running app, ends that task if it is still up, replaces the .app, then this script exits.
 # Log: $TMPDIR/khmer_update.log. If anything fails the old app is opened again.
 set -u
 LOG="${TMPDIR:-/tmp}/khmer_update.log"
@@ -25,8 +25,22 @@ MNT=""
 cleanup() { [ -n "$MNT" ] && hdiutil detach "$MNT" -quiet -force >/dev/null 2>&1; rm -rf "$APP.new"; }
 fail() { say "update FAILED: $*"; cleanup; open "$APP" >/dev/null 2>&1; exit 1; }
 
-for _ in $(seq 1 300); do kill -0 "$PID" 2>/dev/null || break; sleep 0.3; done
+for _ in $(seq 1 12); do kill -0 "$PID" 2>/dev/null || break; sleep 0.3; done
+
+# Auto-recheck: if the program is still running, end that task, then look again.
+for round in 1 2 3 4 5 6 7 8; do
+  kill -0 "$PID" 2>/dev/null || { say "app closed"; break; }
+  if [ "$round" -ge 3 ]; then
+    say "recheck $round: still running pid $PID — force end task"
+    kill -9 "$PID" 2>/dev/null || true
+  else
+    say "recheck $round: still running pid $PID — end task"
+    kill "$PID" 2>/dev/null || true
+  fi
+  sleep 0.5
+done
 kill -0 "$PID" 2>/dev/null && fail "the app (pid $PID) did not quit in time"
+sleep 0.4
 
 MNT="$(mktemp -d /tmp/khmer_update_mnt.XXXXXX)"
 hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$ARCHIVE" -quiet || fail "could not open the disk image"
@@ -44,3 +58,5 @@ cleanup
 rm -f "$ARCHIVE"
 say "update ok"
 open "$APP" && say "app restarted"
+say "updater task ended"
+exit 0
