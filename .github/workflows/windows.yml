@@ -1,6 +1,4 @@
-# Windows: one standalone job per architecture (x64, arm64): build, Authenticode-sign, bundle the Visual C++ runtime,
-# then make the portable zip KhmerCalendar-windows-<arch>.zip and a separate update-windows-<arch>.exe for in-app updates.
-# The "installers" job then builds the setup wizards from those finished builds.
+# Windows: build, sign, bundle VC++ runtime, pack zip (includes update-windows.exe inside the package).
 name: Windows
 
 on:
@@ -49,14 +47,12 @@ jobs:
           PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
           PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
         run: ./scripts/sign-windows.ps1 -Dir khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release
-      - name: Bundle Visual C++ runtime (so it runs without the redistributable installed)
+      - name: Bundle Visual C++ runtime
         shell: pwsh
         run: ./scripts/bundle-vcruntime.ps1 -Dir khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release -Arch ${{ matrix.arch }}
-      - name: Build updater (separate asset + copy into package for older extract path)
+      - name: Build updater into the package folder
         shell: pwsh
-        run: |
-          dart compile exe tools/updater/update.dart -o update-windows-${{ matrix.arch }}.exe
-          Copy-Item update-windows-${{ matrix.arch }}.exe khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe
+        run: dart compile exe tools/updater/update.dart -o khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\* -DestinationPath KhmerCalendar-windows-${{ matrix.arch }}.zip
@@ -67,9 +63,7 @@ jobs:
         with:
           name: windows-${{ matrix.arch }}
           if-no-files-found: ignore
-          path: |
-            KhmerCalendar-windows-${{ matrix.arch }}.zip
-            update-windows-${{ matrix.arch }}.exe
+          path: KhmerCalendar-windows-${{ matrix.arch }}.zip
 
   installers:
     name: windows-installers
@@ -105,10 +99,10 @@ jobs:
           PFX_B64: ${{ secrets.DESKTOP_SIGN_PFX_BASE64 }}
           PFX_PASS: ${{ secrets.DESKTOP_SIGN_PASSWORD }}
         run: ./scripts/sign-windows.ps1 -Dir installer-out
-      - name: Test the x64 installer (silent install, shortcut, uninstall)
+      - name: Test the x64 installer
         shell: pwsh
         run: ./scripts/test-installer.ps1 -Setup installer-out\KhmerCalendar-windows-x64-setup.exe
-      - name: Test the universal installer (installs the x64 build on this runner)
+      - name: Test the universal installer
         if: hashFiles('installer-out/KhmerCalendar-windows-universal-setup.exe') != ''
         shell: pwsh
         run: ./scripts/test-installer.ps1 -Setup installer-out\KhmerCalendar-windows-universal-setup.exe

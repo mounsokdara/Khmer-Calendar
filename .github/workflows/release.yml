@@ -13,7 +13,6 @@ concurrency:
 permissions:
   contents: write
 
-
 jobs:
   android:
     uses: ./.github/workflows/android.yml
@@ -52,20 +51,17 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build linux --release
         working-directory: khmer_calendar
-      - name: Build updater (separate asset + copy into package)
+      - name: Build updater into the package folder
         run: |
-          dart compile exe tools/updater/update.dart -o update-linux-${{ matrix.arch }}
-          chmod +x update-linux-${{ matrix.arch }}
-          cp update-linux-${{ matrix.arch }} khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
+          dart compile exe tools/updater/update.dart -o khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
+          chmod +x khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
       - name: Pack linux
         run: |
           tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
           name: linux-${{ matrix.arch }}
-          path: |
-            KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
-            update-linux-${{ matrix.arch }}
+          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -81,8 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Pack source
-        run: |
-          git archive --format=zip --output KhmerCalendar-project.zip HEAD
+        run: git archive --format=zip --output KhmerCalendar-project.zip HEAD
       - uses: actions/upload-artifact@v4
         with:
           name: project
@@ -105,8 +100,6 @@ jobs:
       - name: Pack web
         run: |
           (cd khmer_calendar/build/web && zip -r "$GITHUB_WORKSPACE/KhmerCalendar-web.zip" .)
-          mkdir -p dist
-          cp -a khmer_calendar/build/web/. dist/
       - uses: actions/upload-artifact@v4
         with:
           name: web
@@ -123,8 +116,8 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          # App packages + separate updater binaries for in-app update.
-          find dist -type f \( -name 'KhmerCalendar-*' -o -name 'update-windows-*.exe' -o -name 'update-linux-*' -o -name 'update-macos.sh' \) ! -name '*.idsig' -exec cp -t release-files {} +
+          # Packages only (updater binaries live inside the zip / tar.gz / dmg).
+          find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
           if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ] && [ -f dist/windows-arm64/KhmerCalendar-windows-arm64.zip ]; then
             mkdir -p u-win/x64 u-win/arm64
             unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win/x64
@@ -193,11 +186,7 @@ jobs:
           }
           create_draft() {
             drop_drafts || return 1
-            gh release create "$TAG" \
-              --draft \
-              --target "$GITHUB_SHA" \
-              --title "Khmer Calendar $TAG" \
-              --notes-file "$NOTES_FILE"
+            gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "Khmer Calendar $TAG" --notes-file "$NOTES_FILE"
           }
           if gh release view "$TAG" >/dev/null 2>&1; then
             retry gh release delete "$TAG" --yes --cleanup-tag

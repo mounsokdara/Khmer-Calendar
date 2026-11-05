@@ -1,5 +1,4 @@
-# macOS: build once (Xcode makes a universal app), then standalone pack jobs make one signed .dmg each.
-# Each .dmg volume contains the .app; update-macos.sh is also published as a separate release asset.
+# macOS: build once, pack signed .dmg. Each volume contains the .app and update-macos.sh (for in-app updates).
 name: macOS
 
 on:
@@ -24,7 +23,7 @@ jobs:
         working-directory: khmer_calendar
       - run: flutter build macos --release
         working-directory: khmer_calendar
-      - name: Keep the universal app (tar keeps symlinks and permissions)
+      - name: Keep the universal app
         run: |
           APP=$(find khmer_calendar/build/macos -name "*.app" | head -1)
           tar -C "$(dirname "$APP")" -cf macos-app.tar "$(basename "$APP")"
@@ -62,16 +61,9 @@ jobs:
           mv "$APP" dmgroot/
           cp tools/updater/update-macos.sh dmgroot/update-macos.sh
           chmod +x dmgroot/update-macos.sh
-          # Also publish the script as a standalone asset (once from the universal job).
-          if [ "${{ matrix.arch }}" = "universal" ]; then
-            cp tools/updater/update-macos.sh update-macos.sh
-            chmod +x update-macos.sh
-          fi
           hdiutil create -volname "Khmer Calendar" -srcfolder dmgroot -ov -format UDZO "KhmerCalendar-macos-${{ matrix.arch }}.dmg"
           ls -lh "KhmerCalendar-macos-${{ matrix.arch }}.dmg"
       - uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.arch }}
-          path: |
-            KhmerCalendar-macos-${{ matrix.arch }}.dmg
-            update-macos.sh
+          path: KhmerCalendar-macos-${{ matrix.arch }}.dmg
