@@ -50,7 +50,6 @@ String? _parseVersionName(String text) {
   return m?.group(1);
 }
 
-/// True when Dart could not verify the TLS chain (common on some Windows installs).
 bool _isSslCertError(Object e) {
   final s = e.toString();
   return s.contains('CERTIFICATE_VERIFY_FAILED') ||
@@ -63,47 +62,131 @@ const _sslCertHint =
     'Check the date/time is correct, open https://github.com in a browser once, '
     'or turn off antivirus HTTPS scanning, then try again.';
 
-/// Windows (and some Linux) only ship a subset of root CAs until something uses WinINet/Schannel.
-/// Dart/BoringSSL does not trigger that lazy install, so HTTPS to GitHub can fail on a "fresh" PC.
-/// One PowerShell / curl hit to github.com usually installs the missing roots for the user.
-Future<void> _warmSystemCertificates() async {
+/// Path to curl that uses the OS certificate store (Schannel on Windows).
+String? _curlPath() {
   if (Platform.isWindows) {
-    try {
-      await Process.run(
-        'powershell',
-        [
-          '-NoProfile',
-          '-Command',
-          'try { Invoke-WebRequest -Uri https://api.github.com -UseBasicParsing -TimeoutSec 12 | Out-Null } catch {}',
-        ],
-      ).timeout(const Duration(seconds: 20));
-    } catch (_) {}
-    return;
+    final p = '${Platform.environment['SystemRoot'] ?? r'C:\Windows'}\System32\curl.exe';
+    if (File(p).existsSync()) return p;
+    return 'curl.exe';
   }
-  if (Platform.isLinux) {
-    try {
-      await Process.run('curl', ['-fsS', '-o', '/dev/null', '--max-time', '12', 'https://api.github.com'])
-          .timeout(const Duration(seconds: 20));
-    } catch (_) {}
+  if (Platform.isLinux || Platform.isMacOS) return 'curl';
+  return null;
+}
+
+/// GET body via system curl (Windows Schannel / system CA store). Returns null if curl is missing or fails.
+Future<({int status, String body})?> _curlGet(String url, {Map<String, String>? headers}) async {
+  final curl = _curlPath();
+  if (curl == null) return null;
+  final args = <String>[
+    '-sS',
+    '-L',
+    '--max-time', '30',
+    '-w', '\n%{http_code}',
+    '-A', 'khmer-calendar-updater',
+  ];
+  headers?.forEach((k, v) {
+    args.addAll(['-H', '$k: $v']);
+  });
+  args.add(url);
+  try {
+    final r = await Process.run(curl, args, stdoutEncoding: utf8, stderrEncoding: utf8)
+        .timeout(const Duration(seconds: 35));
+    if (r.exitCode != 0) return null;
+    final out = (r.stdout as String? ?? '');
+    final nl = out.lastIndexOf('\n');
+    if (nl < 0) return null;
+    final code = int.tryParse(out.substring(nl + 1).trim());
+    if (code == null) return null;
+    return (status: code, body: out.substring(0, nl));
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Download a file with system curl. Returns true on success.
+Future<bool> _curlDownload(
+  String url,
+  File target, {
+  void Function(int received, int total)? onProgress,
+  bool Function()? isCancelled,
+  int expectedSize = 0,
+}) async {
+  final curl = _curlPath();
+  if (curl == null) return false;
+  final part = File('${target.path}.part');
+  if (part.existsSync()) part.deleteSync();
+  final args = <String>[
+    '-fL',
+    '--max-time', '600',
+    '-A', 'khmer-calendar-updater',
+    '-o', part.path,
+    url,
+  ];
+  try {
+    // Progress is approximate: poll file size while curl runs.
+    final proc = await Process.start(curl, args);
+    var done = false;
+    final poll = () async {
+      while (!done) {
+        if (isCancelled?.call() ?? false) {
+          proc.kill();
+          break;
+        }
+        if (part.existsSync()) {
+          final n = part.lengthSync();
+          onProgress?.call(n, expectedSize > 0 ? expectedSize : n);
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+      }
+    };
+    final polling = poll();
+    final code = await proc.exitCode.timeout(const Duration(minutes: 12), onTimeout: () {
+      proc.kill();
+      return -1;
+    });
+    done = true;
+    await polling;
+    if (isCancelled?.call() ?? false) {
+      if (part.existsSync()) part.deleteSync();
+      throw const UpdateCancelled();
+    }
+    if (code != 0 || !part.existsSync()) {
+      if (part.existsSync()) part.deleteSync();
+      return false;
+    }
+    final got = part.lengthSync();
+    if (expectedSize > 0 && got != expectedSize) {
+      part.deleteSync();
+      throw const UpdateException('Download incomplete, please try again');
+    }
+    if (target.existsSync()) target.deleteSync();
+    await part.rename(target.path);
+    onProgress?.call(got, got);
+    return true;
+  } catch (e) {
+    if (e is UpdateCancelled || e is UpdateException) rethrow;
+    if (part.existsSync()) {
+      try {
+        part.deleteSync();
+      } catch (_) {}
+    }
+    return false;
   }
 }
 
 Future<http.Response> _httpGet(Uri uri, {Map<String, String>? headers}) async {
-  Future<http.Response> once() => http.get(uri, headers: headers).timeout(const Duration(seconds: 12));
+  Future<http.Response> dartOnce() => http.get(uri, headers: headers).timeout(const Duration(seconds: 12));
 
   try {
-    return await once();
+    return await dartOnce();
   } catch (e) {
     if (!_isSslCertError(e)) rethrow;
-    await _warmSystemCertificates();
-    try {
-      return await once();
-    } catch (e2) {
-      if (_isSslCertError(e2)) {
-        throw const UpdateException(_sslCertHint);
-      }
-      rethrow;
+    // Dart/BoringSSL failed — use OS curl (Windows Schannel) which trusts the system store.
+    final viaCurl = await _curlGet(uri.toString(), headers: headers);
+    if (viaCurl != null) {
+      return http.Response(viaCurl.body, viaCurl.status, headers: const {'content-type': 'text/plain'});
     }
+    throw const UpdateException(_sslCertHint);
   }
 }
 
@@ -135,7 +218,6 @@ Future<UpdateBuild?> fetchUpdateBuild() async {
       package = arch;
       assetName = 'KhmerCalendar-windows-$arch.zip';
       if (arch == 'arm64') fallbackPackage = 'x64';
-      // Always the same name inside the zip (CI copies the arch build as this name).
       updaterName = 'update-windows.exe';
     } else if (Platform.isLinux) {
       if (arch != 'x64' && arch != 'arm64') {
@@ -217,7 +299,7 @@ Future<UpdateBuild?> fetchUpdateBuild() async {
     sha: sha,
     isNewer: newerByVersion || newerByTime,
     updaterName: updaterName,
-    updaterUrl: '', // updater is inside the package
+    updaterUrl: '',
   );
 }
 
@@ -253,18 +335,17 @@ Future<void> _fetchTo(
           .timeout(const Duration(seconds: 20));
     } catch (e) {
       if (_isSslCertError(e)) {
-        await _warmSystemCertificates();
-        try {
-          response = await client
-              .send(http.Request('GET', Uri.parse(url))..headers.addAll(_headers))
-              .timeout(const Duration(seconds: 20));
-        } catch (e2) {
-          if (_isSslCertError(e2)) throw const UpdateException(_sslCertHint);
-          rethrow;
-        }
-      } else {
-        rethrow;
+        final ok = await _curlDownload(
+          url,
+          target,
+          onProgress: onProgress,
+          isCancelled: isCancelled,
+          expectedSize: expectedSize,
+        );
+        if (ok) return;
+        throw const UpdateException(_sslCertHint);
       }
+      rethrow;
     }
     if (response.statusCode != 200) throw UpdateException('Download failed (${response.statusCode})');
 
@@ -285,11 +366,15 @@ Future<void> _fetchTo(
       throw const UpdateException('Download incomplete, please try again');
     }
     await part.rename(target.path);
-  } catch (_) {
+  } catch (e) {
     try {
       await sink?.close();
     } catch (_) {}
-    if (part.existsSync()) part.deleteSync();
+    if (part.existsSync()) {
+      try {
+        part.deleteSync();
+      } catch (_) {}
+    }
     rethrow;
   } finally {
     client.close();
@@ -306,7 +391,6 @@ Future<Directory> _downloadDir() async {
   return Directory('${Directory.systemTemp.path}${Platform.pathSeparator}khmer_update_dl');
 }
 
-/// Pulls [updaterName] out of the downloaded package so install can run it.
 Future<void> _extractUpdaterFromPackage(String archivePath, String updaterName) async {
   if (updaterName.isEmpty) return;
   final dir = File(archivePath).parent.path;
@@ -344,7 +428,6 @@ Future<void> _extractUpdaterFromPackage(String archivePath, String updaterName) 
   }
 }
 
-/// Downloads [build] and, on desktop, extracts the updater from inside the package.
 Future<String> downloadUpdateBuild(
   UpdateBuild build,
   void Function(int received, int total) onProgress, {
@@ -375,9 +458,6 @@ bool _writable(Directory d) {
   }
 }
 
-/// Android: opens the system installer for the downloaded APK.
-/// Desktop: starts the updater extracted from the package. The updater closes this app,
-/// replaces the files, then restarts the app.
 Future<UpdateInstallResult> installUpdateBuild(String path, UpdateBuild build) async {
   if (Platform.isAndroid) {
     try {
