@@ -17,6 +17,9 @@ class FlutterWindow : public Win32Window {
   explicit FlutterWindow(const flutter::DartProject& project);
   virtual ~FlutterWindow();
 
+  // When true the window is never shown (background / --autostart service).
+  void SetBackgroundMode(bool background) { background_ = background; }
+
  protected:
   // Win32Window:
   bool OnCreate() override;
@@ -26,6 +29,7 @@ class FlutterWindow : public Win32Window {
 
  private:
   void RegisterAutostartChannel();
+  void RegisterWindowsChannel();
 
   // The project to run.
   flutter::DartProject project_;
@@ -34,6 +38,10 @@ class FlutterWindow : public Win32Window {
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
   std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
       autostart_channel_;
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+      windows_channel_;
+
+  bool background_ = false;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

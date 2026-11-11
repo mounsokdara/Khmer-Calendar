@@ -99,21 +99,35 @@ Future<void> runInAppUpdateCheck(BuildContext context, Lang lang) async {
   }
 
   final found = build;
+  final String heading;
+  final String body;
+  switch (found.kind) {
+    case UpdateKind.newerVersion:
+      heading = _s(lang, 'មានកំណែថ្មី', 'Update available');
+      body = '${found.installedVersion.isEmpty ? '' : 'v${found.installedVersion}  →  '}v${found.versionName}\n\n${_describe(found)}';
+    case UpdateKind.aheadOfRelease:
+      heading = title;
+      body = '${_s(lang, 'កំណែរបស់អ្នក (v${found.installedVersion}) ថ្មីជាងកំណែដែលបានបោះផ្សាយ (v${found.versionName})។', 'Your version (v${found.installedVersion}) is newer than the published one (v${found.versionName}).')}\n\n${_describe(found)}';
+    case UpdateKind.upToDate:
+      heading = title;
+      body = '${_s(lang, 'អ្នកកំពុងប្រើកំណែថ្មីបំផុត (v${found.versionName})។', 'You are on the latest version (v${found.versionName}).')}\n\n${_describe(found)}';
+  }
   final go = await showDialog<bool>(
     context: context,
     builder: (d) => AlertDialog(
-      title: Text(found.isNewer ? _s(lang, 'មានកំណែថ្មី', 'Update available') : title),
-      content: Text(
-        found.isNewer
-            ? _describe(found)
-            : '${_s(lang, 'អ្នកកំពុងប្រើកំណែថ្មីបំផុត។', 'You are on the latest version.')}\n\n${_describe(found)}',
-      ),
+      title: Text(heading),
+      content: Text(body),
       actions: [
         TextButton(onPressed: () => Navigator.pop(d, false), child: Text(_s(lang, 'បិទ', 'Close'))),
-        FilledButton(
-          onPressed: () => Navigator.pop(d, true),
-          child: Text(found.isNewer ? _s(lang, 'ទាញយក និងដំឡើង', 'Download & install') : _s(lang, 'ដំឡើងម្តងទៀត', 'Reinstall')),
-        ),
+        found.isNewer
+            ? FilledButton(
+                onPressed: () => Navigator.pop(d, true),
+                child: Text(_s(lang, 'ទាញយក និងដំឡើង', 'Download & install')),
+              )
+            : TextButton(
+                onPressed: () => Navigator.pop(d, true),
+                child: Text(_s(lang, 'ដំឡើងម្តងទៀត', 'Reinstall')),
+              ),
       ],
     ),
   );
@@ -197,7 +211,45 @@ Future<void> _downloadAndInstall(BuildContext context, Lang lang, UpdateBuild bu
   await _install(context, lang, path, build);
 }
 
-Future<void> _install(BuildContext context, Lang lang, String path, UpdateBuild build) async {
+Future<void> _install(BuildContext context, Lang lang, String path, UpdateBuild build, {bool offerAdmin = false}) async {
+  // Another copy of the app keeps the files locked and would make the update fail. Say so first.
+  if (updateRestartsApp) {
+    final others = await otherAppInstances();
+    if (!context.mounted) return;
+    if (others.isNotEmpty) {
+      final choice = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (d) => AlertDialog(
+          title: Text(_s(lang, 'មានកម្មវិធីកំពុងដំណើរការ', 'Another copy is running')),
+          content: Text(_s(
+            lang,
+            'មានប្រតិទិនខ្មែរមួយទៀតកំពុងបើក (${others.join(', ')})។ វាអាចរារាំងការធ្វើបច្ចុប្បន្នភាព។ សូមបិទវាសិន រួចចុច «ព្យាយាមម្តងទៀត» ឬចុច «បង្ខំបិទ» ដើម្បីបិទវាឲ្យ (ការងារមិនទាន់រក្សាទុកនឹងបាត់)។',
+            'Another copy of Khmer Calendar is running (${others.join(', ')}). It can block the update. Close it and tap Retry, or tap Force close to close it for you (unsaved work in it is lost).',
+          ) +
+              (offerAdmin
+                  ? '\n\n${_s(lang, 'ការបង្ខំបិទធម្មតាមិនបានសម្រេចទេ។ ចុច «បង្ខំបិទជា Administrator» ដើម្បីសាកល្បងដោយសិទ្ធិ Administrator (ប្រព័ន្ធនឹងសុំការយល់ព្រមពីអ្នក)។', 'Force close did not work. Tap Force as administrator to try with administrator rights (the system will ask you to confirm).')}'
+                  : '')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(d, 'cancel'), child: Text(_s(lang, 'បោះបង់', 'Cancel'))),
+            if (offerAdmin)
+              TextButton(onPressed: () => Navigator.pop(d, 'admin'), child: Text(_s(lang, 'បង្ខំបិទជា Administrator', 'Force as administrator')))
+            else
+              TextButton(onPressed: () => Navigator.pop(d, 'force'), child: Text(_s(lang, 'បង្ខំបិទ', 'Force close'))),
+            FilledButton(onPressed: () => Navigator.pop(d, 'retry'), child: Text(_s(lang, 'ព្យាយាមម្តងទៀត', 'Retry'))),
+          ],
+        ),
+      );
+      if (choice == 'cancel' || choice == null || !context.mounted) return;
+      if (choice == 'force') await forceCloseInstances(others);
+      if (choice == 'admin') await forceCloseInstances(others, admin: true);
+      if (!context.mounted) return;
+      // Check again: Retry, or after a force close. If a normal force close did not work, offer admin rights next.
+      await _install(context, lang, path, build, offerAdmin: choice == 'force' || offerAdmin);
+      return;
+    }
+  }
+
   final result = await installUpdateBuild(path, build);
   if (!context.mounted) return;
 
@@ -267,4 +319,45 @@ Future<void> _install(BuildContext context, Lang lang, String path, UpdateBuild 
     _s(lang, 'មិនអាចបើកកម្មវិធីដំឡើងបានទេ។', 'Could not open the installer.'),
     extra: [_browserButton(lang, build.versionName)],
   );
+}
+
+/// Called once after start. If the desktop updater could not finish (for example because another
+/// program was using the app files), tell the user what happened and what to do.
+Future<void> showPendingUpdateFailure(BuildContext context, Lang lang) async {
+  final failure = await takeUpdateFailure();
+  if (failure == null || !context.mounted) return;
+
+  final String body;
+  if (failure.isLocked) {
+    final who = failure.processes.isEmpty
+        ? ''
+        : _s(lang, '\n\nកម្មវិធីដែលត្រូវបិទ៖ ${failure.processes.join(', ')}',
+            '\n\nPlease close: ${failure.processes.join(', ')}');
+    final files = failure.files.isEmpty ? '' : '\n\n${failure.files.take(3).join('\n')}';
+    body = _s(
+      lang,
+      'ការធ្វើបច្ចុប្បន្នភាពមិនបានសម្រេចទេ ព្រោះមានកម្មវិធីផ្សេងកំពុងប្រើឯកសាររបស់កម្មវិធីនេះ។ សូមបិទកម្មវិធីទាំងនោះ រួចព្យាយាមម្តងទៀត។$who$files',
+      'The update failed because another program is using this app\'s files. Close it (including any other copy of Khmer Calendar), then try again.$who$files',
+    );
+  } else {
+    body = _s(
+      lang,
+      'ការធ្វើបច្ចុប្បន្នភាពមិនបានសម្រេចទេ។ កំណែបច្ចុប្បន្នរបស់អ្នកនៅដដែល។ សូមព្យាយាមម្តងទៀត។${failure.detail.isEmpty ? '' : '\n\n${failure.detail}'}',
+      'The update did not finish. Your current version is unchanged. Please try again.${failure.detail.isEmpty ? '' : '\n\n${failure.detail}'}',
+    );
+  }
+
+  final retry = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      icon: const Icon(Icons.warning_amber_rounded),
+      title: Text(_s(lang, 'ធ្វើបច្ចុប្បន្នភាពមិនបាន', 'Update failed')),
+      content: Text(body),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(d, false), child: Text(_s(lang, 'បិទ', 'Close'))),
+        FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(_s(lang, 'ព្យាយាមម្តងទៀត', 'Try again'))),
+      ],
+    ),
+  );
+  if (retry == true && context.mounted) await runInAppUpdateCheck(context, lang);
 }

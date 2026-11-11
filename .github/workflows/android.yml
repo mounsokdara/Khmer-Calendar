@@ -31,6 +31,8 @@ jobs:
           - { name: universal, target: "android-arm,android-arm64,android-x64", mode: release, split: false, out: app-release.apk,            experimental: false }
     steps:
       - uses: actions/checkout@v4
+      - name: Apply version.txt
+        run: bash scripts/set-version.sh --apply
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -46,10 +48,23 @@ jobs:
         run: |
           test -n "$ANDROID_KEYSTORE_BASE64" || { echo "ANDROID_KEYSTORE_BASE64 secret is missing"; exit 1; }
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/khmer-release.keystore"
+      # The NDK download from Google sometimes arrives corrupted ("Error reading Zip content"); retry it before Gradle needs it.
+      - name: Install NDK (with retry)
+        run: |
+          NDK=28.2.13676358
+          SDKM="${ANDROID_HOME:-$ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
+          for i in 1 2 3; do
+            yes | "$SDKM" --install "ndk;$NDK" && break
+            echo "NDK install failed (attempt $i), cleaning up and retrying"
+            rm -rf "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/ndk/$NDK"
+            sleep 10
+          done
+          test -d "${ANDROID_HOME:-$ANDROID_SDK_ROOT}/ndk/$NDK"
+      - run: node tools/gen-assets.mjs khmer_calendar
       - run: flutter pub get
         working-directory: khmer_calendar
       # --split-debug-info strips debug symbols from libapp.so; symbols are kept as an artifact.
-      # No --build-number: the version code is the one in pubspec.yaml.
+      # No --build-number: the version code is the one in pubspec.yaml (from version.txt).
       - run: flutter build apk --${{ matrix.mode }} ${{ matrix.split && '--split-per-abi' || '' }} --target-platform ${{ matrix.target }} ${{ matrix.mode == 'release' && '--split-debug-info=build/symbols' || '' }}
         working-directory: khmer_calendar
         env:

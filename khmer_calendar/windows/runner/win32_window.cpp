@@ -134,8 +134,14 @@ bool Win32Window::Create(const std::wstring& title,
   UINT dpi = FlutterDesktopGetDpiForMonitor(monitor);
   double scale_factor = dpi / 96.0;
 
+  // Use a popup style for the tiny background window so it never appears in
+  // the taskbar / Alt-Tab and is harder for the shell to close.
+  DWORD style = (size.width <= 1 && size.height <= 1)
+                    ? (WS_POPUP | WS_CLIPCHILDREN)
+                    : WS_OVERLAPPEDWINDOW;
+
   HWND window = CreateWindow(
-      window_class, title.c_str(), WS_OVERLAPPEDWINDOW,
+      window_class, title.c_str(), style,
       Scale(origin.x, scale_factor), Scale(origin.y, scale_factor),
       Scale(size.width, scale_factor), Scale(size.height, scale_factor),
       nullptr, nullptr, GetModuleHandle(nullptr), this);
@@ -182,6 +188,8 @@ Win32Window::MessageHandler(HWND hwnd,
     case WM_DESTROY:
       window_handle_ = nullptr;
       Destroy();
+      // Critical for background mode: only post quit when the UI window is
+      // closed. Background service keeps running.
       if (quit_on_close_) {
         PostQuitMessage(0);
       }

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +13,7 @@ import 'home_screen.dart';
 import 'i18n.dart';
 import 'net.dart';
 import 'permissions.dart';
+import 'reminders.dart';
 import 'screens/events.dart';
 import 'screens/licenses.dart';
 import 'screens/more.dart';
@@ -26,16 +29,82 @@ import 'screens/widget_pick.dart';
 import 'store.dart';
 import 'widgets/stroke_text.dart';
 import 'theme.dart';
+import 'windows_native.dart';
 
 final store = AppStore();
 
-Future<void> main() async {
+/// Entry point. When launched with --autostart / --background (login item,
+/// Run key, LaunchAgent, or .desktop Exec), runs the headless reminder service
+/// only — no window, no router.
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final background =
+      args.contains('--autostart') || args.contains('--background');
+
+  if (background) {
+    await _runBackgroundService();
+    return;
+  }
+
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-  IntlHelper.localeName = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+  IntlHelper.localeName =
+      WidgetsBinding.instance.platformDispatcher.locale.languageCode;
   await Future.wait([NetStatus.start(), Haptics.instance.init()]);
+  // Register AUMID + Start Menu shortcut early so toasts look correct.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+    unawaited(setupWindowsToastIdentity());
+  }
   runApp(KhmerCalendarApp(store: store));
   store.hydrate().then((_) => applyStoredPermissions(store));
+}
+
+/// Headless path used at login / boot. Keeps the process alive so scheduled
+/// notifications stay registered. Native code holds a hidden window (Windows /
+/// Linux) or an accessory NSApp (macOS).
+///
+/// Re-hydrates SharedPreferences every loop so tasks / settings / events edited
+/// in the UI process are picked up by the background process.
+Future<void> _runBackgroundService() async {
+  // A failure in any startup step must never end the service.
+  Future<void> guarded(String what, Future<void> Function() fn) async {
+    try {
+      await fn();
+    } catch (e) {
+      debugPrint('background $what: $e');
+    }
+  }
+
+  await guarded('net', NetStatus.start);
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+    await guarded('toast identity', () async {
+      await setupWindowsToastIdentity();
+    });
+  }
+  await guarded('hydrate', store.hydrate);
+  await guarded('permissions', () => applyStoredPermissions(store));
+  if (store.notifyOn) {
+    await guarded('engine', initReminderEngine);
+    await guarded('sync', () => syncReminders(store));
+  }
+
+  // Keep the isolate alive. Re-load data + re-sync so UI edits reach the
+  // background process without restarting it.
+  while (true) {
+    await Future<void>.delayed(const Duration(minutes: 2));
+    try {
+      // Fresh read from disk (UI process may have persisted new events/flags).
+      await store.hydrate();
+      if (store.notifyOn) {
+        await initReminderEngine();
+        await syncReminders(store);
+      } else {
+        await cancelAllReminders();
+      }
+    } catch (e) {
+      debugPrint('background sync: $e');
+    }
+  }
 }
 
 class KhmerCalendarApp extends StatefulWidget {
@@ -57,7 +126,10 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     StrokeText.enabled = widget.store.textStroke;
     final launchRoute = PlatformDispatcher.instance.defaultRouteName;
     final floatingPick = launchRoute.startsWith('/widget-pick');
-    if (!floatingPick && launchRoute.startsWith('/') && launchRoute != '/' && launchRoute != '/splash') {
+    if (!floatingPick &&
+        launchRoute.startsWith('/') &&
+        launchRoute != '/' &&
+        launchRoute != '/splash') {
       widget.store.pendingRoute = launchRoute;
     }
     router = GoRouter(
@@ -66,12 +138,17 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
       redirect: (ctx, state) {
         if (state.uri.path == '/widget-pick') return null;
         if (!widget.store.hydrated) return '/splash';
-        if (!widget.store.setupDone && state.uri.path != '/get-started') return '/get-started';
+        if (!widget.store.setupDone && state.uri.path != '/get-started') {
+          return '/get-started';
+        }
         if (widget.store.setupDone) {
           final pending = widget.store.takePendingRoute();
           if (pending != null) return pending;
         }
-        if (widget.store.setupDone && (state.uri.path == '/get-started' || state.uri.path == '/splash' || state.uri.path == '/')) {
+        if (widget.store.setupDone &&
+            (state.uri.path == '/get-started' ||
+                state.uri.path == '/splash' ||
+                state.uri.path == '/')) {
           switch (widget.store.lastTab) {
             case TabId.today:
               return '/day';
@@ -88,53 +165,98 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
         return null;
       },
       routes: [
-        GoRoute(path: '/splash', builder: (_, _) => SplashPage(store: widget.store)),
-        GoRoute(path: '/get-started', builder: (_, _) => SetupPage(store: widget.store)),
+        GoRoute(
+            path: '/splash',
+            builder: (_, _) => SplashPage(store: widget.store)),
+        GoRoute(
+            path: '/get-started',
+            builder: (_, _) => SetupPage(store: widget.store)),
         ShellRoute(
-          builder: (ctx, state, child) => AppShell(store: widget.store, child: child),
+          builder: (ctx, state, child) =>
+              AppShell(store: widget.store, child: child),
           routes: [
-            GoRoute(path: '/day', builder: (_, _) => TodayPage(store: widget.store)),
-            GoRoute(path: '/calendar', builder: (_, _) => CalendarPage(store: widget.store)),
-            GoRoute(path: '/events', builder: (_, _) => EventsPage(store: widget.store)),
-            GoRoute(path: '/weather', builder: (_, _) => WeatherPage(store: widget.store)),
-            GoRoute(path: '/more', builder: (_, _) => MorePage(store: widget.store)),
+            GoRoute(
+                path: '/day',
+                builder: (_, _) => TodayPage(store: widget.store)),
+            GoRoute(
+                path: '/calendar',
+                builder: (_, _) => CalendarPage(store: widget.store)),
+            GoRoute(
+                path: '/events',
+                builder: (_, _) => EventsPage(store: widget.store)),
+            GoRoute(
+                path: '/weather',
+                builder: (_, _) => WeatherPage(store: widget.store)),
+            GoRoute(
+                path: '/more',
+                builder: (_, _) => MorePage(store: widget.store)),
           ],
         ),
         GoRoute(
           path: '/widget-pick',
           builder: (_, state) => WidgetPickPage(
             store: widget.store,
-            widgetId: int.tryParse(state.uri.queryParameters['id'] ?? '') ?? 0,
-            year: int.tryParse(state.uri.queryParameters['y'] ?? '') ?? DateTime.now().year,
-            month: int.tryParse(state.uri.queryParameters['m'] ?? '') ?? DateTime.now().month,
+            widgetId:
+                int.tryParse(state.uri.queryParameters['id'] ?? '') ?? 0,
+            year: int.tryParse(state.uri.queryParameters['y'] ?? '') ??
+                DateTime.now().year,
+            month: int.tryParse(state.uri.queryParameters['m'] ?? '') ??
+                DateTime.now().month,
           ),
         ),
-        GoRoute(path: '/settings', builder: (_, _) => SettingsPage(store: widget.store)),
-        GoRoute(path: '/settings/theme', builder: (_, _) => ThemePage(store: widget.store)),
-        GoRoute(path: '/settings/notifications', builder: (_, _) => NotificationsPage(store: widget.store)),
-        GoRoute(path: '/settings/sounds', builder: (_, _) => SoundsPage(store: widget.store)),
-        GoRoute(path: '/settings/privacy', builder: (_, _) => PrivacyPage(store: widget.store)),
-        GoRoute(path: '/settings/clear', builder: (_, _) => ClearPage(store: widget.store)),
-        GoRoute(path: '/about', builder: (_, _) => AboutPage(store: widget.store)),
-        GoRoute(path: '/changelog', builder: (_, _) => ChangelogPage(store: widget.store)),
-        GoRoute(path: '/privacy-policy', builder: (_, _) => PrivacyPolicyPage(store: widget.store)),
+        GoRoute(
+            path: '/settings',
+            builder: (_, _) => SettingsPage(store: widget.store)),
+        GoRoute(
+            path: '/settings/theme',
+            builder: (_, _) => ThemePage(store: widget.store)),
+        GoRoute(
+            path: '/settings/notifications',
+            builder: (_, _) => NotificationsPage(store: widget.store)),
+        GoRoute(
+            path: '/settings/sounds',
+            builder: (_, _) => SoundsPage(store: widget.store)),
+        GoRoute(
+            path: '/settings/privacy',
+            builder: (_, _) => PrivacyPage(store: widget.store)),
+        GoRoute(
+            path: '/settings/clear',
+            builder: (_, _) => ClearPage(store: widget.store)),
+        GoRoute(
+            path: '/about',
+            builder: (_, _) => AboutPage(store: widget.store)),
+        GoRoute(
+            path: '/changelog',
+            builder: (_, _) => ChangelogPage(store: widget.store)),
+        GoRoute(
+            path: '/privacy-policy',
+            builder: (_, _) => PrivacyPolicyPage(store: widget.store)),
         GoRoute(
           path: '/license',
           builder: (_, _) => OssLicensePage(store: widget.store),
           routes: [
-            GoRoute(path: 'app', builder: (_, _) => AppMitLicensePage(store: widget.store)),
+            GoRoute(
+                path: 'app',
+                builder: (_, _) => AppMitLicensePage(store: widget.store)),
             GoRoute(
               path: 'pkg/:name',
               builder: (_, state) => PackageLicensePage(
                 store: widget.store,
-                package: Uri.decodeComponent(state.pathParameters['name'] ?? ''),
+                package: Uri.decodeComponent(
+                    state.pathParameters['name'] ?? ''),
               ),
             ),
           ],
         ),
-        GoRoute(path: '/tools', builder: (_, _) => ToolsPage(store: widget.store)),
-        GoRoute(path: '/tools/datecalculator', builder: (_, _) => DateCalcPage(store: widget.store)),
-        GoRoute(path: '/download', builder: (_, _) => DownloadPage(store: widget.store)),
+        GoRoute(
+            path: '/tools',
+            builder: (_, _) => ToolsPage(store: widget.store)),
+        GoRoute(
+            path: '/tools/datecalculator',
+            builder: (_, _) => DateCalcPage(store: widget.store)),
+        GoRoute(
+            path: '/download',
+            builder: (_, _) => DownloadPage(store: widget.store)),
       ],
     );
   }
@@ -155,7 +277,8 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     super.dispose();
   }
 
-  ThemeData _theme(Brightness brightness, {required bool extraDark, ColorScheme? dynamicScheme}) {
+  ThemeData _theme(Brightness brightness,
+      {required bool extraDark, ColorScheme? dynamicScheme}) {
     final s = widget.store;
     return buildTheme(
       brightness: brightness,
@@ -194,8 +317,10 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
     final s = widget.store;
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
-        final lightTheme = _theme(Brightness.light, extraDark: false, dynamicScheme: lightDynamic);
-        final darkTheme = _theme(Brightness.dark, extraDark: s.extraDark, dynamicScheme: darkDynamic);
+        final lightTheme = _theme(Brightness.light,
+            extraDark: false, dynamicScheme: lightDynamic);
+        final darkTheme = _theme(Brightness.dark,
+            extraDark: s.extraDark, dynamicScheme: darkDynamic);
         syncWidgetTheme(s, lightTheme.colorScheme, darkTheme.colorScheme);
         return MaterialApp.router(
           title: s.lang == Lang.en ? 'Khmer Calendar' : 'ប្រតិទិនខ្មែរ',
@@ -210,13 +335,18 @@ class _KhmerCalendarAppState extends State<KhmerCalendarApp> {
           ],
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: s.theme == 'light' ? ThemeMode.light : s.theme == 'dark' ? ThemeMode.dark : ThemeMode.system,
+          themeMode: s.theme == 'light'
+              ? ThemeMode.light
+              : s.theme == 'dark'
+                  ? ThemeMode.dark
+                  : ThemeMode.system,
           routerConfig: router,
           builder: (context, child) {
             return AnnotatedRegion<SystemUiOverlayStyle>(
-            value: systemBarStyle(Theme.of(context), Theme.of(context).colorScheme.surface),
-            child: child ?? const SizedBox.shrink(),
-          );
+              value: systemBarStyle(
+                  Theme.of(context), Theme.of(context).colorScheme.surface),
+              child: child ?? const SizedBox.shrink(),
+            );
           },
         );
       },

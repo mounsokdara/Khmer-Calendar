@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-/** Optional morning digest. Off unless notifyDaily is explicitly true. */
 object DailyDigestNotify {
     fun schedule(context: Context) {
         if (!NotifyKit.dailyOn(context)) {
@@ -58,7 +57,6 @@ object DailyDigestNotify {
     }
 }
 
-/** Kept so already-queued daily alarms still land here after the 1.0.1 update. */
 class DailyNotifyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!NotifyKit.dailyOn(context)) {

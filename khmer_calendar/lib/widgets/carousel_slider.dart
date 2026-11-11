@@ -36,7 +36,6 @@ class _CarouselSliderState extends State<CarouselSlider> {
   void initState() {
     super.initState();
     _controller = PageController(initialPage: widget.index.clamp(0, _lastPage));
-    HardwareKeyboard.instance.addHandler(_onKey);
   }
 
   @override
@@ -47,7 +46,6 @@ class _CarouselSliderState extends State<CarouselSlider> {
 
   @override
   void dispose() {
-    HardwareKeyboard.instance.removeHandler(_onKey);
     _controller.dispose();
     super.dispose();
   }
@@ -77,44 +75,6 @@ class _CarouselSliderState extends State<CarouselSlider> {
     final keys = HardwareKeyboard.instance.logicalKeysPressed;
     return keys.contains(LogicalKeyboardKey.altLeft) ||
         keys.contains(LogicalKeyboardKey.altRight);
-  }
-
-  /// Last arrow key press that some carousel already handled. While a view change is peeking,
-  /// two carousels can exist at once; this makes sure one key press pages only once.
-  static Duration? _lastKeyStamp;
-  static LogicalKeyboardKey? _lastKey;
-
-  /// Keyboard: Left arrow = previous page, Right arrow = next page (day, month, week).
-  ///
-  /// Ignored when the person is typing, when a dialog or sheet is on top, or when any of
-  /// Ctrl / Alt / Shift / Meta is held (Alt+Left is "back" in browsers, Ctrl+arrows move words).
-  bool _onKey(KeyEvent event) {
-    if (event is KeyUpEvent) return false;
-    final key = event.logicalKey;
-    if (key != LogicalKeyboardKey.arrowLeft && key != LogicalKeyboardKey.arrowRight) return false;
-    if (!mounted || !_controller.hasClients) return false;
-
-    final hw = HardwareKeyboard.instance;
-    if (hw.isControlPressed || hw.isAltPressed || hw.isShiftPressed || hw.isMetaPressed) return false;
-
-    // A dialog, bottom sheet or another page covers this one.
-    if (ModalRoute.of(context)?.isCurrent == false) return false;
-
-    // Never steal the arrows from a text field (they move the caret there).
-    final focus = FocusManager.instance.primaryFocus?.context;
-    if (focus != null && (focus.widget is EditableText || focus.findAncestorWidgetOfExactType<EditableText>() != null)) {
-      return false;
-    }
-
-    // Already paged by another carousel for this very key press.
-    if (_lastKeyStamp == event.timeStamp && _lastKey == key) return true;
-    _lastKeyStamp = event.timeStamp;
-    _lastKey = key;
-
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final next = (key == LogicalKeyboardKey.arrowRight) != rtl;
-    _pageBy(next ? 1 : -1);
-    return true;
   }
 
   /// True if a vertical scrollable ancestor can still move in the direction of [dy].

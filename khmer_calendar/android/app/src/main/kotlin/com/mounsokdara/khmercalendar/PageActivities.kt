@@ -59,4 +59,3 @@ class ToolsActivity : FlutterPageActivity() {
 class DateCalculatorActivity : FlutterPageActivity() {
     override fun getInitialRoute(): String = "/tools/datecalculator"
 }
-

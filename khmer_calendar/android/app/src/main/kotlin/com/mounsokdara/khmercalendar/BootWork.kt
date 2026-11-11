@@ -3,7 +3,6 @@ package com.mounsokdara.khmercalendar
 import android.app.NotificationManager
 import android.content.Context
 
-/** Shared work for process start (App Startup) and BOOT_COMPLETED. */
 object BootWork {
     fun run(context: Context) {
         val app = context.applicationContext

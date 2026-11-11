@@ -3,6 +3,9 @@
 Native Flutter Khmer lunar calendar for phone and desktop. Holy days, national holidays, weather, reminders and a bunch of cool features.
 
 **Visit this Website for demo:** [khmercalendar.pages.dev](https://khmercalendar.pages.dev)
+
+**Dev Preview**
+[https://khmer-calendar-dev.pnsdg.workers.dev/](https://khmer-calendar-dev.pnsdg.workers.dev/)
 ## Run app
 
 ```bash
@@ -21,24 +24,23 @@ flutter run -d chrome
 ## Download:
 [In my GitHub Releases](https://github.com/mounsokdara/Khmer-Calendar/releases/latest)
 
+## Dev builds: update inside the app
+In this dev repo every push to `main` runs **Release** (`release.yml`), which builds Android APKs and Windows / Linux / macOS packages (`android.yml`, `windows.yml`, `linux.yml`, `macos.yml`) and publishes them to the GitHub Release for the current version. Each desktop package includes its updater. **About > Check for updates** downloads the right package for your device and installs it without opening GitHub: Android opens the system installer; on Windows (`update-windows.exe`), Linux and macOS a small updater waits for the app to quit, swaps the files and restarts it. Source: `khmer_calendar/lib/screens/more/dev_update*.dart`, `tools/updater/`.
+
+**Update without opening the app:** download the updater for your system from the release and run it: `KhmerCalendar-Updater-windows-x64.exe` (Windows), `KhmerCalendar-Updater-linux-x64` / `-arm64` (Linux, make it executable first), or `KhmerCalendar-Updater-macos.zip` (macOS, unzip, then right-click the `.command` file > Open). It finds the installed app (or asks for the folder, or use `--app-dir <folder>`), checks the installed version against the latest one (nothing is downloaded when you are already up to date; add `--force-update 1` to reinstall anyway), downloads the latest package, closes the app if it is running, updates it and starts it again. If another program is using the app files it shows which one and offers Retry, Force close, and Force as administrator when a normal force close was not enough. Windows may show "Unknown publisher" and macOS may say the developer cannot be verified because the files are not signed yet.
+
+## Icons for the updater and background service
+The update service and the background service have their own icons: the app icon with a down-arrow badge (updater) or a gear badge (background service). They are drawn automatically from `khmer_calendar/assets/icons/icon-512.png` by `tools/icons/make_icons.py` (badge position and colours are picked from the app icon; run `bash tools/icons/generate.sh` after changing the icon, and CI runs it before packaging); the generated files are in `tools/icons/`.
+
+- **Windows:** the icon is embedded into `update-windows.exe` and `khmer-calendar-bg.exe` while the package is built (`tools/icons/set-icon-windows.ps1`, which keeps the plain exe if the check fails).
+- **macOS:** the standalone updater zip also has `Khmer Calendar Updater.app` with the icon (it runs the same updater in Terminal).
+- **Linux:** a program file cannot hold an icon, so the package has `install-linux-launchers.sh`: run `sh install-linux-launchers.sh` in the extracted folder to add both to the application menu with their icons (`--remove` undoes it).
+
 ## Privacy
 [Privacy Policy](PRIVACY.md): no accounts, ads or analytics; your data stays on your device.
 
-## Packages (one file per architecture)
-Every release has standalone files, each with its architecture in the name. Pick the one for your device:
-- **Android:** `KhmerCalendar-arm64.apk` (almost every phone), `-arm32.apk` (old 32-bit phones), `-x64.apk` (emulators, Intel Chromebooks), `-arm32_64.apk` (arm + arm64 in one file) or `-universal.apk` (arm, arm64 and x64 in one file).
-- **Windows:** the same three CPU types for the setup wizard (`KhmerCalendar-windows-x64-setup.exe`, `-arm64-setup.exe`, `-universal-setup.exe`) and for the portable zip (`KhmerCalendar-windows-x64.zip`, `-arm64.zip`, `-universal.zip`). Universal means x64 and arm64 in one file.
-- **macOS:** `KhmerCalendar-macos-arm64.dmg` (Apple Silicon), `-x86_64.dmg` (Intel) or `-universal.dmg` (both).
-- **Linux:** `KhmerCalendar-linux-x64.tar.gz`, `KhmerCalendar-linux-arm64.tar.gz` or `KhmerCalendar-linux-universal.tar.gz` (both in one archive, start it with `khmer-calendar.sh`).
-
-Flutter cannot build 32-bit x86 or ARMv5/v6 (`armeabi`), so there are no such packages.
-
-## Windows: installer or portable
-- **Setup wizard:** `KhmerCalendar-windows-x64-setup.exe` (Intel/AMD), `KhmerCalendar-windows-arm64-setup.exe` (ARM PCs) or `KhmerCalendar-windows-universal-setup.exe` (carries both and installs the build that fits your PC). It installs for the current user (no admin needed), adds a Start menu shortcut and an uninstaller.
-- **Portable:** `KhmerCalendar-windows-x64.zip` (Intel/AMD), `KhmerCalendar-windows-arm64.zip` (ARM PCs) or `KhmerCalendar-windows-universal.zip` (both, start it with `KhmerCalendar.cmd`): unzip anywhere and run `khmer_calendar.exe`. Nothing is installed.
-
-## Windows: "Unknown publisher" warning
-The Windows zip is signed with the maintainer's own certificate, which Windows does not recognise, so SmartScreen may say "Windows protected your PC". Click **More info**, then **Run anyway**.
+## Code signing policy
+I have applied to the SignPath Foundation for free code signing of the Windows app; no release is signed by it yet, so Windows may show "Unknown publisher" until then. Roles, scope and how signing will work: [Code signing policy](docs/CODE-SIGNING-POLICY.md).
 
 ## Deploy (Cloudflare Pages, built from source)
 
@@ -61,5 +63,4 @@ Environment variables (Production and Preview):
 | Variable | Value | Purpose |
 |---|---|---|
 | `FLUTTER_VERSION` | optional, e.g. `3.47.4` | Pin Flutter (default `3.47.4`, same as the Release workflow). |
-<!-- If you have access/permission to changees my repo, make sure you have to update https://github.com/mounsokdara/Khmer-Calendar.Dev to avoid commit too many changes everyday. so we can have clean public releasing repo. when the app look finish, you can now publish to the main public repo -->
-
+<!-- read me if youre an ai agens look at AGENTS.project.md-->

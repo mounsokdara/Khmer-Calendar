@@ -34,6 +34,11 @@ const reminderKinds = <ReminderKind>[
   TomorrowReminder(),
 ];
 
+bool get _desktopCatchUp =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux);
+
 String silPhaseLabel(LunarDay info, Lang lang) {
   if (lang == Lang.en) {
     final wax = info.moonStatus == 'កើត' ? 'waxing' : 'waning';
@@ -78,18 +83,30 @@ class DailyReminder extends ReminderKind {
 
   @override
   List<ReminderShot> collect(AppStore store, DateTime now) {
-    var when = DateTime(now.year, now.month, now.day, 7);
+    final today7 = DateTime(now.year, now.month, now.day, 7);
+    var when = today7;
     if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
     final lang = store.lang;
-    return [
-      ReminderShot(
-        'daily-${isoOf(when)}',
+    final out = <ReminderShot>[];
+    // Windows / Linux: if the PC was off or asleep at 7:00, still show today's
+    // digest once when the app comes back (like Android's morning notification).
+    if (_desktopCatchUp && !today7.isAfter(now)) {
+      out.add(ReminderShot(
+        'daily-${isoOf(today7)}',
         t(lang, 'notifyTodayTitle'),
-        dayNotifyBody(when, store),
-        when,
+        dayNotifyBody(today7, store),
+        today7,
         channel: 'daily',
-      ),
-    ];
+      ));
+    }
+    out.add(ReminderShot(
+      'daily-${isoOf(when)}',
+      t(lang, 'notifyTodayTitle'),
+      dayNotifyBody(when, store),
+      when,
+      channel: 'daily',
+    ));
+    return out;
   }
 }
 
@@ -109,7 +126,12 @@ class SilReminder extends ReminderKind {
     for (final iso in upcomingSilDates()) {
       final d = fromIso(iso);
       final when = DateTime(d.year, d.month, d.day, 7);
-      if (!when.isAfter(now)) continue;
+      // Future sil days always.
+      // Desktop: also catch up today's sil if we missed 7:00 (PC was off).
+      final sameDay = when.year == now.year &&
+          when.month == now.month &&
+          when.day == now.day;
+      if (!when.isAfter(now) && !(_desktopCatchUp && sameDay)) continue;
       out.add(
         ReminderShot(
           'sil-$iso',
@@ -140,7 +162,10 @@ List<ReminderShot> _holidayShotsFrom(
   for (final h in items) {
     final day = fromIso(h['d']!);
     final when = DateTime(day.year, day.month, day.day, 8);
-    if (!when.isAfter(now)) continue;
+    final sameDay = when.year == now.year &&
+        when.month == now.month &&
+        when.day == now.day;
+    if (!when.isAfter(now) && !(_desktopCatchUp && sameDay)) continue;
     final name = lang == Lang.en ? h['en']! : h['km']!;
     final type = switch (h['type']) {
       'public' => HolidayType.public,
@@ -300,7 +325,12 @@ ReminderShot? _taskShot(
     minute = int.tryParse(p.length > 1 ? p[1] : '0') ?? 0;
   }
   final when = DateTime(day.year, day.month, day.day, hour, minute);
-  if (!when.isAfter(now)) return null;
+  // Future always. Desktop: allow up to 2h late so a missed task still toasts
+  // when the app / bg helper comes back.
+  if (!when.isAfter(now)) {
+    if (!_desktopCatchUp) return null;
+    if (now.difference(when) > const Duration(hours: 2)) return null;
+  }
   final time = '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
   final notes = (e.notes ?? '').trim();
   return ReminderShot(

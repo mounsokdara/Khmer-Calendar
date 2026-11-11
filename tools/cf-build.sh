@@ -20,6 +20,7 @@ export CI=true
 flutter config --no-analytics >/dev/null 2>&1 || true
 flutter --version
 
+node "$ROOT/tools/gen-assets.mjs" "$APP"   # lists every khmer_calendar/assets folder in pubspec.yaml
 cd "$APP"
 flutter pub get
 flutter build web --release --no-web-resources-cdn --base-href /

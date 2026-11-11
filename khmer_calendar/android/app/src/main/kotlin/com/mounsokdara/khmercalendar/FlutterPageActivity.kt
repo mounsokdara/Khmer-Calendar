@@ -3,10 +3,6 @@ package com.mounsokdara.khmercalendar
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 
-/**
- * Base for the dedicated Flutter screens that run as their own launchable activity. Same native
- * bridge as [MainActivity]; the subclass only picks the Dart route to start on.
- */
 open class FlutterPageActivity : MainActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         paintWindow()

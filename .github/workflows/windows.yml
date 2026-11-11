@@ -1,4 +1,5 @@
-# Windows: build, sign, bundle VC++ runtime, pack zip (includes update-windows.exe inside the package).
+# Windows: build, sign, bundle VC++ runtime, pack zip (includes update-windows.exe
+# and khmer-calendar-bg.exe). Also uploads a standalone updater exe.
 name: Windows
 
 on:
@@ -22,6 +23,9 @@ jobs:
           - { arch: arm64, runner: windows-11-arm, experimental: true }
     steps:
       - uses: actions/checkout@v4
+      - name: Apply version.txt
+        shell: bash
+        run: bash scripts/set-version.sh --apply
       - uses: subosito/flutter-action@v2
         if: matrix.arch == 'x64'
         with:
@@ -35,12 +39,21 @@ jobs:
           git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$env:RUNNER_TEMP\flutter"
           "$env:RUNNER_TEMP\flutter\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
           & "$env:RUNNER_TEMP\flutter\bin\flutter.bat" --version
+      - run: node tools/gen-assets.mjs khmer_calendar
       - run: flutter pub get
         working-directory: khmer_calendar
-      - run: flutter build windows --release
+      - name: Build windows
+        shell: pwsh
         working-directory: khmer_calendar
         env:
           CXXFLAGS: /D_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
+        run: |
+          flutter build windows --release 2>&1 | Tee-Object -Variable log | Out-Host
+          if ($LASTEXITCODE -ne 0) {
+            $tail = (($log | Select-Object -Last 25) -join ' | ') -replace '[\r\n]+', ' '
+            Write-Host "::error title=flutter build windows failed::$tail"
+            exit 1
+          }
       - name: Sign windows (Authenticode)
         shell: pwsh
         env:
@@ -50,9 +63,27 @@ jobs:
       - name: Bundle Visual C++ runtime
         shell: pwsh
         run: ./scripts/bundle-vcruntime.ps1 -Dir khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release -Arch ${{ matrix.arch }}
+      - name: Draw update and background service icons from the app icon
+        shell: bash
+        run: bash tools/icons/generate.sh
       - name: Build updater into the package folder
         shell: pwsh
-        run: dart compile exe tools/updater/update.dart -o khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe
+        run: |
+          $out = "khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe"
+          dart compile exe tools/updater/update.dart -o $out
+          # Started with only --pid it prints "Missing arguments" and exits 2: a safe check that it still runs.
+          ./tools/icons/set-icon-windows.ps1 -Exe $out -Icon tools/icons/update.ico -ProbeArgs '--pid','0' -ExpectExit 2
+      - name: Build background service into the package folder
+        shell: pwsh
+        run: |
+          $out = "khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\khmer-calendar-bg.exe"
+          dart compile exe tools/background/bg_service.dart -o $out
+          ./tools/background/set-gui-subsystem.ps1 -Exe $out
+          # With a folder that has no app in it the service exits 2 right away: a safe check that it still runs.
+          ./tools/icons/set-icon-windows.ps1 -Exe $out -Icon tools/icons/bg.ico -ProbeArgs '--app-dir','khmer-icon-probe-missing' -ExpectExit 2
+      - name: Standalone updater copy (separate release asset)
+        shell: pwsh
+        run: Copy-Item khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\update-windows.exe KhmerCalendar-Updater-windows-${{ matrix.arch }}.exe
       - name: Pack windows
         shell: pwsh
         run: Compress-Archive -Path khmer_calendar\build\windows\${{ matrix.arch }}\runner\Release\* -DestinationPath KhmerCalendar-windows-${{ matrix.arch }}.zip
@@ -64,6 +95,11 @@ jobs:
           name: windows-${{ matrix.arch }}
           if-no-files-found: ignore
           path: KhmerCalendar-windows-${{ matrix.arch }}.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: updater-windows-${{ matrix.arch }}
+          if-no-files-found: ignore
+          path: KhmerCalendar-Updater-windows-${{ matrix.arch }}.exe
 
   installers:
     name: windows-installers
@@ -73,6 +109,9 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Apply version.txt
+        shell: bash
+        run: bash scripts/set-version.sh --apply
       - uses: actions/download-artifact@v4
         with:
           pattern: windows-*

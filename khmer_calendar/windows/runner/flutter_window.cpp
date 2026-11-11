@@ -1,11 +1,13 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <string>
 
 #include <flutter/standard_method_codec.h>
 
 #include "autostart.h"
 #include "flutter/generated_plugin_registrant.h"
+#include "windows_notify.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -28,6 +30,73 @@ void FlutterWindow::RegisterAutostartChannel() {
           result->Success(flutter::EncodableValue(KhmerAutostartDisable()));
         } else if (method == "isEnabled") {
           result->Success(flutter::EncodableValue(KhmerAutostartIsEnabled()));
+        } else if (method == "ensureRunning") {
+          result->Success(
+              flutter::EncodableValue(KhmerAutostartEnsureRunning()));
+        } else {
+          result->NotImplemented();
+        }
+      });
+}
+
+void FlutterWindow::RegisterWindowsChannel() {
+  windows_channel_ =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          flutter_controller_->engine()->messenger(), "khmer.windows",
+          &flutter::StandardMethodCodec::GetInstance());
+  windows_channel_->SetMethodCallHandler(
+      [](const flutter::MethodCall<flutter::EncodableValue>& call,
+         std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>>
+             result) {
+        const std::string& method = call.method_name();
+        if (method == "registerNotifyApp") {
+          std::string app_name = "Khmer Calendar";
+          std::string aumid = "MounSokdara.KhmerCalendar";
+          std::string icon;
+          if (const auto* args =
+                  std::get_if<flutter::EncodableMap>(call.arguments())) {
+            auto name_it = args->find(flutter::EncodableValue("appName"));
+            if (name_it != args->end()) {
+              if (const auto* s = std::get_if<std::string>(&name_it->second)) {
+                app_name = *s;
+              }
+            }
+            auto id_it = args->find(flutter::EncodableValue("aumid"));
+            if (id_it != args->end()) {
+              if (const auto* s = std::get_if<std::string>(&id_it->second)) {
+                aumid = *s;
+              }
+            }
+            auto icon_it = args->find(flutter::EncodableValue("iconPath"));
+            if (icon_it != args->end()) {
+              if (const auto* s = std::get_if<std::string>(&icon_it->second)) {
+                icon = *s;
+              }
+            }
+          }
+          result->Success(flutter::EncodableValue(
+              KhmerRegisterNotificationAppUtf8(app_name, aumid, icon)));
+        } else if (method == "runPowerShell") {
+          std::string script;
+          if (const auto* args =
+                  std::get_if<flutter::EncodableMap>(call.arguments())) {
+            auto it = args->find(flutter::EncodableValue("script"));
+            if (it != args->end()) {
+              if (const auto* s = std::get_if<std::string>(&it->second)) {
+                script = *s;
+              }
+            }
+          } else if (const auto* s =
+                         std::get_if<std::string>(call.arguments())) {
+            script = *s;
+          }
+          std::string err;
+          bool ok = KhmerRunPowerShellUtf8(script, &err);
+          if (ok) {
+            result->Success(flutter::EncodableValue(true));
+          } else {
+            result->Error("ps_failed", err.empty() ? "PowerShell failed" : err);
+          }
         } else {
           result->NotImplemented();
         }
@@ -41,31 +110,40 @@ bool FlutterWindow::OnCreate() {
 
   RECT frame = GetClientArea();
 
-  // The size here must match the window dimensions to avoid unnecessary surface
-  // creation / destruction in the startup path.
   flutter_controller_ = std::make_unique<flutter::FlutterViewController>(
       frame.right - frame.left, frame.bottom - frame.top, project_);
-  // Ensure that basic setup of the controller was successful.
   if (!flutter_controller_->engine() || !flutter_controller_->view()) {
     return false;
   }
   RegisterPlugins(flutter_controller_->engine());
   RegisterAutostartChannel();
+  RegisterWindowsChannel();
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
-  flutter_controller_->engine()->SetNextFrameCallback([&]() {
-    this->Show();
-  });
-
-  // Flutter can complete the first frame before the "show window" callback is
-  // registered. The following call ensures a frame is pending to ensure the
-  // window is shown. It is a no-op if the first frame hasn't completed yet.
-  flutter_controller_->ForceRedraw();
+  if (background_) {
+    // Hidden tool-style window: no taskbar entry, never shown, not activatable.
+    HWND hwnd = GetHandle();
+    if (hwnd != nullptr) {
+      LONG_PTR ex = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+      SetWindowLongPtr(hwnd, GWL_EXSTYLE,
+                       ex | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE |
+                           WS_EX_NOINHERITLAYOUT);
+      SetWindowPos(hwnd, nullptr, -32000, -32000, 1, 1,
+                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_HIDEWINDOW);
+      ShowWindow(hwnd, SW_HIDE);
+    }
+  } else {
+    flutter_controller_->engine()->SetNextFrameCallback([&]() {
+      this->Show();
+    });
+    flutter_controller_->ForceRedraw();
+  }
 
   return true;
 }
 
 void FlutterWindow::OnDestroy() {
+  windows_channel_.reset();
   autostart_channel_.reset();
   if (flutter_controller_) {
     flutter_controller_ = nullptr;
@@ -78,7 +156,27 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
-  // Give Flutter, including plugins, an opportunity to handle window messages.
+  if (background_) {
+    switch (message) {
+      case WM_QUERYENDSESSION:
+        // Never block Windows logoff / shutdown.
+        return TRUE;
+      case WM_ENDSESSION:
+        break;
+      case WM_CLOSE:
+      case WM_QUIT:
+      case WM_DESTROY:
+        return 0;
+      case WM_SYSCOMMAND:
+        if ((wparam & 0xFFF0) == SC_CLOSE) {
+          return 0;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   if (flutter_controller_) {
     std::optional<LRESULT> result =
         flutter_controller_->HandleTopLevelWindowProc(hwnd, message, wparam,

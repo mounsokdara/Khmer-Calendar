@@ -5,7 +5,14 @@ on:
     branches: [main]
     paths-ignore:
       - "**/*.md"
+    tags:
+      - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Optional tag to publish (e.g. v1.0.5). Leave empty to use version.txt / current SHA."
+        required: false
+        default: ""
 
 concurrency:
   group: release
@@ -13,55 +20,15 @@ concurrency:
 permissions:
   contents: write
 
+
 jobs:
   android:
     uses: ./.github/workflows/android.yml
     secrets: inherit
 
   linux:
-    name: linux-${{ matrix.arch }}
-    runs-on: ${{ matrix.runner }}
-    continue-on-error: ${{ matrix.experimental }}
-    timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - { arch: x64, runner: ubuntu-latest, experimental: false }
-          - { arch: arm64, runner: ubuntu-24.04-arm, experimental: true }
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        if: matrix.arch == 'x64'
-        with:
-          flutter-version: "3.47.4"
-          channel: stable
-          cache: true
-      - name: Flutter SDK 3.47.4 from git (arm64)
-        if: matrix.arch == 'arm64'
-        run: |
-          git clone --depth 1 --branch 3.47.4 https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
-          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
-          "$RUNNER_TEMP/flutter/bin/flutter" --version
-      - name: Linux toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-      - run: flutter pub get
-        working-directory: khmer_calendar
-      - run: flutter build linux --release
-        working-directory: khmer_calendar
-      - name: Build updater into the package folder
-        run: |
-          dart compile exe tools/updater/update.dart -o khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
-          chmod +x khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle/update-linux-${{ matrix.arch }}
-      - name: Pack linux
-        run: |
-          tar -C khmer_calendar/build/linux/${{ matrix.arch }}/release/bundle -czf KhmerCalendar-linux-${{ matrix.arch }}.tar.gz .
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-${{ matrix.arch }}
-          path: KhmerCalendar-linux-${{ matrix.arch }}.tar.gz
+    uses: ./.github/workflows/linux.yml
+    secrets: inherit
 
   windows:
     uses: ./.github/workflows/windows.yml
@@ -77,7 +44,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Pack source
-        run: git archive --format=zip --output KhmerCalendar-project.zip HEAD
+        run: |
+          git archive --format=zip --output KhmerCalendar-project.zip HEAD
       - uses: actions/upload-artifact@v4
         with:
           name: project
@@ -88,11 +56,14 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Apply version.txt
+        run: bash scripts/set-version.sh --apply
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.47.4"
           channel: stable
           cache: true
+      - run: node tools/gen-assets.mjs khmer_calendar
       - run: flutter pub get
         working-directory: khmer_calendar
       - run: flutter build web --release --web-resources-cdn --base-href /
@@ -100,6 +71,8 @@ jobs:
       - name: Pack web
         run: |
           (cd khmer_calendar/build/web && zip -r "$GITHUB_WORKSPACE/KhmerCalendar-web.zip" .)
+          mkdir -p dist
+          cp -a khmer_calendar/build/web/. dist/
       - uses: actions/upload-artifact@v4
         with:
           name: web
@@ -116,24 +89,20 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          # Packages only (updater binaries live inside the zip / tar.gz / dmg).
-          find dist -type f -name 'KhmerCalendar-*' ! -name '*.idsig' -exec cp -t release-files {} +
-          if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ] && [ -f dist/windows-arm64/KhmerCalendar-windows-arm64.zip ]; then
-            mkdir -p u-win/x64 u-win/arm64
-            unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win/x64
-            unzip -q dist/windows-arm64/KhmerCalendar-windows-arm64.zip -d u-win/arm64
-            cat > u-win/KhmerCalendar.cmd <<'LAUNCHER'
-          @echo off
-          setlocal
-          set "ARCH=%PROCESSOR_ARCHITECTURE%"
-          if /I "%PROCESSOR_ARCHITEW6432%"=="ARM64" set "ARCH=ARM64"
-          if /I "%ARCH%"=="ARM64" (set "DIR=arm64") else (set "DIR=x64")
-          start "" "%~dp0%DIR%\khmer_calendar.exe"
-          LAUNCHER
-            sed -i 's/$/\r/' u-win/KhmerCalendar.cmd
+          # Packages + standalone updaters (KhmerCalendar-Updater-*).
+          find dist -type f \( \
+            -name 'KhmerCalendar-*' -o \
+            -name 'KhmerCalendar-Updater-*' \
+          \) ! -name '*.idsig' -exec cp -t release-files {} +
+          # Portable universal Windows: one flat folder (x64 build).
+          # No x64/arm64 subfolders and no launcher — double-click khmer_calendar.exe.
+          # Works on ARM64 Windows via built-in x64 emulation.
+          if [ -f dist/windows-x64/KhmerCalendar-windows-x64.zip ]; then
+            mkdir -p u-win
+            unzip -q dist/windows-x64/KhmerCalendar-windows-x64.zip -d u-win
             (cd u-win && zip -qr ../release-files/KhmerCalendar-windows-universal.zip .)
           else
-            echo "::warning::windows universal skipped (needs both the x64 and arm64 zips)"
+            echo "::warning::windows universal skipped (needs windows-x64 zip)"
           fi
           if [ -f dist/linux-x64/KhmerCalendar-linux-x64.tar.gz ] && [ -f dist/linux-arm64/KhmerCalendar-linux-arm64.tar.gz ]; then
             mkdir -p u-linux/x64 u-linux/arm64
@@ -160,10 +129,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          VERSION=$(grep -m1 '^version:' khmer_calendar/pubspec.yaml | sed 's/^version:[[:space:]]*//; s/+.*//')
-          TAG="v${VERSION}"
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+            TAG="${TAG#v}"
+            TAG="v${TAG}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          elif [ -f version.txt ]; then
+            VERSION=$(sed -n 's/^versionName=//p' version.txt | head -1 | tr -d '\r')
+            TAG="v${VERSION}"
+          else
+            VERSION=$(grep -m1 '^version:' khmer_calendar/pubspec.yaml | sed 's/^version:[[:space:]]*//; s/+.*//')
+            TAG="v${VERSION}"
+          fi
+
           NOTES_FILE=".github/release-body.md"
-          echo "Publishing ${TAG}"
+          echo "Publishing ${TAG} (target ${GITHUB_SHA})"
           retry() {
             local n=1 max=5
             until "$@"; do
@@ -186,7 +167,11 @@ jobs:
           }
           create_draft() {
             drop_drafts || return 1
-            gh release create "$TAG" --draft --target "$GITHUB_SHA" --title "Khmer Calendar $TAG" --notes-file "$NOTES_FILE"
+            gh release create "$TAG" \
+              --draft \
+              --target "$GITHUB_SHA" \
+              --title "Khmer Calendar $TAG" \
+              --notes-file "$NOTES_FILE"
           }
           if gh release view "$TAG" >/dev/null 2>&1; then
             retry gh release delete "$TAG" --yes --cleanup-tag
@@ -195,4 +180,4 @@ jobs:
           for f in release-files/*; do
             retry gh release upload "$TAG" "$f" --clobber
           done
-          retry gh release edit "$TAG" --draft=false --latest
+          retry gh release edit "$TAG" --draft=false

@@ -17,6 +17,8 @@ constexpr wchar_t kApprovedFolderKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\StartupFolder";
 constexpr wchar_t kValueName[] = L"KhmerCalendar";
 constexpr wchar_t kShortcutName[] = L"Khmer Calendar.lnk";
+constexpr wchar_t kBgExeName[] = L"khmer-calendar-bg.exe";
+constexpr wchar_t kBgMutexName[] = L"Local\\KhmerCalendar.Background";
 
 std::wstring ExePath() {
   wchar_t buf[MAX_PATH] = {};
@@ -27,7 +29,24 @@ std::wstring ExePath() {
   return std::wstring(buf);
 }
 
-std::wstring CommandLineFor(const std::wstring& exe) {
+std::wstring DirOf(const std::wstring& path) {
+  size_t slash = path.find_last_of(L"\\/");
+  if (slash == std::wstring::npos) {
+    return std::wstring();
+  }
+  return path.substr(0, slash);
+}
+
+std::wstring BackgroundCommand() {
+  std::wstring exe = ExePath();
+  if (exe.empty()) {
+    return std::wstring();
+  }
+  std::wstring dir = DirOf(exe);
+  std::wstring bg = dir + L"\\" + kBgExeName;
+  if (GetFileAttributesW(bg.c_str()) != INVALID_FILE_ATTRIBUTES) {
+    return L"\"" + bg + L"\"";
+  }
   return L"\"" + exe + L"\" --autostart";
 }
 
@@ -100,7 +119,6 @@ bool ApprovedEnabled(HKEY root, const wchar_t* subkey, const wchar_t* name) {
   if (st != ERROR_SUCCESS || bytes == 0) {
     return true;
   }
-  // Bit 0 set means disabled in Settings / Task Manager.
   return (data[0] & 0x01) == 0;
 }
 
@@ -141,38 +159,6 @@ std::wstring ShortcutPath() {
   return dir;
 }
 
-bool WriteShortcut(const std::wstring& exe) {
-  std::wstring dest = ShortcutPath();
-  if (dest.empty() || exe.empty()) {
-    return false;
-  }
-  IShellLinkW* link = nullptr;
-  HRESULT hr =
-      CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_INPROC_SERVER,
-                       IID_IShellLinkW, reinterpret_cast<void**>(&link));
-  if (FAILED(hr) || link == nullptr) {
-    return false;
-  }
-  link->SetPath(exe.c_str());
-  link->SetArguments(L"--autostart");
-  std::wstring dir = exe;
-  size_t slash = dir.find_last_of(L"\\/");
-  if (slash != std::wstring::npos) {
-    dir.resize(slash);
-    link->SetWorkingDirectory(dir.c_str());
-  }
-  link->SetDescription(L"Khmer Calendar");
-  IPersistFile* file = nullptr;
-  hr = link->QueryInterface(IID_IPersistFile, reinterpret_cast<void**>(&file));
-  bool ok = false;
-  if (SUCCEEDED(hr) && file != nullptr) {
-    ok = SUCCEEDED(file->Save(dest.c_str(), TRUE));
-    file->Release();
-  }
-  link->Release();
-  return ok;
-}
-
 bool RemoveShortcut() {
   std::wstring dest = ShortcutPath();
   if (dest.empty()) {
@@ -192,19 +178,27 @@ bool ShortcutExists() {
   return GetFileAttributesW(dest.c_str()) != INVALID_FILE_ATTRIBUTES;
 }
 
+bool BackgroundAlreadyRunning() {
+  HANDLE m = OpenMutexW(SYNCHRONIZE, FALSE, kBgMutexName);
+  if (m == nullptr) {
+    return false;
+  }
+  CloseHandle(m);
+  return true;
+}
+
 }  // namespace
 
 bool KhmerAutostartEnable() {
-  std::wstring exe = ExePath();
-  if (exe.empty()) {
+  std::wstring cmd = BackgroundCommand();
+  if (cmd.empty()) {
     return false;
   }
-  std::wstring cmd = CommandLineFor(exe);
   bool run = WriteSz(HKEY_CURRENT_USER, kRunKey, kValueName, cmd);
   WriteApprovedEnabled(HKEY_CURRENT_USER, kApprovedKey, kValueName);
-  WriteShortcut(exe);
-  WriteApprovedEnabled(HKEY_CURRENT_USER, kApprovedFolderKey, kShortcutName);
-  return run || ShortcutExists();
+  RemoveShortcut();
+  DeleteValue(HKEY_CURRENT_USER, kApprovedFolderKey, kShortcutName);
+  return run;
 }
 
 bool KhmerAutostartDisable() {
@@ -227,4 +221,39 @@ bool KhmerAutostartIsEnabled() {
     return true;
   }
   return false;
+}
+
+bool KhmerAutostartEnsureRunning() {
+  if (BackgroundAlreadyRunning()) {
+    return true;
+  }
+  std::wstring exe = ExePath();
+  if (exe.empty()) {
+    return false;
+  }
+  std::wstring dir = DirOf(exe);
+  std::wstring bg = dir + L"\\" + kBgExeName;
+  std::wstring cmd;
+  std::wstring work = dir;
+  if (GetFileAttributesW(bg.c_str()) != INVALID_FILE_ATTRIBUTES) {
+    cmd = L"\"" + bg + L"\"";
+  } else {
+    cmd = L"\"" + exe + L"\" --autostart";
+  }
+  STARTUPINFOW si = {};
+  si.cb = sizeof(si);
+  si.dwFlags = STARTF_USESHOWWINDOW;
+  si.wShowWindow = SW_HIDE;
+  PROCESS_INFORMATION pi = {};
+  std::wstring mutable_cmd = cmd;
+  BOOL ok = CreateProcessW(
+      nullptr, mutable_cmd.data(), nullptr, nullptr, FALSE,
+      DETACHED_PROCESS | CREATE_NO_WINDOW | CREATE_NEW_PROCESS_GROUP, nullptr,
+      work.empty() ? nullptr : work.c_str(), &si, &pi);
+  if (!ok) {
+    return false;
+  }
+  CloseHandle(pi.hThread);
+  CloseHandle(pi.hProcess);
+  return true;
 }
