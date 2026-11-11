@@ -1,0 +1,9 @@
+# Files that must stay different in this repo when sync-twin.yml overwrites it (gitignore syntax).
+# The repo being overwritten decides. This file always protects itself.
+# Without a .syncignore the workflow protects wrangler.toml only.
+
+# Cloudflare deploy identity (Pages project vs dev Worker)
+wrangler.toml
+
+# Uncomment if the README should keep its own links in each repo
+# README.md

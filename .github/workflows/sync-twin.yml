@@ -1,0 +1,185 @@
+name: Sync with twin repo
+
+# Put this file at .github/workflows/sync-twin.yml in BOTH repos.
+# Run it from the Actions tab (Run workflow) in whichever repo you are standing in:
+#   direction = push  ->  this repo  ->  the other repo
+#   direction = pull  ->  the other repo  ->  this repo
+#
+# Files:     copies tracked files only. Anything matching the source's .gitignore is never copied
+#            (even if it was force-added), and files that exist in the destination but not in the
+#            source are removed ("no leftovers") unless they match .syncignore.
+# Variables: copied in either direction (GitHub lets a token read variable values).
+# Secrets:   push only. GitHub never reveals a secret's value, so the only secrets this workflow can
+#            send are the ones available to the repo it runs in. To get secrets from repo A into B,
+#            run the workflow in A with direction = push.
+#
+# One-time setup, in BOTH repos: Settings > Secrets and variables > Actions > New repository secret
+#   SYNC_TOKEN = a personal access token that can write to both repos
+#                (classic: scopes "repo" + "workflow"; fine-grained: Contents, Workflows, Secrets and
+#                Variables = read/write on both repos). SYNC_TOKEN itself is never copied.
+
+on:
+  workflow_dispatch:
+    inputs:
+      direction:
+        description: "push = this repo -> other repo, pull = other repo -> this repo"
+        type: choice
+        options: [push, pull]
+        default: push
+      branch:
+        description: "Branch to sync (same name in both repos)"
+        type: string
+        default: main
+      copy_files:
+        description: "Copy files (follows .gitignore, removes leftovers, honours .syncignore)"
+        type: boolean
+        default: true
+      copy_variables:
+        description: "Copy Actions variables"
+        type: boolean
+        default: true
+      copy_secrets:
+        description: "Copy Actions secrets (push only)"
+        type: boolean
+        default: false
+      skip_ci:
+        description: "Add [skip ci] to the commit so the destination does not start a build/release"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Only show what would change, write nothing"
+        type: boolean
+        default: false
+
+concurrency:
+  group: twin-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REPO_A: mounsokdara/Khmer-Calendar        # public
+  REPO_B: mounsokdara/Khmer-Calendar.Dev    # dev
+  GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Work out source and destination
+        id: r
+        env:
+          DIRECTION: ${{ inputs.direction }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Add a repository secret named SYNC_TOKEN first (see the comment at the top of this file)."
+            exit 1
+          fi
+          this="${GITHUB_REPOSITORY,,}"
+          if   [ "$this" = "${REPO_A,,}" ]; then twin="$REPO_B"
+          elif [ "$this" = "${REPO_B,,}" ]; then twin="$REPO_A"
+          else echo "::error::$GITHUB_REPOSITORY is neither REPO_A nor REPO_B (edit the env block)."; exit 1
+          fi
+          if [ "$DIRECTION" = push ]; then src="$GITHUB_REPOSITORY"; dst="$twin"
+          else src="$twin"; dst="$GITHUB_REPOSITORY"; fi
+          echo "src=$src" >> "$GITHUB_OUTPUT"
+          echo "dst=$dst" >> "$GITHUB_OUTPUT"
+          echo "## $src -> $dst" >> "$GITHUB_STEP_SUMMARY"
+          [ "${{ inputs.dry_run }}" = true ] && echo "_Dry run: nothing is written._" >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Sync files
+        if: inputs.copy_files
+        env:
+          SRC: ${{ steps.r.outputs.src }}
+          DST: ${{ steps.r.outputs.dst }}
+          BRANCH: ${{ inputs.branch }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SKIP_CI: ${{ inputs.skip_ci }}
+        run: |
+          set -euo pipefail
+          BASE="${SYNC_URL_BASE:-https://x-access-token:${GH_TOKEN}@github.com}"
+          W="${RUNNER_TEMP:-/tmp}/twin"; rm -rf "$W"; mkdir -p "$W"
+          S_DIR="$W/src"; D_DIR="$W/dst"
+          git clone -q --depth 1 --branch "$BRANCH" "$BASE/$SRC.git" "$S_DIR"
+          git clone -q --depth 1 --branch "$BRANCH" "$BASE/$DST.git" "$D_DIR"
+
+          # .syncignore (gitignore syntax) lives in the repo being overwritten and lists files that
+          # must stay different there (for example wrangler.toml). It always protects itself.
+          git init -q "$W/prot"
+          { echo ".syncignore"
+            if [ -f "$D_DIR/.syncignore" ]; then cat "$D_DIR/.syncignore"; echo; else echo "wrangler.toml"; fi
+          } > "$W/prot/.gitignore"
+
+          # Tracked files, minus anything the checkout's own .gitignore says to ignore, minus protected.
+          list_files() {
+            git -C "$1" ls-files -z | sort -z > "$W/t"
+            git -C "$1" ls-files -z -c -i --exclude-standard | sort -z > "$W/i"
+            comm -z -23 "$W/t" "$W/i" > "$W/m"
+            { git -C "$W/prot" check-ignore --no-index -z --stdin < "$W/m" || true; } | sort -z > "$W/p"
+            comm -z -23 "$W/m" "$W/p" > "$2"
+          }
+          list_files "$S_DIR" "$W/S"
+          list_files "$D_DIR" "$W/D"
+
+          comm -z -13 "$W/S" "$W/D" > "$W/del"          # in destination, not in source = leftovers
+          xargs -0 -r git -C "$D_DIR" rm -q -f -- < "$W/del"
+          tar -C "$S_DIR" --null -T "$W/S" -cf - | tar -C "$D_DIR" -xf -   # keeps modes and symlinks
+          git -C "$D_DIR" add -A                          # destination's .gitignore still applies here
+
+          if git -C "$D_DIR" diff --cached --quiet; then
+            echo "Files are already identical."; echo "Files: already identical." >> "${GITHUB_STEP_SUMMARY:-/dev/null}"; exit 0
+          fi
+          git -C "$D_DIR" diff --cached --stat | tail -n 30
+          { echo "Files changed in $DST:"; echo '```'; git -C "$D_DIR" diff --cached --shortstat; echo '```'; } >> "${GITHUB_STEP_SUMMARY:-/dev/null}"
+
+          if [ "$DRY_RUN" = true ]; then echo "Dry run: not pushed."; exit 0; fi
+          msg="Sync from $SRC@$(git -C "$S_DIR" rev-parse --short HEAD)"
+          [ "$SKIP_CI" = true ] && msg="$msg [skip ci]"
+          git -C "$D_DIR" -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "$msg"
+          git -C "$D_DIR" push -q origin "HEAD:$BRANCH"
+          echo "Pushed to $DST ($BRANCH)."
+
+      - name: Copy variables
+        if: inputs.copy_variables
+        env:
+          SRC: ${{ steps.r.outputs.src }}
+          DST: ${{ steps.r.outputs.dst }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          n=0
+          while IFS= read -r row; do
+            name=$(jq -r .name <<<"$row"); value=$(jq -r .value <<<"$row")
+            if [ "$DRY_RUN" = true ]; then echo "would copy variable $name"
+            else gh variable set "$name" --repo "$DST" --body "$value"; echo "copied variable $name"; fi
+            n=$((n+1))
+          done < <(gh api --paginate "repos/$SRC/actions/variables" --jq '.variables[] | @json')
+          echo "Variables: $n" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Copy secrets
+        if: inputs.copy_secrets
+        env:
+          DST: ${{ steps.r.outputs.dst }}
+          DIRECTION: ${{ inputs.direction }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+        run: |
+          set -euo pipefail
+          if [ "$DIRECTION" != push ]; then
+            echo "::warning::GitHub never reveals secret values, so pull cannot copy secrets. Run this workflow in the other repo with direction = push."
+            exit 0
+          fi
+          n=0
+          while IFS= read -r name; do
+            case "$name" in github_token|SYNC_TOKEN|GITHUB_*) continue;; esac
+            value=$(jq -j --arg k "$name" '.[$k]' <<<"$ALL_SECRETS")
+            [ -n "$value" ] || { echo "skipping $name (empty)"; continue; }
+            if [ "$DRY_RUN" = true ]; then echo "would copy secret $name"
+            else printf '%s' "$value" | gh secret set "$name" --repo "$DST"; echo "copied secret $name"; fi
+            n=$((n+1))
+          done < <(jq -r 'keys[]' <<<"$ALL_SECRETS")
+          echo "Secrets: $n" >> "$GITHUB_STEP_SUMMARY"
