@@ -13,10 +13,17 @@ name: Sync with twin repo
 #            send are the ones available to the repo it runs in. To get secrets from repo A into B,
 #            run the workflow in A with direction = push.
 #
-# One-time setup, in BOTH repos: Settings > Secrets and variables > Actions > New repository secret
-#   SYNC_TOKEN = a personal access token that can write to both repos
-#                (classic: scopes "repo" + "workflow"; fine-grained: Contents, Workflows, Secrets and
-#                Variables = read/write on both repos). SYNC_TOKEN itself is never copied.
+# Logging: every run prints all Actions variables (name=value) and all secret NAMES of both repos.
+#          Secret values are never printed: GitHub masks them as *** in logs, and in a public repo the
+#          logs are readable by anyone.
+#
+# Token: SYNC_TOKEN is optional, but without it GitHub only lets the run write to THIS repo:
+#   - with SYNC_TOKEN (recommended): push and pull, files + variables + secrets, workflow files too.
+#       Add it in BOTH repos: Settings > Secrets and variables > Actions > New repository secret.
+#       Classic PAT scopes "repo" + "workflow"; fine-grained: Contents, Workflows, Secrets and
+#       Variables = read/write on both repos. SYNC_TOKEN itself is never copied.
+#   - without it: pull only, files only (the other repo must be public), and .github/workflows/ is
+#       left untouched. Variables and secrets of the other repo cannot be read or written.
 
 on:
   workflow_dispatch:
@@ -56,12 +63,13 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   REPO_A: mounsokdara/Khmer-Calendar        # public
   REPO_B: mounsokdara/Khmer-Calendar.Dev    # dev
-  GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+  GH_TOKEN: ${{ secrets.SYNC_TOKEN || github.token }}
+  HAVE_PAT: ${{ secrets.SYNC_TOKEN != '' }}
 
 jobs:
   sync:
@@ -74,8 +82,8 @@ jobs:
           DIRECTION: ${{ inputs.direction }}
         run: |
           set -euo pipefail
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::error::Add a repository secret named SYNC_TOKEN first (see the comment at the top of this file)."
+          if [ "$HAVE_PAT" != true ] && [ "$DIRECTION" = push ]; then
+            echo "::error::Without SYNC_TOKEN this run can only write to its own repo. Use direction = pull, or add SYNC_TOKEN (see the top of this file)."
             exit 1
           fi
           this="${GITHUB_REPOSITORY,,}"
@@ -87,8 +95,34 @@ jobs:
           else src="$twin"; dst="$GITHUB_REPOSITORY"; fi
           echo "src=$src" >> "$GITHUB_OUTPUT"
           echo "dst=$dst" >> "$GITHUB_OUTPUT"
+          echo "pat=$HAVE_PAT" >> "$GITHUB_OUTPUT"
+          [ "$HAVE_PAT" = true ] || echo "::notice::No SYNC_TOKEN: files only, .github/workflows/ untouched, variables and secrets skipped."
           echo "## $src -> $dst" >> "$GITHUB_STEP_SUMMARY"
           [ "${{ inputs.dry_run }}" = true ] && echo "_Dry run: nothing is written._" >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Log variables and secret names
+        if: steps.r.outputs.pat == 'true'
+        env:
+          SRC: ${{ steps.r.outputs.src }}
+          DST: ${{ steps.r.outputs.dst }}
+        run: |
+          set -euo pipefail
+          for repo in "$SRC" "$DST"; do
+            echo "::group::$repo - variables (name=value)"
+            gh api --paginate "repos/$repo/actions/variables" --jq '.variables[] | "\(.name)=\(.value)"' || echo "(cannot read variables)"
+            echo "::endgroup::"
+            echo "::group::$repo - secrets (names only, GitHub never returns values)"
+            gh api --paginate "repos/$repo/actions/secrets" --jq '.secrets[] | .name' || echo "(cannot read secret names)"
+            echo "::endgroup::"
+            {
+              echo "### $repo"
+              echo "Variables:"; echo '```'
+              gh api --paginate "repos/$repo/actions/variables" --jq '.variables[] | "\(.name)=\(.value)"' || true
+              echo '```'; echo "Secrets (names):"; echo '```'
+              gh api --paginate "repos/$repo/actions/secrets" --jq '.secrets[] | .name' || true
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Sync files
         if: inputs.copy_files
@@ -98,12 +132,15 @@ jobs:
           BRANCH: ${{ inputs.branch }}
           DRY_RUN: ${{ inputs.dry_run }}
           SKIP_CI: ${{ inputs.skip_ci }}
+          PAT: ${{ steps.r.outputs.pat }}
         run: |
           set -euo pipefail
           BASE="${SYNC_URL_BASE:-https://x-access-token:${GH_TOKEN}@github.com}"
+          SRC_BASE="$BASE"
+          [ "$PAT" = true ] || SRC_BASE="${SYNC_URL_BASE:-https://github.com}"   # other repo is read anonymously
           W="${RUNNER_TEMP:-/tmp}/twin"; rm -rf "$W"; mkdir -p "$W"
           S_DIR="$W/src"; D_DIR="$W/dst"
-          git clone -q --depth 1 --branch "$BRANCH" "$BASE/$SRC.git" "$S_DIR"
+          git clone -q --depth 1 --branch "$BRANCH" "$SRC_BASE/$SRC.git" "$S_DIR"
           git clone -q --depth 1 --branch "$BRANCH" "$BASE/$DST.git" "$D_DIR"
 
           # .syncignore (gitignore syntax) lives in the repo being overwritten and lists files that
@@ -111,6 +148,7 @@ jobs:
           git init -q "$W/prot"
           { echo ".syncignore"
             if [ -f "$D_DIR/.syncignore" ]; then cat "$D_DIR/.syncignore"; echo; else echo "wrangler.toml"; fi
+            [ "$PAT" = true ] || echo ".github/workflows/"   # GITHUB_TOKEN may not change workflow files
           } > "$W/prot/.gitignore"
 
           # Tracked files, minus anything the checkout's own .gitignore says to ignore, minus protected.
@@ -144,24 +182,32 @@ jobs:
           echo "Pushed to $DST ($BRANCH)."
 
       - name: Copy variables
-        if: inputs.copy_variables
+        if: inputs.copy_variables && steps.r.outputs.pat == 'true'
         env:
           SRC: ${{ steps.r.outputs.src }}
           DST: ${{ steps.r.outputs.dst }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           set -euo pipefail
-          n=0
+          # What the destination has right now, as {"NAME": "value"}
+          old=$(gh api --paginate "repos/$DST/actions/variables" --jq '.variables[] | @json' | jq -s 'map({(.name): .value}) | add // {}')
+          log() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo '### Variables' >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
           while IFS= read -r row; do
             name=$(jq -r .name <<<"$row"); value=$(jq -r .value <<<"$row")
-            if [ "$DRY_RUN" = true ]; then echo "would copy variable $name"
-            else gh variable set "$name" --repo "$DST" --body "$value"; echo "copied variable $name"; fi
-            n=$((n+1))
+            if ! jq -e --arg k "$name" 'has($k)' <<<"$old" >/dev/null; then log "NEW      $name=$value"
+            else
+              prev=$(jq -r --arg k "$name" '.[$k]' <<<"$old")
+              if [ "$prev" = "$value" ]; then log "same     $name"
+              else log "CHANGED  $name: $prev  ->  $value"; fi
+            fi
+            [ "$DRY_RUN" = true ] || gh variable set "$name" --repo "$DST" --body "$value"
           done < <(gh api --paginate "repos/$SRC/actions/variables" --jq '.variables[] | @json')
-          echo "Variables: $n" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          [ "$DRY_RUN" = true ] && echo "Dry run: variables not written." || true
 
       - name: Copy secrets
-        if: inputs.copy_secrets
+        if: inputs.copy_secrets && steps.r.outputs.pat == 'true'
         env:
           DST: ${{ steps.r.outputs.dst }}
           DIRECTION: ${{ inputs.direction }}
@@ -173,13 +219,18 @@ jobs:
             echo "::warning::GitHub never reveals secret values, so pull cannot copy secrets. Run this workflow in the other repo with direction = push."
             exit 0
           fi
-          n=0
+          # Names and last-changed times already in the destination (values cannot be read by anyone)
+          have=$(gh api --paginate "repos/$DST/actions/secrets" --jq '.secrets[] | "\(.name)\t\(.updated_at)"')
+          log() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          echo '### Secrets (values are never logged)' >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
           while IFS= read -r name; do
             case "$name" in github_token|SYNC_TOKEN|GITHUB_*) continue;; esac
             value=$(jq -j --arg k "$name" '.[$k]' <<<"$ALL_SECRETS")
-            [ -n "$value" ] || { echo "skipping $name (empty)"; continue; }
-            if [ "$DRY_RUN" = true ]; then echo "would copy secret $name"
-            else printf '%s' "$value" | gh secret set "$name" --repo "$DST"; echo "copied secret $name"; fi
-            n=$((n+1))
+            [ -n "$value" ] || { log "skipped  $name (empty)"; continue; }
+            was=$(awk -F'\t' -v k="$name" '$1==k {print $2}' <<<"$have")
+            if [ -n "$was" ]; then log "OVERWRITE $name (destination copy was last changed $was; old value cannot be read)"
+            else log "NEW       $name"; fi
+            [ "$DRY_RUN" = true ] || printf '%s' "$value" | gh secret set "$name" --repo "$DST"
           done < <(jq -r 'keys[]' <<<"$ALL_SECRETS")
-          echo "Secrets: $n" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          [ "$DRY_RUN" = true ] && echo "Dry run: secrets not written." || true
