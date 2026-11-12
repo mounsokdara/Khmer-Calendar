@@ -17,9 +17,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: arm32,     btype: Arm32, target: "android-arm",                           mode: release, split: true,  out: app-armeabi-v7a-release.apk, experimental: false }
-          - { name: arm64,     btype: Arm64, target: "android-arm64",                         mode: release, split: true,  out: app-arm64-v8a-release.apk,   experimental: false }
-          - { name: x64,       btype: X64, target: "android-x64",                           mode: release, split: true,  out: app-x86_64-release.apk,      experimental: false }
+          - { name: arm32,     btype: Arm32, target: "android-arm",                           mode: release, split: false,  out: app-release.apk, experimental: false }
+          - { name: arm64,     btype: Arm64, target: "android-arm64",                         mode: release, split: false,  out: app-release.apk,   experimental: false }
+          - { name: x64,       btype: X64, target: "android-x64",                           mode: release, split: false,  out: app-release.apk,      experimental: false }
           - { name: arm32_64,  btype: Arm32_64, target: "android-arm,android-arm64",             mode: release, split: false, out: app-release.apk,            experimental: false }
           - { name: universal, btype: Universal, target: "android-arm,android-arm64,android-x64", mode: release, split: false, out: app-release.apk,            experimental: false }
     steps:
