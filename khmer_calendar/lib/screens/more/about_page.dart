@@ -235,7 +235,7 @@ class AboutPage extends StatelessWidget {
                         AboutItem(
                           icon: Icons.info_outline,
                           title: km ? 'កំណែ' : 'Version',
-                          subtitle: 'v$appVersion ($appBuildNumber)',
+                          subtitle: 'v$appVersion${appBuildType.isEmpty ? '' : '_$appBuildType'} ($appBuildNumber)',
                           chevron: false,
                         ),
                         AboutItem(

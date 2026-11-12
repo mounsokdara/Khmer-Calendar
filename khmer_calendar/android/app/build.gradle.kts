@@ -65,18 +65,17 @@ android {
     }
 }
 
-// Version codes: every package is versionCode * 10 + one digit saying what is inside (F-Droid ABI split).
-// The base versionCode always comes from pubspec.yaml (1.0.4+5 -> 5), never from a CI run number.
-//   0 universal | 1 arm32 (armeabi-v7a) | 2 arm64 (arm64-v8a) | 3 x64 (x86_64)
-//   4 arm32_64 (arm + arm64) | 5 x86_x64 (x86 + x86_64) | 6 x86
-val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86_64" to 3, "x86" to 6)
-val targetPlatformCodes = mapOf(
-    setOf("android-arm") to 1,
-    setOf("android-arm64") to 2,
-    setOf("android-x64") to 3,
-    setOf("android-arm", "android-arm64") to 4,
-    setOf("android-x86", "android-x64") to 5,
-    setOf("android-x86") to 6,
+// Version code: the same number for every package. It always comes from version.txt (via pubspec.yaml),
+// whatever the CPU build type, and never from a CI run number.
+// Version name: <versionName>_<BuildType>, e.g. 1.0.5_Arm64 (Arm32, Arm64, X64, Arm32_64, X86_X64, X86, Universal).
+val abiNames = mapOf("armeabi-v7a" to "Arm32", "arm64-v8a" to "Arm64", "x86_64" to "X64", "x86" to "X86")
+val targetPlatformNames = mapOf(
+    setOf("android-arm") to "Arm32",
+    setOf("android-arm64") to "Arm64",
+    setOf("android-x64") to "X64",
+    setOf("android-arm", "android-arm64") to "Arm32_64",
+    setOf("android-x86", "android-x64") to "X86_X64",
+    setOf("android-x86") to "X86",
 )
 // What `flutter build apk --target-platform ...` asked for (absent = the default set = universal).
 val builtTargets: Set<String>? = (project.findProperty("target-platform") as String?)
@@ -86,9 +85,9 @@ android.applicationVariants.configureEach {
     variant.outputs.forEach { output ->
         val abi = output.filters.find { it.filterType == "ABI" }?.identifier
         // Split build: the ABI of this APK. Fat build: the targets that were requested (none -> universal).
-        val code = if (abi != null) abiCodes[abi] else (builtTargets?.let { targetPlatformCodes[it] } ?: 0)
-        if (code != null) {
-            (output as ApkVariantOutputImpl).versionCodeOverride = variant.versionCode * 10 + code
+        val type = if (abi != null) abiNames[abi] else (builtTargets?.let { targetPlatformNames[it] } ?: "Universal")
+        if (type != null) {
+            (output as ApkVariantOutputImpl).versionNameOverride = "${variant.versionName}_$type"
         }
     }
 }

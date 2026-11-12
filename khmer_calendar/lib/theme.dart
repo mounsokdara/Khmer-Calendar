@@ -427,6 +427,8 @@ const xlBreak = 1180.0;
 // Synced from version.txt by scripts/set-version.sh --apply (CI runs this before every build).
 const appVersion = '1.0.5';
 const appBuildNumber = 6;
+// CPU build type of this package (Arm64, Arm32, X64, Arm32_64, Universal); set by CI with --dart-define=BUILD_TYPE=...
+const appBuildType = String.fromEnvironment('BUILD_TYPE');
 const appAuthor = 'Moun Sokdara';
 const appSourceUrl = 'https://github.com/mounsokdara/Khmer-Calendar';
 const appWebsiteUrl = 'https://khmercalendar.pages.dev';

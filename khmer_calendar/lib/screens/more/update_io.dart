@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
-import '../../theme.dart' show appVersion;
+import '../../theme.dart' show appBuildType, appVersion;
 // Prefixed: package:flutter/services.dart also exports a symbol named appBuildNumber.
 import '../../theme.dart' as theme show appBuildNumber;
 import 'device_arch.dart';
@@ -21,6 +21,7 @@ final bool inAppUpdateSupported =
 
 final bool updateRestartsApp = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
 
+const _packageByType = <String, String>{'Universal': 'universal', 'Arm32': 'arm32', 'Arm64': 'arm64', 'X64': 'x64', 'Arm32_64': 'arm32_64'};
 const _packageByDigit = <int, String>{0: 'universal', 1: 'arm32', 2: 'arm64', 3: 'x64', 4: 'arm32_64'};
 
 const _headers = {'Accept': 'application/vnd.github+json', 'User-Agent': 'khmer-calendar-updater'};
@@ -221,7 +222,8 @@ Future<UpdateBuild?> fetchUpdateBuild() async {
     final info = await _channel.invokeMapMethod<String, dynamic>('installInfo');
     if (info == null) throw const UpdateException('Cannot read the installed version');
     final versionCode = (info['versionCode'] as num).toInt();
-    package = _packageByDigit[versionCode % 10] ?? 'universal';
+    // New builds carry their type (versionName_<BuildType>); builds installed before that used versionCode*10+digit.
+    package = _packageByType[appBuildType] ?? _packageByDigit[versionCode % 10] ?? 'universal';
     assetName = 'KhmerCalendar-$package.apk';
   } else {
     final arch = deviceArch();

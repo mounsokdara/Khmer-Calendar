@@ -172,7 +172,12 @@ jobs:
               --notes-file "$NOTES_FILE"
           }
           if gh release view "$TAG" >/dev/null 2>&1; then
-            retry gh release delete "$TAG" --yes --cleanup-tag
+            # Target release already exists: keep it (tag, date, notes, latest flag) and only replace its assets.
+            echo "Release ${TAG} exists: replacing its assets"
+            for f in release-files/*; do
+              retry gh release upload "$TAG" "$f" --clobber
+            done
+            exit 0
           fi
           retry create_draft
           for f in release-files/*; do
