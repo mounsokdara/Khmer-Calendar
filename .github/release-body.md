@@ -17,3 +17,5 @@
 - Month navigation with mouse and trackpad feels more natural on desktop
 - Clear Data is now more helpful
 - About page redesigned: same layout as my other projects (hero card, quick actions, author card, version and legal tiles)
+# Important:
+⚠️ If you have an older APK build (e.g., 1.0.4, 1.0.5), please uninstall the app and reinstall the latest APK build to update the app.
