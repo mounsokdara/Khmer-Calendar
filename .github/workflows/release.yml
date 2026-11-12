@@ -16,7 +16,7 @@ on:
 
 concurrency:
   group: release
-  cancel-in-progress: true
+
 permissions:
   contents: write
 
@@ -89,11 +89,9 @@ jobs:
       - name: Stage files
         run: |
           mkdir -p release-files
-          # Packages + standalone updaters (KhmerCalendar-Updater-*).
-          find dist -type f \( \
-            -name 'KhmerCalendar-*' -o \
-            -name 'KhmerCalendar-Updater-*' \
-          \) ! -name '*.idsig' -exec cp -t release-files {} +
+          # Packages only: the updater stays inside each package, never a separate asset.
+          find dist -type f -name 'KhmerCalendar-*' \
+            ! -name 'KhmerCalendar-Updater-*' ! -name '*.idsig' -exec cp -t release-files {} +
           # Portable universal Windows: one flat folder (x64 build).
           # No x64/arm64 subfolders and no launcher — double-click khmer_calendar.exe.
           # Works on ARM64 Windows via built-in x64 emulation.

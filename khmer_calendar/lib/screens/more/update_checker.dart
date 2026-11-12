@@ -5,7 +5,7 @@ import '../../theme.dart' show appVersion;
 // Prefixed: package:flutter/services.dart also exports a symbol named appBuildNumber.
 import '../../theme.dart' as theme show appBuildNumber;
 import '../../web_refresh.dart';
-import 'dev_update_types.dart' show updateRepo, updateVersionFileUrl;
+import 'update_types.dart' show updateRepo, updateVersionFileUrl;
 
 const currentAppVersion = appVersion;
 const latestReleaseUrl = 'https://github.com/$updateRepo/releases/latest';

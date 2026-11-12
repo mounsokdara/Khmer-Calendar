@@ -7,8 +7,8 @@ import '../i18n.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../widgets/overlay_page.dart';
-import 'more/dev_update.dart' show inAppUpdateSupported;
-import 'more/dev_update_ui.dart' show showPendingUpdateFailure;
+import 'more/update.dart' show inAppUpdateSupported;
+import 'more/update_ui.dart' show showPendingUpdateFailure;
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.store, required this.child});

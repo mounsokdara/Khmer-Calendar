@@ -25,7 +25,7 @@ import 'dart:io';
 
 final _sep = Platform.pathSeparator;
 
-const _repo = 'mounsokdara/Khmer-Calendar.Dev';
+const _repo = 'mounsokdara/Khmer-Calendar';
 const _userAgent = 'khmer-calendar-updater';
 final _log = File('${Directory.systemTemp.path}${_sep}khmer_update.log');
 

@@ -14,8 +14,8 @@ import '../../theme.dart';
 import '../../web_refresh.dart';
 import '../../widgets/overlay_page.dart';
 import '../../widgets/about_widgets.dart';
-import 'dev_update.dart' show inAppUpdateSupported;
-import 'dev_update_ui.dart';
+import 'update.dart' show inAppUpdateSupported;
+import 'update_ui.dart';
 import 'update_checker.dart';
 
 const _githubProfile = 'https://github.com/mounsokdara';

@@ -16,7 +16,7 @@
 # Log: $TMPDIR/khmer_update.log
 set -u
 LOG="${TMPDIR:-/tmp}/khmer_update.log"
-REPO="mounsokdara/Khmer-Calendar.Dev"
+REPO="mounsokdara/Khmer-Calendar"
 TITLE="Khmer Calendar update"
 say() { echo "$(date '+%Y-%m-%dT%H:%M:%S') $*" >> "$LOG"; echo "$*"; }
 
