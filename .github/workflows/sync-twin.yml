@@ -8,6 +8,12 @@ name: Sync with twin repo
 # Files:     copies tracked files only. Anything matching the source's .gitignore is never copied
 #            (even if it was force-added), and files that exist in the destination but not in the
 #            source are removed ("no leftovers") unless they match .syncignore.
+# .syncignore: gitignore syntax, one per repo, lists files that stay in that repo only (for example
+#            wrangler.toml, dev-build.yml). Both repos' lists apply in both directions: a listed file is
+#            never copied out of the repo that lists it and never overwritten or deleted in it. A copy that
+#            already sits in the other repo is removed as a leftover. The .syncignore file itself is never
+#            copied, overwritten or deleted, whatever it contains. If the destination has no .syncignore,
+#            wrangler.toml is protected.
 # Variables: copied in either direction (GitHub lets a token read variable values).
 # Secrets:   push only. GitHub never reveals a secret's value, so the only secrets this workflow can
 #            send are the ones available to the repo it runs in. To get secrets from repo A into B,
@@ -143,24 +149,33 @@ jobs:
           git clone -q --depth 1 --branch "$BRANCH" "$SRC_BASE/$SRC.git" "$S_DIR"
           git clone -q --depth 1 --branch "$BRANCH" "$BASE/$DST.git" "$D_DIR"
 
-          # .syncignore (gitignore syntax) lives in the repo being overwritten and lists files that
-          # must stay different there (for example wrangler.toml). It always protects itself.
-          git init -q "$W/prot"
-          { echo ".syncignore"
-            if [ -f "$D_DIR/.syncignore" ]; then cat "$D_DIR/.syncignore"; echo; else echo "wrangler.toml"; fi
+          # .syncignore (gitignore syntax): one per repo, lists files that stay in that repo only (for example
+          # wrangler.toml, dev-build.yml). Both lists apply, in both directions:
+          #   prot_d, destination files left alone (not overwritten, not deleted): the destination's list
+          #   prot_s, source files that are not copied: the destination's list plus the source's list
+          # A file only the source lists is never copied, and a stray copy already in the destination is
+          # removed as a leftover. The fixed rules come last, so nothing above can un-ignore them:
+          # .syncignore itself is never copied, overwritten or deleted.
+          git init -q "$W/prot_s"; git init -q "$W/prot_d"
+          { if [ -f "$D_DIR/.syncignore" ]; then cat "$D_DIR/.syncignore"; echo; else echo "wrangler.toml"; fi; } > "$W/rules_d"
+          { if [ -f "$S_DIR/.syncignore" ]; then cat "$S_DIR/.syncignore"; echo; fi; } > "$W/rules_s"
+          fixed_rules() {
             [ "$PAT" = true ] || echo ".github/workflows/"   # GITHUB_TOKEN may not change workflow files
-          } > "$W/prot/.gitignore"
+            echo ".syncignore"
+          }
+          { cat "$W/rules_d"; fixed_rules; } > "$W/prot_d/.gitignore"
+          { cat "$W/rules_d" "$W/rules_s"; fixed_rules; } > "$W/prot_s/.gitignore"
 
           # Tracked files, minus anything the checkout's own .gitignore says to ignore, minus protected.
-          list_files() {
+          list_files() { # dir, output list, protect repo
             git -C "$1" ls-files -z | sort -z > "$W/t"
             git -C "$1" ls-files -z -c -i --exclude-standard | sort -z > "$W/i"
             comm -z -23 "$W/t" "$W/i" > "$W/m"
-            { git -C "$W/prot" check-ignore --no-index -z --stdin < "$W/m" || true; } | sort -z > "$W/p"
+            { git -C "$3" check-ignore --no-index -z --stdin < "$W/m" || true; } | sort -z > "$W/p"
             comm -z -23 "$W/m" "$W/p" > "$2"
           }
-          list_files "$S_DIR" "$W/S"
-          list_files "$D_DIR" "$W/D"
+          list_files "$S_DIR" "$W/S" "$W/prot_s"
+          list_files "$D_DIR" "$W/D" "$W/prot_d"
 
           comm -z -13 "$W/S" "$W/D" > "$W/del"          # in destination, not in source = leftovers
           xargs -0 -r git -C "$D_DIR" rm -q -f -- < "$W/del"
